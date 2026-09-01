@@ -1,0 +1,70 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: trustbridge_test
+          POSTGRES_USER: trustbridge
+          POSTGRES_PASSWORD: trustbridge
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U trustbridge"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.3"
+          extensions: mbstring, pdo_pgsql, pgsql, curl, zip, gd, intl, sodium, exif
+          coverage: none
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Copy .env
+        run: cp .env.example .env
+
+      - name: Install PHP dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Install Node dependencies
+        run: npm install --legacy-peer-deps
+
+      - name: Build frontend assets
+        run: npm run build
+
+      - name: Generate app key
+        run: php artisan key:generate
+
+      - name: Point .env at the CI database
+        run: |
+          sed -i 's/^DB_CONNECTION=.*/DB_CONNECTION=pgsql/' .env
+          sed -i 's/^DB_HOST=.*/DB_HOST=127.0.0.1/' .env
+          sed -i 's/^DB_PORT=.*/DB_PORT=5432/' .env
+          sed -i 's/^DB_DATABASE=.*/DB_DATABASE=trustbridge_test/' .env
+          sed -i 's/^DB_USERNAME=.*/DB_USERNAME=trustbridge/' .env
+          sed -i 's/^DB_PASSWORD=.*/DB_PASSWORD=trustbridge/' .env
+
+      - name: Run migrations
+        run: php artisan migrate --force
+
+      - name: Run tests
+        run: php artisan test

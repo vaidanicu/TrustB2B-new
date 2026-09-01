@@ -1,0 +1,56 @@
+name: trustbridge
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_DATABASE:-trustbridge}
+      POSTGRES_USER: ${DB_USERNAME:-trustbridge}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-trustbridge}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - trustbridge_postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-trustbridge}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--save", "60", "1"]
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - trustbridge_redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Local stand-in for the private EU S3-compatible object storage described
+  # in the roadmap (§4/§10). Swap for the real provider's endpoint in .env
+  # once Tárhely.eu / the chosen EU provider is confirmed — application code
+  # talks to it only through Laravel's s3-compatible filesystem driver, so no
+  # code changes are needed to switch.
+  minio:
+    image: minio/minio:latest
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${AWS_ACCESS_KEY_ID:-trustbridge}
+      MINIO_ROOT_PASSWORD: ${AWS_SECRET_ACCESS_KEY:-trustbridge-secret}
+    ports:
+      - "127.0.0.1:9000:9000"
+      - "127.0.0.1:9001:9001"
+    volumes:
+      - trustbridge_minio:/data
+
+volumes:
+  trustbridge_postgres:
+  trustbridge_redis:
+  trustbridge_minio:
