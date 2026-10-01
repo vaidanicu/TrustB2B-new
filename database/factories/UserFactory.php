@@ -2,6 +2,8 @@
 
 namespace Database\Factories;
 
+use App\Models\FranchisePartner;
+use App\Models\Organization;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
@@ -40,6 +42,31 @@ class UserFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'email_verified_at' => null,
+        ]);
+    }
+
+    /**
+     * Franchise-partner-level staff: no organization_id of their own.
+     */
+    public function forFranchisePartner(?FranchisePartner $franchisePartner = null): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'franchise_partner_id' => ($franchisePartner ?? FranchisePartner::factory()->create())->id,
+            'organization_id' => null,
+        ]);
+    }
+
+    /**
+     * Customer-level staff. franchise_partner_id is denormalized from the
+     * organization, matching what BelongsToOrganization does on create.
+     */
+    public function forOrganization(?Organization $organization = null): static
+    {
+        $organization ??= Organization::factory()->create();
+
+        return $this->state(fn (array $attributes) => [
+            'organization_id' => $organization->id,
+            'franchise_partner_id' => $organization->franchise_partner_id,
         ]);
     }
 }
