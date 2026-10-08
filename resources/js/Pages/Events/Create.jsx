@@ -9,7 +9,7 @@ function RadioCard({ name, value, checked, onChange, title, hint }) {
         <label
             className={
                 'flex cursor-pointer items-start gap-2.5 rounded-lg border px-4 py-3.5 ' +
-                (checked ? 'border-indigo-500 bg-indigo-50' : 'border-gray-300')
+                (checked ? 'border-accent bg-accent-soft' : 'border-line')
             }
         >
             <input
@@ -18,11 +18,11 @@ function RadioCard({ name, value, checked, onChange, title, hint }) {
                 value={value}
                 checked={checked}
                 onChange={onChange}
-                className="mt-0.5 text-indigo-600 focus:ring-indigo-500"
+                className="mt-0.5 text-accent focus:ring-accent"
             />
             <span>
-                <span className="block text-sm font-medium text-gray-900">{title}</span>
-                <span className="block text-xs text-gray-400">{hint}</span>
+                <span className="block text-sm font-medium text-ink">{title}</span>
+                <span className="block text-xs text-ink-muted">{hint}</span>
             </span>
         </label>
     );
@@ -68,8 +68,8 @@ export default function Create() {
 
             <form onSubmit={submit} className="mx-auto flex max-w-3xl flex-col gap-6 px-4 py-8 sm:px-6 lg:px-8">
                 <section className="rounded-lg bg-white p-7 shadow-sm">
-                    <h2 className="text-base font-semibold text-gray-900">Detalii eveniment</h2>
-                    <p className="mt-0.5 text-sm text-gray-400">
+                    <h2 className="text-base font-semibold text-ink">Detalii eveniment</h2>
+                    <p className="mt-0.5 text-sm text-ink-muted">
                         Scopul, țara și perioada determină ce reguli legale se aplică.
                     </p>
 
@@ -104,13 +104,13 @@ export default function Create() {
                 </section>
 
                 <section className="rounded-lg bg-white p-7 shadow-sm">
-                    <h2 className="text-base font-semibold text-gray-900">Fotografii și retenție</h2>
-                    <p className="mt-0.5 text-sm text-gray-400">
+                    <h2 className="text-base font-semibold text-ink">Fotografii și retenție</h2>
+                    <p className="mt-0.5 text-sm text-ink-muted">
                         Termenul standard e 90 de zile de la finalul evenimentului — abateri necesită scop documentat.
                     </p>
 
                     <div className="mt-5">
-                        <span className="mb-2 block text-sm font-medium text-gray-700">Termen de ștergere foto</span>
+                        <span className="mb-2 block text-sm font-medium text-ink-soft">Termen de ștergere foto</span>
                         <div className="grid grid-cols-2 gap-3">
                             <RadioCard
                                 name="retention"
@@ -133,7 +133,7 @@ export default function Create() {
                     </div>
 
                     <div className="mt-5">
-                        <span className="mb-2 block text-sm font-medium text-gray-700">La finalul ciclului</span>
+                        <span className="mb-2 block text-sm font-medium text-ink-soft">La finalul ciclului</span>
                         <div className="grid grid-cols-2 gap-3">
                             <RadioCard
                                 name="end-of-cycle"
@@ -156,8 +156,8 @@ export default function Create() {
                 </section>
 
                 <section className="rounded-lg bg-white p-7 shadow-sm">
-                    <h2 className="text-base font-semibold text-gray-900">Responsabili eveniment</h2>
-                    <p className="mt-0.5 text-sm text-gray-400">
+                    <h2 className="text-base font-semibold text-ink">Responsabili eveniment</h2>
+                    <p className="mt-0.5 text-sm text-ink-muted">
                         Confirmă cine ocupă fiecare rol — sistemul nu deduce automat rolurile juridice.
                     </p>
 
@@ -175,13 +175,13 @@ export default function Create() {
                 </section>
 
                 <div className="flex items-center justify-end gap-3 pb-4">
-                    <Link href={route('dashboard')} className="text-sm text-gray-500 hover:text-gray-800">
+                    <Link href={route('dashboard')} className="text-sm text-ink-muted hover:text-ink">
                         Anulează
                     </Link>
                     <button
                         type="submit"
                         disabled={processing}
-                        className="inline-flex items-center rounded-md border border-transparent bg-gray-800 px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white transition hover:bg-gray-700 disabled:opacity-50"
+                        className="inline-flex items-center rounded-md border border-transparent bg-ink px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white transition hover:bg-ink-soft disabled:opacity-50"
                     >
                         {processing ? 'Se salvează…' : 'Continuă'}
                     </button>

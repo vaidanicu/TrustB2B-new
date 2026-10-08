@@ -13,15 +13,15 @@ export default function TwoFactorChallenge() {
             <Head title="Verificare în doi pași" />
 
             <div className="mb-2 flex items-center gap-2.5">
-                <span className="flex h-8 w-8 flex-none items-center justify-center rounded-lg bg-indigo-50">
+                <span className="flex h-8 w-8 flex-none items-center justify-center rounded-lg bg-accent-soft">
                     <svg width="18" height="18" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M10 2l6 3v5c0 4.2-2.6 7.4-6 8-3.4-.6-6-3.8-6-8V5l6-3z" stroke="#4f46e5" strokeWidth="1.5" strokeLinejoin="round" />
+                        <path d="M10 2l6 3v5c0 4.2-2.6 7.4-6 8-3.4-.6-6-3.8-6-8V5l6-3z" stroke="#a97a35" strokeWidth="1.5" strokeLinejoin="round" />
                     </svg>
                 </span>
-                <h1 className="text-lg font-semibold text-gray-900">Verificare în doi pași</h1>
+                <h1 className="font-display text-lg font-semibold text-ink">Verificare în doi pași</h1>
             </div>
 
-            <p className="mb-5 text-sm leading-relaxed text-gray-600">
+            <p className="mb-5 text-sm leading-relaxed text-ink-soft">
                 Introdu codul din aplicația de autentificare pentru a continua.
             </p>
 
@@ -38,7 +38,7 @@ export default function TwoFactorChallenge() {
                 />
 
                 <div className="mt-5 flex items-center justify-between">
-                    <button type="button" className="text-sm text-gray-600 underline hover:text-gray-900">
+                    <button type="button" className="text-sm text-ink-soft underline hover:text-ink">
                         Folosește un cod de recuperare
                     </button>
 

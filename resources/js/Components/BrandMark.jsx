@@ -4,7 +4,7 @@
  * Laravel/Breeze default logo used to sit, so it is easy to swap out once
  * a real one exists.
  */
-export default function BrandMark({ size = 26, className = 'text-gray-800' }) {
+export default function BrandMark({ size = 26, className = 'text-ink' }) {
     return (
         <svg
             width={size}

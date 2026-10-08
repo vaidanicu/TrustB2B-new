@@ -45,13 +45,13 @@ export default function AppLayout({ title, active = null, actions = null, childr
           : (user?.roles ?? [])[0];
 
     return (
-        <div className="min-h-screen bg-gray-100">
-            <nav className="border-b border-gray-100 bg-white">
+        <div className="min-h-screen bg-paper">
+            <nav className="border-b border-line bg-white">
                 <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center gap-10">
                         <Link href="/" className="flex items-center gap-2.5">
-                            <BrandMark />
-                            <span className="text-[17px] font-semibold text-gray-800">TrustBridge</span>
+                            <BrandMark className="text-ink" />
+                            <span className="font-display text-[18px] font-semibold text-ink">TrustBridge</span>
                         </Link>
 
                         <div className="hidden gap-8 sm:flex">
@@ -62,8 +62,8 @@ export default function AppLayout({ title, active = null, actions = null, childr
                                     className={
                                         'flex h-16 items-center border-b-2 text-sm font-medium transition duration-150 ease-in-out ' +
                                         (active === item.key
-                                            ? 'border-indigo-400 text-gray-900'
-                                            : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700')
+                                            ? 'border-accent text-ink'
+                                            : 'border-transparent text-ink-muted hover:border-line hover:text-ink-soft')
                                     }
                                 >
                                     {item.label}
@@ -73,17 +73,17 @@ export default function AppLayout({ title, active = null, actions = null, childr
                     </div>
 
                     {user && (
-                        <div className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-gray-600">
-                            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-gray-200 text-xs font-semibold text-gray-600">
+                        <div className="flex items-center gap-2 rounded-md px-3 py-2 text-sm text-ink-muted">
+                            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-accent-soft text-xs font-semibold text-accent-ink">
                                 {initials(user.name)}
                             </span>
                             <span>
-                                {user.name}
-                                {contextLabel && <span className="text-gray-400"> · {contextLabel}</span>}
+                                <span className="text-ink-soft">{user.name}</span>
+                                {contextLabel && <span className="text-ink-muted"> · {contextLabel}</span>}
                             </span>
                             <Link
                                 href={route('profile.edit')}
-                                className="ms-2 text-xs text-gray-400 underline hover:text-gray-700"
+                                className="ms-2 text-xs text-ink-muted underline hover:text-ink-soft"
                             >
                                 Profil
                             </Link>
@@ -91,7 +91,7 @@ export default function AppLayout({ title, active = null, actions = null, childr
                                 href={route('logout')}
                                 method="post"
                                 as="button"
-                                className="text-xs text-gray-400 underline hover:text-gray-700"
+                                className="text-xs text-ink-muted underline hover:text-ink-soft"
                             >
                                 Ieșire
                             </Link>
@@ -101,9 +101,9 @@ export default function AppLayout({ title, active = null, actions = null, childr
             </nav>
 
             {title && (
-                <header className="bg-white shadow-[0_1px_3px_0_rgba(0,0,0,0.06)]">
+                <header className="bg-white shadow-[0_1px_3px_0_rgba(23,33,43,0.06)]">
                     <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-6 sm:px-6 lg:px-8">
-                        <h1 className="text-xl font-semibold text-gray-800">{title}</h1>
+                        <h1 className="font-display text-2xl font-semibold text-ink">{title}</h1>
                         {actions}
                     </div>
                 </header>
