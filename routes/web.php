@@ -7,17 +7,17 @@ use App\Http\Controllers\EventController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\ParticipantController;
 use App\Http\Controllers\ProfileController;
-use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
-    return Inertia::render('Welcome', [
-        'canLogin' => Route::has('login'),
-        'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
-    ]);
+    // A logged-in visitor almost certainly wants their dashboard, not the
+    // pitch for people who don't have an account yet.
+    if (request()->user()) {
+        return redirect()->route('dashboard');
+    }
+
+    return Inertia::render('Welcome');
 });
 
 Route::get('/two-factor-challenge', [TwoFactorChallengeController::class, 'show'])
