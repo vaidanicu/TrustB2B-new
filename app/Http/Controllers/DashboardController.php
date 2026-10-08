@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Event;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -14,10 +15,8 @@ use Inertia\Response;
  * them straight there instead of showing an empty events screen that
  * isn't theirs.
  *
- * Event does not exist yet (AP07/08, deliberately built after the
- * frontend per the current work order) — this renders the real page shell
- * with an honest empty state rather than placeholder data that would look
- * like it came from a database.
+ * Events are real now (AP07/08) — Event's BelongsToOrganization scope
+ * already limits this query to the acting user's own organization.
  */
 class DashboardController extends Controller
 {
@@ -29,8 +28,17 @@ class DashboardController extends Controller
             return redirect()->route('organizations.index');
         }
 
+        $events = Event::query()
+            ->orderBy('starts_at')
+            ->get(['id', 'name', 'starts_at', 'status']);
+
         return Inertia::render('Dashboard', [
-            'events' => [],
+            'events' => $events->map(fn (Event $event) => [
+                'id' => $event->id,
+                'name' => $event->name,
+                'date' => $event->starts_at->format('d.m.Y'),
+                'status' => $event->status,
+            ]),
         ]);
     }
 }

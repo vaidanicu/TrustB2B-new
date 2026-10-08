@@ -60,4 +60,12 @@ class Organization extends Model
     {
         return $this->hasMany(User::class);
     }
+
+    /**
+     * @return HasMany<Event, $this>
+     */
+    public function events(): HasMany
+    {
+        return $this->hasMany(Event::class);
+    }
 }

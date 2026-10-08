@@ -41,6 +41,9 @@ class HandleInertiaRequests extends Middleware
                     'franchise_partner' => $user->franchisePartner?->only(['id', 'name', 'region_code']),
                 ] : null,
             ],
+            'flash' => [
+                'status' => fn () => $request->session()->get('status'),
+            ],
         ];
     }
 }

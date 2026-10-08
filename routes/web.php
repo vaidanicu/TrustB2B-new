@@ -32,6 +32,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/organizations', [OrganizationController::class, 'index'])->name('organizations.index');
     Route::get('/events/create', [EventController::class, 'create'])->name('events.create');
+    Route::post('/events', [EventController::class, 'store'])->name('events.store');
     Route::get('/participanti', [ParticipantController::class, 'statusBoard'])->name('participants.status');
     Route::get('/audit-log', [AuditLogController::class, 'index'])->name('audit-log.index');
 });
