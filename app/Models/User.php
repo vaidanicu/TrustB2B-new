@@ -44,11 +44,17 @@ class User extends Authenticatable
     protected static function booted(): void
     {
         static::creating(function (self $user) {
-            if ($user->organization_id === null) {
+            // array_key_exists, not "=== null": a franchise-level staff
+            // member legitimately HAS organization_id = null, explicitly,
+            // and that must stick — only an attribute that was never set
+            // at all should fall back to the ambient tenant context.
+            $attributes = $user->getAttributes();
+
+            if (! array_key_exists('organization_id', $attributes)) {
                 $user->organization_id = TenantContext::organizationId();
             }
 
-            if ($user->franchise_partner_id === null) {
+            if (! array_key_exists('franchise_partner_id', $attributes)) {
                 $user->franchise_partner_id = $user->organization_id
                     ? Organization::withoutGlobalScopes()->whereKey($user->organization_id)->value('franchise_partner_id')
                     : TenantContext::franchisePartnerId();

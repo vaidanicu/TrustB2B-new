@@ -27,19 +27,7 @@ class CrossTenantIsolationTest extends TestCase
 {
     use RefreshDatabase;
 
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        TenantContext::flush();
-    }
-
-    protected function tearDown(): void
-    {
-        TenantContext::flush();
-
-        parent::tearDown();
-    }
+    // TenantContext is flushed before/after every test by Tests\TestCase.
 
     /**
      * User itself carries no automatic tenant scope — see the long comment

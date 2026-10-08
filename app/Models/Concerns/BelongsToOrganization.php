@@ -41,11 +41,16 @@ trait BelongsToOrganization
         static::addGlobalScope(new TenantScope('organization_id'));
 
         static::creating(function (Model $model) {
-            if ($model->organization_id === null) {
+            // array_key_exists, not "=== null" — see the long comment on
+            // User::booted() for why an explicit null must never be
+            // overwritten by the ambient tenant context.
+            $attributes = $model->getAttributes();
+
+            if (! array_key_exists('organization_id', $attributes)) {
                 $model->organization_id = TenantContext::organizationId();
             }
 
-            if ($model->franchise_partner_id === null) {
+            if (! array_key_exists('franchise_partner_id', $attributes)) {
                 $model->franchise_partner_id = $model->organization_id
                     ? Organization::withoutGlobalScopes()->whereKey($model->organization_id)->value('franchise_partner_id')
                     : TenantContext::franchisePartnerId();
