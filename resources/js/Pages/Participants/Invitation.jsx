@@ -1,5 +1,6 @@
 import Logo from '@/Components/Logo';
-import { Head, Link } from '@inertiajs/react';
+import InputError from '@/Components/InputError';
+import { Head, Link, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 
 function RsvpOption({ selected, onClick, label, hint }) {
@@ -18,11 +19,38 @@ function RsvpOption({ selected, onClick, label, hint }) {
     );
 }
 
-export default function Invitation({ event }) {
-    const [attending, setAttending] = useState(true);
-    const [name, setName] = useState('');
-    const [email, setEmail] = useState('');
-    const [photoConsent, setPhotoConsent] = useState(true);
+/**
+ * Serves two cases from one component: the static marketing demo (no
+ * signedUrl — ParticipantController@invitation, one sample event, submits
+ * by navigating to a query-string confirmation, same as always) and the
+ * real per-recipient flow (signedUrl present — ParticipantController@show,
+ * submits by POSTing back to that exact signed address).
+ */
+export default function Invitation({ event, participantName, signedUrl }) {
+    const isReal = Boolean(signedUrl);
+
+    const [demoAttending, setDemoAttending] = useState(true);
+    const [demoName, setDemoName] = useState('');
+    const [demoEmail, setDemoEmail] = useState('');
+    const [demoPhotoConsent, setDemoPhotoConsent] = useState(true);
+
+    const { data, setData, post, processing, errors } = useForm({
+        name: participantName ?? '',
+        attending: true,
+        photo_consent: true,
+    });
+
+    function submitReal(e) {
+        e.preventDefault();
+        post(signedUrl);
+    }
+
+    const attending = isReal ? data.attending : demoAttending;
+    const name = isReal ? data.name : demoName;
+    const photoConsent = isReal ? data.photo_consent : demoPhotoConsent;
+    const setAttending = isReal ? (value) => setData('attending', value) : setDemoAttending;
+    const setName = isReal ? (value) => setData('name', value) : setDemoName;
+    const setPhotoConsent = isReal ? (value) => setData('photo_consent', value) : setDemoPhotoConsent;
 
     return (
         <div className="min-h-screen bg-paper pb-10">
@@ -32,7 +60,7 @@ export default function Invitation({ event }) {
                 <Logo height={20} />
             </div>
 
-            <div className="mx-auto w-full max-w-md px-4">
+            <form onSubmit={isReal ? submitReal : (e) => e.preventDefault()} className="mx-auto w-full max-w-md px-4">
                 <div className="rounded-lg bg-white p-5 shadow-sm">
                     <p className="text-xs font-medium uppercase tracking-wide text-ink-muted">{event.organizer} te invită</p>
                     <h1 className="mt-1 text-lg font-semibold leading-snug text-ink">{event.name}</h1>
@@ -63,17 +91,20 @@ export default function Invitation({ event }) {
                                     placeholder="ex. Andrei Popescu"
                                     className="mt-1 block min-h-[44px] w-full rounded-md border-line text-base shadow-sm focus:border-accent focus:ring-accent"
                                 />
+                                {isReal && <InputError message={errors.name} className="mt-1" />}
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium text-ink-soft">Email</label>
-                                <input
-                                    type="email"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    placeholder="nume@exemplu.ro"
-                                    className="mt-1 block min-h-[44px] w-full rounded-md border-line text-base shadow-sm focus:border-accent focus:ring-accent"
-                                />
-                            </div>
+                            {!isReal && (
+                                <div>
+                                    <label className="block text-sm font-medium text-ink-soft">Email</label>
+                                    <input
+                                        type="email"
+                                        value={demoEmail}
+                                        onChange={(e) => setDemoEmail(e.target.value)}
+                                        placeholder="nume@exemplu.ro"
+                                        className="mt-1 block min-h-[44px] w-full rounded-md border-line text-base shadow-sm focus:border-accent focus:ring-accent"
+                                    />
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>
@@ -96,21 +127,31 @@ export default function Invitation({ event }) {
                     </p>
                 </div>
 
-                <Link
-                    href={route('participants.confirmation', {
-                        nume: name || 'Andrei',
-                        particip: attending ? 1 : 0,
-                        poze: photoConsent ? 1 : 0,
-                    })}
-                    className="mt-5 flex min-h-[48px] w-full items-center justify-center rounded-md bg-ink px-4 text-sm font-semibold uppercase tracking-widest text-white"
-                >
-                    Trimite răspunsul
-                </Link>
+                {isReal ? (
+                    <button
+                        type="submit"
+                        disabled={processing}
+                        className="mt-5 flex min-h-[48px] w-full items-center justify-center rounded-md bg-ink px-4 text-sm font-semibold uppercase tracking-widest text-white disabled:opacity-50"
+                    >
+                        {processing ? 'Se trimite…' : 'Trimite răspunsul'}
+                    </button>
+                ) : (
+                    <Link
+                        href={route('participants.confirmation', {
+                            nume: demoName || 'Andrei',
+                            particip: demoAttending ? 1 : 0,
+                            poze: demoPhotoConsent ? 1 : 0,
+                        })}
+                        className="mt-5 flex min-h-[48px] w-full items-center justify-center rounded-md bg-ink px-4 text-sm font-semibold uppercase tracking-widest text-white"
+                    >
+                        Trimite răspunsul
+                    </Link>
+                )}
 
                 <p className="mt-4 text-center text-xs text-ink-muted">
                     Acest link e personal și expiră pe {event.linkExpires}.
                 </p>
-            </div>
+            </form>
         </div>
     );
 }

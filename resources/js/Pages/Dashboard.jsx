@@ -75,7 +75,7 @@ export default function Dashboard({ events }) {
                                             <span className={`h-1.5 w-1.5 rounded-full ${style.dot}`} />
                                             {style.label}
                                         </span>
-                                        <Link href={route('participants.status')} className="text-xs text-accent underline">
+                                        <Link href={route('participants.status', event.id)} className="text-xs text-accent underline">
                                             Participanți
                                         </Link>
                                     </div>
