@@ -35,7 +35,7 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'auth' => [
                 'user' => $user ? [
-                    ...$user->only(['id', 'name', 'email', 'organization_id', 'franchise_partner_id']),
+                    ...$user->only(['id', 'name', 'email', 'locale', 'organization_id', 'franchise_partner_id']),
                     'roles' => $user->getRoleNames(),
                     'organization' => $user->organization?->only(['id', 'name']),
                     'franchise_partner' => $user->franchisePartner?->only(['id', 'name', 'region_code']),

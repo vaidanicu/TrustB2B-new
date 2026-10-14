@@ -1,31 +1,32 @@
 import AppLayout from '@/Layouts/AppLayout';
+import { useAppTranslations } from '@/i18n/appTranslations';
 import { Head, Link, usePage } from '@inertiajs/react';
 
-const STATUS_STYLES = {
-    active: { label: 'Activ', dot: 'bg-teal', text: 'text-teal-ink', bg: 'bg-teal-soft' },
-    draft: { label: 'Ciornă', dot: 'bg-ink-muted', text: 'text-ink-soft', bg: 'bg-paper-sunken' },
-    locked: { label: 'Blocat', dot: 'bg-amber-600', text: 'text-amber-700', bg: 'bg-amber-50' },
-    archived: { label: 'Arhivat', dot: 'bg-ink-muted', text: 'text-ink-muted', bg: 'bg-paper-sunken' },
-};
-
-function NewEventButton() {
+function NewEventButton({ label }) {
     return (
         <Link
             href={route('events.create')}
             className="inline-flex items-center rounded-md border border-transparent bg-ink px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white transition hover:bg-ink-soft"
         >
-            Eveniment nou
+            {label}
         </Link>
     );
 }
 
 export default function Dashboard({ events }) {
     const { flash } = usePage().props;
+    const { t } = useAppTranslations();
+    const statusStyles = {
+        active: { label: t.statusEvent.active, dot: 'bg-teal', text: 'text-teal-ink', bg: 'bg-teal-soft' },
+        draft: { label: t.statusEvent.draft, dot: 'bg-ink-muted', text: 'text-ink-soft', bg: 'bg-paper-sunken' },
+        locked: { label: t.statusEvent.locked, dot: 'bg-amber-600', text: 'text-amber-700', bg: 'bg-amber-50' },
+        archived: { label: t.statusEvent.archived, dot: 'bg-ink-muted', text: 'text-ink-muted', bg: 'bg-paper-sunken' },
+    };
     const activeCount = events.filter((event) => event.status === 'active').length;
 
     return (
-        <AppLayout title="Evenimente" active="dashboard" actions={<NewEventButton />}>
-            <Head title="Evenimente" />
+        <AppLayout title={t.dashboard.title} active="dashboard" actions={<NewEventButton label={t.dashboard.newEvent} />}>
+            <Head title={t.dashboard.title} />
 
             <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
                 {flash?.status && (
@@ -36,33 +37,31 @@ export default function Dashboard({ events }) {
 
                 {events.length === 0 ? (
                     <div className="rounded-lg bg-white px-6 py-14 text-center shadow-sm">
-                        <p className="text-sm font-medium text-ink">Niciun eveniment încă</p>
-                        <p className="mx-auto mt-1 max-w-sm text-sm text-ink-muted">
-                            Creează primul eveniment ca să începi să trimiți invitații și să colectezi răspunsuri.
-                        </p>
+                        <p className="text-sm font-medium text-ink">{t.dashboard.emptyTitle}</p>
+                        <p className="mx-auto mt-1 max-w-sm text-sm text-ink-muted">{t.dashboard.emptyBody}</p>
                         <div className="mt-5">
-                            <NewEventButton />
+                            <NewEventButton label={t.dashboard.newEvent} />
                         </div>
                     </div>
                 ) : (
                     <>
                         <div className="mb-7 grid grid-cols-1 gap-5 sm:grid-cols-3">
                             <div className="rounded-lg bg-white p-5 shadow-sm">
-                                <div className="text-xs font-semibold uppercase tracking-wide text-ink-muted">Evenimente active</div>
+                                <div className="text-xs font-semibold uppercase tracking-wide text-ink-muted">{t.dashboard.activeEvents}</div>
                                 <div className="mt-2 text-3xl font-semibold text-ink">{activeCount}</div>
                             </div>
                         </div>
 
                         <div className="overflow-hidden rounded-lg bg-white shadow-sm">
                             <div className="grid grid-cols-[2.2fr_1fr_1.2fr_auto] gap-3 border-b border-line px-5 py-3 text-xs font-semibold uppercase tracking-wide text-ink-muted">
-                                <span>Eveniment</span>
-                                <span>Dată</span>
-                                <span>Stare</span>
+                                <span>{t.dashboard.colEvent}</span>
+                                <span>{t.dashboard.colDate}</span>
+                                <span>{t.dashboard.colStatus}</span>
                                 <span></span>
                             </div>
 
                             {events.map((event) => {
-                                const style = STATUS_STYLES[event.status] ?? STATUS_STYLES.draft;
+                                const style = statusStyles[event.status] ?? statusStyles.draft;
 
                                 return (
                                     <div
@@ -76,7 +75,7 @@ export default function Dashboard({ events }) {
                                             {style.label}
                                         </span>
                                         <Link href={route('participants.status', event.id)} className="text-xs text-accent underline">
-                                            Participanți
+                                            {t.dashboard.participants}
                                         </Link>
                                     </div>
                                 );

@@ -2,6 +2,7 @@ import AppLayout from '@/Layouts/AppLayout';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
+import { useAppTranslations } from '@/i18n/appTranslations';
 import { Head, Link, useForm } from '@inertiajs/react';
 
 function RadioCard({ name, value, checked, onChange, title, hint }) {
@@ -39,6 +40,9 @@ function Field({ label, field, errors, ...props }) {
 }
 
 export default function Create() {
+    const { t } = useAppTranslations();
+    const c = t.events.create;
+
     const { data, setData, post, processing, errors } = useForm({
         name: '',
         purpose: '',
@@ -63,38 +67,36 @@ export default function Create() {
     }
 
     return (
-        <AppLayout title="Eveniment nou">
-            <Head title="Eveniment nou" />
+        <AppLayout title={c.title}>
+            <Head title={c.title} />
 
             <form onSubmit={submit} className="mx-auto flex max-w-3xl flex-col gap-6 px-4 py-8 sm:px-6 lg:px-8">
                 <section className="rounded-lg bg-white p-7 shadow-sm">
-                    <h2 className="text-base font-semibold text-ink">Detalii eveniment</h2>
-                    <p className="mt-0.5 text-sm text-ink-muted">
-                        Scopul, țara și perioada determină ce reguli legale se aplică.
-                    </p>
+                    <h2 className="text-base font-semibold text-ink">{c.sectionDetailsTitle}</h2>
+                    <p className="mt-0.5 text-sm text-ink-muted">{c.sectionDetailsBody}</p>
 
                     <div className="mt-5 flex flex-col gap-4">
                         <Field
-                            label="Nume eveniment"
-                            placeholder="ex. Turneu de fotbal — clienți 2026"
+                            label={c.nameLabel}
+                            placeholder={c.namePlaceholder}
                             field={{ value: data.name, onChange: (e) => setData('name', e.target.value) }}
                             errors={errors.name}
                         />
                         <Field
-                            label="Scop"
-                            placeholder="ex. Eveniment de fidelizare pentru clienți B2B"
+                            label={c.purposeLabel}
+                            placeholder={c.purposePlaceholder}
                             field={{ value: data.purpose, onChange: (e) => setData('purpose', e.target.value) }}
                             errors={errors.purpose}
                         />
                         <div className="grid grid-cols-2 gap-4">
                             <Field
-                                label="Data început"
+                                label={c.startLabel}
                                 type="date"
                                 field={{ value: data.starts_at, onChange: (e) => setData('starts_at', e.target.value) }}
                                 errors={errors.starts_at}
                             />
                             <Field
-                                label="Data sfârșit"
+                                label={c.endLabel}
                                 type="date"
                                 field={{ value: data.ends_at, onChange: (e) => setData('ends_at', e.target.value) }}
                                 errors={errors.ends_at}
@@ -104,86 +106,82 @@ export default function Create() {
                 </section>
 
                 <section className="rounded-lg bg-white p-7 shadow-sm">
-                    <h2 className="text-base font-semibold text-ink">Fotografii și retenție</h2>
-                    <p className="mt-0.5 text-sm text-ink-muted">
-                        Termenul standard e 90 de zile de la finalul evenimentului — abateri necesită scop documentat.
-                    </p>
+                    <h2 className="text-base font-semibold text-ink">{c.sectionRetentionTitle}</h2>
+                    <p className="mt-0.5 text-sm text-ink-muted">{c.sectionRetentionBody}</p>
 
                     <div className="mt-5">
-                        <span className="mb-2 block text-sm font-medium text-ink-soft">Termen de ștergere foto</span>
+                        <span className="mb-2 block text-sm font-medium text-ink-soft">{c.retentionLabel}</span>
                         <div className="grid grid-cols-2 gap-3">
                             <RadioCard
                                 name="retention"
                                 value="60"
                                 checked={data.retention_days === '60'}
                                 onChange={(e) => setData('retention_days', e.target.value)}
-                                title="60 de zile"
-                                hint="Necesită scop documentat"
+                                title={c.retention60Title}
+                                hint={c.retention60Hint}
                             />
                             <RadioCard
                                 name="retention"
                                 value="90"
                                 checked={data.retention_days === '90'}
                                 onChange={(e) => setData('retention_days', e.target.value)}
-                                title="90 de zile"
-                                hint="Termen standard"
+                                title={c.retention90Title}
+                                hint={c.retention90Hint}
                             />
                         </div>
                         <InputError message={errors.retention_days} className="mt-1" />
                     </div>
 
                     <div className="mt-5">
-                        <span className="mb-2 block text-sm font-medium text-ink-soft">La finalul ciclului</span>
+                        <span className="mb-2 block text-sm font-medium text-ink-soft">{c.endCycleLabel}</span>
                         <div className="grid grid-cols-2 gap-3">
                             <RadioCard
                                 name="end-of-cycle"
                                 value="delete"
                                 checked={data.end_of_cycle_action === 'delete'}
                                 onChange={(e) => setData('end_of_cycle_action', e.target.value)}
-                                title="Ștergere ireversibilă"
-                                hint="Fără pachet de export pentru client"
+                                title={c.deleteTitle}
+                                hint={c.deleteHint}
                             />
                             <RadioCard
                                 name="end-of-cycle"
                                 value="export"
                                 checked={data.end_of_cycle_action === 'export'}
                                 onChange={(e) => setData('end_of_cycle_action', e.target.value)}
-                                title="Pachet export criptat"
-                                hint="Livrat, confirmat, apoi șters"
+                                title={c.exportTitle}
+                                hint={c.exportHint}
                             />
                         </div>
                     </div>
                 </section>
 
                 <section className="rounded-lg bg-white p-7 shadow-sm">
-                    <h2 className="text-base font-semibold text-ink">Responsabili eveniment</h2>
-                    <p className="mt-0.5 text-sm text-ink-muted">
-                        Confirmă cine ocupă fiecare rol — sistemul nu deduce automat rolurile juridice.
-                    </p>
+                    <h2 className="text-base font-semibold text-ink">{c.sectionRolesTitle}</h2>
+                    <p className="mt-0.5 text-sm text-ink-muted">{c.sectionRolesBody}</p>
 
                     <div className="mt-5 grid grid-cols-2 gap-x-4 gap-y-4">
-                        <Field label="Organizator" field={{ value: data.organizer, onChange: (e) => setData('organizer', e.target.value) }} errors={errors.organizer} />
-                        <Field label="Co-organizator" placeholder="opțional" field={{ value: data.co_organizer, onChange: (e) => setData('co_organizer', e.target.value) }} errors={errors.co_organizer} />
-                        <Field label="Locație" field={{ value: data.location, onChange: (e) => setData('location', e.target.value) }} errors={errors.location} />
-                        <Field label="Agenție" placeholder="opțional" field={{ value: data.agency, onChange: (e) => setData('agency', e.target.value) }} errors={errors.agency} />
-                        <Field label="Fotograf" placeholder="opțional" field={{ value: data.photographer, onChange: (e) => setData('photographer', e.target.value) }} errors={errors.photographer} />
-                        <Field label="Contact protecția datelor" type="email" field={{ value: data.data_protection_contact, onChange: (e) => setData('data_protection_contact', e.target.value) }} errors={errors.data_protection_contact} />
+                        <Field label={c.organizerLabel} field={{ value: data.organizer, onChange: (e) => setData('organizer', e.target.value) }} errors={errors.organizer} />
+                        <Field label={c.coOrganizerLabel} placeholder={c.optional} field={{ value: data.co_organizer, onChange: (e) => setData('co_organizer', e.target.value) }} errors={errors.co_organizer} />
+                        <Field label={c.locationLabel} field={{ value: data.location, onChange: (e) => setData('location', e.target.value) }} errors={errors.location} />
+                        <Field label={c.agencyLabel} placeholder={c.optional} field={{ value: data.agency, onChange: (e) => setData('agency', e.target.value) }} errors={errors.agency} />
+                        <Field label={c.photographerLabel} placeholder={c.optional} field={{ value: data.photographer, onChange: (e) => setData('photographer', e.target.value) }} errors={errors.photographer} />
+                        <Field label={c.dpoContactLabel} type="email" field={{ value: data.data_protection_contact, onChange: (e) => setData('data_protection_contact', e.target.value) }} errors={errors.data_protection_contact} />
                         <div className="col-span-2">
-                            <Field label="Destinatar pachet final" field={{ value: data.final_package_recipient, onChange: (e) => setData('final_package_recipient', e.target.value) }} errors={errors.final_package_recipient} />
+                            <Field label={c.finalRecipientLabel} field={{ value: data.final_package_recipient, onChange: (e) => setData('final_package_recipient', e.target.value) }} errors={errors.final_package_recipient} />
                         </div>
                     </div>
                 </section>
 
                 <div className="flex items-center justify-end gap-3 pb-4">
                     <Link href={route('dashboard')} className="text-sm text-ink-muted hover:text-ink">
-                        Anulează
+                        {t.common.cancel}
                     </Link>
                     <button
                         type="submit"
                         disabled={processing}
                         className="inline-flex items-center rounded-md border border-transparent bg-ink px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white transition hover:bg-ink-soft disabled:opacity-50"
                     >
-                        {processing ? 'Se salvează…' : 'Continuă'}
+                        {processing ? c.submitting : c.submit}
                     </button>
                 </div>
             </form>

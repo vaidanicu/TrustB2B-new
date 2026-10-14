@@ -2,6 +2,7 @@ import AppLayout from '@/Layouts/AppLayout';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
+import { useAppTranslations } from '@/i18n/appTranslations';
 import { Head, Link, useForm } from '@inertiajs/react';
 
 function Field({ label, field, errors, ...props }) {
@@ -15,6 +16,9 @@ function Field({ label, field, errors, ...props }) {
 }
 
 export default function Create({ franchisePartners }) {
+    const { t } = useAppTranslations();
+    const c = t.organizations.create;
+
     const { data, setData, post, processing, errors } = useForm({
         name: '',
         country: 'RO',
@@ -30,35 +34,33 @@ export default function Create({ franchisePartners }) {
     }
 
     return (
-        <AppLayout title="Client nou">
-            <Head title="Client nou" />
+        <AppLayout title={c.title}>
+            <Head title={c.title} />
 
             <form onSubmit={submit} className="mx-auto flex max-w-3xl flex-col gap-6 px-4 py-8 sm:px-6 lg:px-8">
                 <section className="rounded-lg bg-white p-7 shadow-sm">
-                    <h2 className="text-base font-semibold text-ink">Organizație client</h2>
-                    <p className="mt-0.5 text-sm text-ink-muted">
-                        Datele companiei care va organiza evenimente pe platformă.
-                    </p>
+                    <h2 className="text-base font-semibold text-ink">{c.sectionOrgTitle}</h2>
+                    <p className="mt-0.5 text-sm text-ink-muted">{c.sectionOrgBody}</p>
 
                     <div className="mt-5 flex flex-col gap-4">
                         <Field
-                            label="Nume organizație"
-                            placeholder="ex. Hotel Aurora"
+                            label={c.nameLabel}
+                            placeholder={c.namePlaceholder}
                             field={{ value: data.name, onChange: (e) => setData('name', e.target.value) }}
                             errors={errors.name}
                         />
                         <div className="grid grid-cols-2 gap-4">
                             <Field
-                                label="Țară"
+                                label={c.countryLabel}
                                 placeholder="RO"
                                 maxLength={2}
                                 field={{ value: data.country, onChange: (e) => setData('country', e.target.value.toUpperCase()) }}
                                 errors={errors.country}
                             />
                             <Field
-                                label="Contact protecția datelor"
+                                label={c.dpoLabel}
                                 type="email"
-                                placeholder="opțional"
+                                placeholder={c.dpoPlaceholder}
                                 field={{ value: data.data_protection_contact_email, onChange: (e) => setData('data_protection_contact_email', e.target.value) }}
                                 errors={errors.data_protection_contact_email}
                             />
@@ -66,7 +68,7 @@ export default function Create({ franchisePartners }) {
 
                         {franchisePartners?.length > 0 && (
                             <div>
-                                <InputLabel value="Franciză parteneră" />
+                                <InputLabel value={c.franchiseLabel} />
                                 <select
                                     value={data.franchise_partner_id}
                                     onChange={(e) => setData('franchise_partner_id', e.target.value)}
@@ -83,23 +85,20 @@ export default function Create({ franchisePartners }) {
                 </section>
 
                 <section className="rounded-lg bg-white p-7 shadow-sm">
-                    <h2 className="text-base font-semibold text-ink">Primul admin al organizației</h2>
-                    <p className="mt-0.5 text-sm text-ink-muted">
-                        Acest cont va gestiona evenimentele și participanții organizației. Parola generată se
-                        afișează o singură dată — nu există încă trimitere automată de email.
-                    </p>
+                    <h2 className="text-base font-semibold text-ink">{c.sectionAdminTitle}</h2>
+                    <p className="mt-0.5 text-sm text-ink-muted">{c.sectionAdminBody}</p>
 
                     <div className="mt-5 grid grid-cols-2 gap-4">
                         <Field
-                            label="Nume"
-                            placeholder="ex. Bianca Ionescu"
+                            label={c.adminNameLabel}
+                            placeholder={c.adminNamePlaceholder}
                             field={{ value: data.admin_name, onChange: (e) => setData('admin_name', e.target.value) }}
                             errors={errors.admin_name}
                         />
                         <Field
-                            label="Email"
+                            label={c.adminEmailLabel}
                             type="email"
-                            placeholder="ex. bianca@hotelaurora.ro"
+                            placeholder={c.adminEmailPlaceholder}
                             field={{ value: data.admin_email, onChange: (e) => setData('admin_email', e.target.value) }}
                             errors={errors.admin_email}
                         />
@@ -108,14 +107,14 @@ export default function Create({ franchisePartners }) {
 
                 <div className="flex items-center justify-end gap-3 pb-4">
                     <Link href={route('organizations.index')} className="text-sm text-ink-muted hover:text-ink">
-                        Anulează
+                        {t.common.cancel}
                     </Link>
                     <button
                         type="submit"
                         disabled={processing}
                         className="inline-flex items-center rounded-md border border-transparent bg-ink px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white transition hover:bg-ink-soft disabled:opacity-50"
                     >
-                        {processing ? 'Se creează…' : 'Creează client'}
+                        {processing ? c.submitting : c.submit}
                     </button>
                 </div>
             </form>
