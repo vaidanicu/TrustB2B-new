@@ -24,7 +24,14 @@ export default function AppLayout({ title, active = null, actions = null, childr
     const user = auth?.user;
 
     const isOrganizationScope = Boolean(user?.organization_id);
-    const isFranchiseScope = !user?.organization_id && Boolean(user?.franchise_partner_id);
+    // Everyone else lands on the same "Clienți" nav: a franchise-partner-admin
+    // (their own franchise_partner_id set) and a true system operator
+    // (platform-admin/franchisor-admin, neither organization_id nor
+    // franchise_partner_id set) are both handled identically by
+    // OrganizationController/AuditLogController — this used to require
+    // franchise_partner_id too, which silently left a system operator with
+    // no navigation at all beyond Profil/Ieșire.
+    const isFranchiseScope = !isOrganizationScope;
 
     const navItems = isOrganizationScope
         ? [
@@ -32,19 +39,15 @@ export default function AppLayout({ title, active = null, actions = null, childr
               { key: 'audit-log', label: 'Jurnal audit', href: route('audit-log.index') },
               { key: 'guide', label: 'Ghid', href: route('guide.index') },
           ]
-        : isFranchiseScope
-          ? [
-                { key: 'organizations', label: 'Clienți', href: route('organizations.index') },
-                { key: 'audit-log', label: 'Jurnal audit', href: route('audit-log.index') },
-                { key: 'guide', label: 'Ghid', href: route('guide.index') },
-            ]
-          : [];
+        : [
+              { key: 'organizations', label: 'Clienți', href: route('organizations.index') },
+              { key: 'audit-log', label: 'Jurnal audit', href: route('audit-log.index') },
+              { key: 'guide', label: 'Ghid', href: route('guide.index') },
+          ];
 
     const contextLabel = isOrganizationScope
         ? user.organization?.name
-        : isFranchiseScope
-          ? user.franchise_partner?.name
-          : (user?.roles ?? [])[0];
+        : (user?.franchise_partner?.name ?? (user?.roles ?? [])[0]);
 
     return (
         <div className="min-h-screen bg-paper">
