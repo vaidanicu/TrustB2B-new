@@ -4,21 +4,18 @@ use App\Http\Controllers\Auth\TwoFactorChallengeController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\MarketingController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\ParticipantController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
-Route::get('/', function () {
-    // A logged-in visitor almost certainly wants their dashboard, not the
-    // pitch for people who don't have an account yet.
-    if (request()->user()) {
-        return redirect()->route('dashboard');
-    }
-
-    return Inertia::render('Welcome');
-});
+// trustbridgeb2b.com (any path below) and app.trustbridgeb2b.com share this
+// exact route table and document root — MarketingController is what tells
+// the two domains apart; see its docblock.
+Route::get('/', [MarketingController::class, 'show'])->name('marketing.ro');
+Route::get('/en', [MarketingController::class, 'show'])->defaults('locale', 'en')->name('marketing.en');
+Route::get('/de', [MarketingController::class, 'show'])->defaults('locale', 'de')->name('marketing.de');
 
 Route::get('/two-factor-challenge', [TwoFactorChallengeController::class, 'show'])
     ->middleware('guest')
