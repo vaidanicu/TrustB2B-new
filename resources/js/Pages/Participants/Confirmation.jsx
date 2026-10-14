@@ -1,4 +1,4 @@
-import BrandMark from '@/Components/BrandMark';
+import Logo from '@/Components/Logo';
 import { Head, Link } from '@inertiajs/react';
 
 export default function Confirmation({ event, participantName, attending, photoConsent }) {
@@ -6,9 +6,8 @@ export default function Confirmation({ event, participantName, attending, photoC
         <div className="min-h-screen bg-paper pb-10">
             <Head title="Răspuns înregistrat" />
 
-            <div className="flex items-center justify-center gap-2 pt-7 pb-5">
-                <BrandMark size={24} className="text-ink-muted" />
-                <span className="font-display text-[16px] font-semibold text-ink-soft">TrustBridge</span>
+            <div className="flex items-center justify-center pt-7 pb-5">
+                <Logo height={20} />
             </div>
 
             <div className="mx-auto w-full max-w-md px-4">

@@ -1,4 +1,4 @@
-import BrandMark from '@/Components/BrandMark';
+import Logo from '@/Components/Logo';
 import Dropdown from '@/Components/Dropdown';
 import NavLink from '@/Components/NavLink';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink';
@@ -17,10 +17,9 @@ export default function AuthenticatedLayout({ header, children }) {
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                     <div className="flex h-16 justify-between">
                         <div className="flex">
-                            <div className="flex shrink-0 items-center gap-2.5">
-                                <Link href="/" className="flex items-center gap-2.5">
-                                    <BrandMark size={24} className="text-ink" />
-                                    <span className="text-[16px] font-semibold text-ink">TrustBridge</span>
+                            <div className="flex shrink-0 items-center">
+                                <Link href="/" className="flex items-center">
+                                    <Logo height={22} />
                                 </Link>
                             </div>
 

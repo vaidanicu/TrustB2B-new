@@ -1,4 +1,4 @@
-import BrandMark from '@/Components/BrandMark';
+import Logo from '@/Components/Logo';
 import { Head, Link } from '@inertiajs/react';
 import { LOCALE_LABELS, WELCOME_TRANSLATIONS } from './welcomeTranslations';
 
@@ -32,10 +32,7 @@ export default function Welcome({ locale = 'ro' }) {
 
             <header className="border-b border-line">
                 <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-5">
-                    <div className="flex items-center gap-2.5">
-                        <BrandMark size={26} className="text-ink" />
-                        <span className="font-display text-lg font-semibold text-ink">TrustBridge</span>
-                    </div>
+                    <Logo height={26} />
                     <div className="flex items-center gap-5">
                         <LanguageSwitcher current={locale} />
                         <Link
@@ -139,17 +136,26 @@ export default function Welcome({ locale = 'ro' }) {
                 </div>
             </section>
 
-            <footer className="border-t border-line bg-ink py-12 text-center">
-                <p className="font-display text-xl font-semibold text-white">{t.footerCta}</p>
-                <div className="mt-5">
-                    <Link
-                        href={route('login')}
-                        className="rounded-md bg-white px-6 py-3 text-xs font-semibold uppercase tracking-widest text-ink transition hover:bg-paper"
-                    >
-                        {t.login}
-                    </Link>
+            <footer className="relative overflow-hidden border-t border-line bg-ink py-20 text-center">
+                <div
+                    className="absolute inset-0 bg-cover bg-center opacity-40"
+                    style={{ backgroundImage: 'url(/images/background.jpg)' }}
+                    aria-hidden="true"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-ink via-ink/90 to-ink/60" aria-hidden="true" />
+
+                <div className="relative">
+                    <p className="font-display text-xl font-semibold text-white">{t.footerCta}</p>
+                    <div className="mt-5">
+                        <Link
+                            href={route('login')}
+                            className="rounded-md bg-white px-6 py-3 text-xs font-semibold uppercase tracking-widest text-ink transition hover:bg-paper"
+                        >
+                            {t.login}
+                        </Link>
+                    </div>
+                    <p className="mx-auto mt-8 max-w-xl px-6 text-xs leading-relaxed text-white/50">{t.footerDisclaimer}</p>
                 </div>
-                <p className="mx-auto mt-8 max-w-xl px-6 text-xs leading-relaxed text-white/50">{t.footerDisclaimer}</p>
             </footer>
         </div>
     );

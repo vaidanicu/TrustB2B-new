@@ -1,4 +1,4 @@
-import BrandMark from '@/Components/BrandMark';
+import Logo from '@/Components/Logo';
 import { Head, Link } from '@inertiajs/react';
 import { useState } from 'react';
 
@@ -28,9 +28,8 @@ export default function Invitation({ event }) {
         <div className="min-h-screen bg-paper pb-10">
             <Head title={event.name} />
 
-            <div className="flex items-center justify-center gap-2 pt-7 pb-5">
-                <BrandMark size={24} className="text-ink-muted" />
-                <span className="text-[15px] font-semibold text-ink-soft">TrustBridge</span>
+            <div className="flex items-center justify-center pt-7 pb-5">
+                <Logo height={20} />
             </div>
 
             <div className="mx-auto w-full max-w-md px-4">

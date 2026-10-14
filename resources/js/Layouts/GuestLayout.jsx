@@ -1,14 +1,11 @@
-import BrandMark from '@/Components/BrandMark';
+import Logo from '@/Components/Logo';
 import { Link } from '@inertiajs/react';
 
 export default function GuestLayout({ children }) {
     return (
         <div className="flex min-h-screen flex-col items-center bg-paper pt-6 sm:justify-center sm:pt-0 dark:bg-gray-900">
-            <Link href="/" className="flex items-center gap-3">
-                <BrandMark size={40} className="text-ink-muted" />
-                <span className="font-display text-[24px] font-semibold tracking-tight text-ink dark:text-gray-200">
-                    TrustBridge
-                </span>
+            <Link href="/">
+                <Logo height={36} />
             </Link>
 
             <div className="mt-6 w-full overflow-hidden bg-white px-6 py-4 shadow-md sm:max-w-md sm:rounded-lg dark:bg-gray-800">
