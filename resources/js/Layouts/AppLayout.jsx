@@ -30,11 +30,13 @@ export default function AppLayout({ title, active = null, actions = null, childr
         ? [
               { key: 'dashboard', label: 'Dashboard', href: route('dashboard') },
               { key: 'audit-log', label: 'Jurnal audit', href: route('audit-log.index') },
+              { key: 'guide', label: 'Ghid', href: route('guide.index') },
           ]
         : isFranchiseScope
           ? [
                 { key: 'organizations', label: 'Clienți', href: route('organizations.index') },
                 { key: 'audit-log', label: 'Jurnal audit', href: route('audit-log.index') },
+                { key: 'guide', label: 'Ghid', href: route('guide.index') },
             ]
           : [];
 
