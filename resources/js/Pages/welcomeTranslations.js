@@ -1,214 +1,159 @@
-// Real translations, not machine output left unreviewed — RO is the
-// source (matches the roadmap's own positioning, §12), EN and DE are
-// written to the same register, not a literal word-for-word pass.
+﻿export const LOCALE_LABELS = { ro: 'RO', en: 'EN', de: 'DE' };
+
 export const WELCOME_TRANSLATIONS = {
     ro: {
-        htmlTitle: 'TrustBridge',
-        login: 'Autentificare',
+        htmlTitle: 'TrustBridge', login: 'Autentificare', menu: 'Meniu', skip: 'Sari la conținut',
+        nav: ['Platformă', 'Cum funcționează', 'Pentru organizatori'],
         eyebrow: 'Event Privacy & Media Workflow',
-        headline: 'Invitația, galeria foto și dreptul la ștergere — într-un singur flux, cu dovadă la fiecare pas.',
-        subheadline:
-            'TrustBridge leagă ce platformele de evenimente și portalurile foto fac separat: cine a fost invitat, ce a acceptat, ce fotografii apar și cum dispar, la timp, fără o cerere de ștergere pierdută pe email.',
-        ctaSecondary: 'Vezi cum funcționează',
-        gapTitle: 'Lipsa pe care o acoperim',
-        gapSubtitle: 'Niciun segment de piață verificat public nu acoperă tot lanțul, de la invitație la ștergerea fotografiei.',
-        gapHeaders: ['Segment', 'Punct forte', 'Lipsă față de TrustBridge'],
-        gapRows: [
-            {
-                segment: 'Platforme de evenimente',
-                strength: 'Invitație, înregistrare, comunicare, check-in',
-                gap: 'Fără drept pe fotografie individuală și fără ciclu de 90 de zile',
-            },
-            {
-                segment: 'Portaluri foto de eveniment',
-                strength: 'Acces QR, galerie privată, download',
-                gap: 'Fără dovadă de consimțământ a participantului dinainte de eveniment',
-            },
-            {
-                segment: 'Unelte de conformitate GDPR',
-                strength: 'Registre, politici, dovezi documentate',
-                gap: 'Fără flux real de eveniment și fără galerie pentru participanți',
-            },
+        headline: 'Fotografii de eveniment. Consimțământ clar. Control deplin.',
+        subheadline: 'Gestionează invitațiile, obține consimțământul participanților, creează galerii foto private și oferă dreptul la ștergere — totul într-un singur flux transparent și sigur.',
+        primary: 'Descoperă platforma', ctaSecondary: 'Vezi cum funcționează',
+        heroNote: 'Un flux gândit pentru oameni. Cu protecția datelor în centru.',
+        scope: 'Disponibil acum: administrarea evenimentelor și jurnalul de audit. Invitațiile sunt demonstrative; galeriile și cererile de ștergere sunt planificate.',
+        demo: 'Date demonstrative', previewTitle: 'Spațiul tău de evenimente', previewOrg: 'Organizație demonstrativă',
+        previewTabs: ['Evenimente', 'Participanți', 'Jurnal de audit'],
+        eventName: 'Business Forum · București', eventDate: '18 noiembrie 2026', draft: 'Ciornă',
+        previewGreeting: 'Fiecare eveniment, un dosar clar.', previewSub: 'Organizează. Documentează. Păstrează controlul.',
+        eventLabel: 'Eveniment', participantsLabel: 'Invitați', consentLabel: 'Preferințe foto',
+        previewMetrics: ['Eveniment demo', 'Invitați demo', 'Acorduri demo'],
+        sampleStatus: ['Confirmat', 'Acord foto', 'Fără acord foto'],
+        previewPeople: ['Participant', 'Participare', 'Preferință'],
+        gallery: 'Galerie foto privată', planned: 'Planificat', galleryNote: 'Concept de galerie. Accesul și descărcarea nu sunt încă disponibile.',
+        photoAlt: 'Fotografie ilustrativă de la un eveniment business',
+        auditTitle: 'Ultimele operațiuni', auditItems: ['Eveniment creat', 'Rol atribuit', 'Detalii actualizate'],
+        auditNote: 'Exemple de operațiuni; nu sunt înregistrări reale.', demoLink: 'Vezi invitația demo',
+        benefitsEyebrow: 'Protecția datelor, la fiecare pas', benefitsTitle: 'Mai multă claritate. Mai puține întrebări.',
+        benefits: [
+            { title: 'Consimțământ documentat', body: 'Un acord cu dată, oră și context relevant — obiectivul fluxului de consimțământ.', status: 'Flux demonstrativ' },
+            { title: 'Galerii private', body: 'Fotografii organizate pe evenimente, cu acces pentru grupuri autorizate.', status: 'Funcție planificată' },
+            { title: 'Dreptul la ștergere', body: 'Un proces clar pentru solicitări, de la înregistrare până la finalizare.', status: 'Funcție planificată' },
         ],
-        principlesTitle: 'Cum funcționează, pe scurt',
-        principles: [
-            {
-                title: 'Un singur dosar de eveniment',
-                body: 'Invitație, răspunsuri, versiune de document, acces foto, cerere de drept, termen — toate legate, nu împrăștiate în unelte diferite.',
-            },
-            {
-                title: 'Ștergere la fotografia concretă',
-                body: 'Cererea de ștergere pornește de la o fotografie anume, nu de la un email general către suport.',
-            },
-            {
-                title: 'Decizie obligatorie la 90 de zile',
-                body: 'Fiecare eveniment are un termen clar: ștergere ireversibilă sau predare controlată către client — niciodată nedefinit.',
-            },
-            {
-                title: 'Clienți complet separați',
-                body: 'Fiecare organizație își vede doar propriile evenimente și participanți — testat automat, nu doar promis.',
-            },
+        platformEyebrow: 'O platformă. Un flux conectat.', platformTitle: 'De la prima invitație la ultima fotografie.',
+        platformSub: 'Un spațiu de lucru pentru organizatori, cu o direcție clară de dezvoltare pentru întregul ciclu de eveniment.',
+        features: [
+            { title: 'Invitații și acorduri', body: 'O experiență simplă pentru participanți, cu alegeri foto separate de participare.', points: ['Invitație și confirmare demonstrative', 'Preferințe foto distincte', 'Panou de participanți demonstrativ'], status: 'Demo disponibil', link: 'Explorează invitația demo' },
+            { title: 'Galerie foto securizată', body: 'Un loc dedicat fotografiilor și permisiunilor de acces ale evenimentului.', points: ['Organizare pe evenimente', 'Acces controlat planificat', 'Descărcare conform permisiunilor'], status: 'În planul de dezvoltare', link: 'Vezi direcția platformei' },
+            { title: 'Dovezi și ștergere', body: 'Jurnalul de audit există deja. Gestionarea cererilor de ștergere este următorul pas.', points: ['Jurnal de audit disponibil', 'Operațiuni limitate la organizație', 'Cereri de ștergere planificate'], status: 'Audit disponibil', link: 'Accesează jurnalul de audit' },
         ],
-        packagesTitle: 'Trei pachete, în ordinea de construit',
-        packageBadge: 'Pachet',
-        packages: [
-            {
-                name: 'Privacy Setup & RSVP',
-                description: 'Șabloane versionate, invitație personalizată, răspuns da/nu, preferințe separate de participare.',
-            },
-            {
-                name: 'Secure Event Gallery',
-                description: 'Galerie foto protejată, acces prin QR, URL-uri semnate, cerere de ștergere la fotografia concretă.',
-            },
-            {
-                name: 'Complete Event Privacy File',
-                description: 'Tot lanțul legat: invitație, galerie, cazuri GDPR, ciclul de 60/90 de zile, audit complet.',
-            },
+        workflowEyebrow: 'Cum funcționează', workflowTitle: 'Un parcurs simplu. Responsabilități clare.',
+        steps: [
+            { title: 'Pregătește evenimentul', body: 'Creează evenimentul, stabilește scopul și termenele de păstrare.', status: 'Disponibil' },
+            { title: 'Invită și informează', body: 'Explorează invitația și preferințele separate de participare în fluxul demo.', status: 'Demonstrativ' },
+            { title: 'Partajează cu grijă', body: 'Direcția planificată: galerii private și permisiuni explicite pentru fotografii.', status: 'Planificat' },
+            { title: 'Încheie cu trasabilitate', body: 'Consultă auditul. Fluxul dedicat solicitărilor de ștergere urmează să fie implementat.', status: 'Audit disponibil' },
         ],
-        audiencesTitle: 'Pentru cine',
+        comparisonEyebrow: 'O perspectivă mai clară', comparisonTitle: 'Mai puține informații dispersate.',
+        comparisonSub: 'Comparație între un flux manual, în fișiere și email, și stadiul actual al platformei. Nu este o evaluare a altor servicii.',
+        comparisonHeaders: ['Activitate', 'Flux manual', 'TrustBridge B2B'],
+        comparisonRows: [
+            ['Administrarea evenimentelor', 'Fișiere și calendare separate', 'Evenimente într-un spațiu de organizație'],
+            ['Evidența operațiunilor', 'Documentare manuală', 'Jurnal de audit disponibil'],
+            ['Consimțământ', 'Acorduri colectate separat', 'Preferințe foto în fluxul demonstrativ'],
+            ['Acces la fotografii', 'Permisiuni gestionate separat', 'Galerie privată planificată'],
+            ['Solicitări de ștergere', 'Urmărire manuală', 'Flux dedicat planificat'],
+        ],
+        audiencesEyebrow: 'Pentru organizatori', audiencesTitle: 'Evenimente memorabile. O administrare atentă.',
+        audiencesSub: 'Pentru echipe care pun experiența participanților și protecția datelor pe aceeași agendă.',
         audiences: ['Agenții de evenimente', 'Hoteluri și locații', 'Firme cu evenimente de clienți', 'Asociații și organizații'],
-        footerCta: 'Vrei să vezi platforma pe un eveniment real?',
-        footerDisclaimer:
-            'TrustBridge sprijină procese orientate spre protecția datelor și documentate — nu oferă o garanție juridică automată. Textele, bazele legale și termenele trebuie aprobate pentru fiecare țară și tip de eveniment înainte de operare productivă.',
+        footerCta: 'Construiește încredere, la fiecare eveniment.', footerLabel: 'Event Privacy & Media Platform',
+        footerDisclaimer: 'TrustBridge sprijină procese orientate spre protecția datelor și documentate — nu oferă o garanție juridică automată. Textele, bazele legale și termenele trebuie aprobate pentru fiecare țară și tip de eveniment înainte de operare productivă.',
     },
     en: {
-        htmlTitle: 'TrustBridge',
-        login: 'Sign in',
-        eyebrow: 'Event Privacy & Media Workflow',
-        headline: 'The invitation, the photo gallery and the right to erasure — one workflow, with proof at every step.',
-        subheadline:
-            "TrustBridge connects what event platforms and photo portals handle separately: who was invited, what they consented to, which photos go live, and how they disappear on time — without a deletion request getting lost in an inbox.",
-        ctaSecondary: 'See how it works',
-        gapTitle: 'The gap we close',
-        gapSubtitle: 'No publicly verified market segment covers the full chain, from invitation to photo deletion.',
-        gapHeaders: ['Segment', 'Strength', 'Gap vs. TrustBridge'],
-        gapRows: [
-            {
-                segment: 'Event platforms',
-                strength: 'Invitation, registration, communication, check-in',
-                gap: 'No individual photo rights, no 90-day cycle',
-            },
-            {
-                segment: 'Event photo portals',
-                strength: 'QR access, private gallery, download',
-                gap: 'No proof of participant consent before the event',
-            },
-            {
-                segment: 'GDPR compliance tools',
-                strength: 'Registers, policies, documented evidence',
-                gap: 'No real event workflow, no participant gallery',
-            },
+        htmlTitle: 'TrustBridge', login: 'Sign in', menu: 'Menu', skip: 'Skip to content',
+        nav: ['Platform', 'How it works', 'For organizers'], eyebrow: 'Event Privacy & Media Workflow',
+        headline: 'Event photography. Clear consent. Complete control.',
+        subheadline: 'Manage invitations, collect participant consent, create private photo galleries and support the right to erasure — in one transparent, secure workflow.',
+        primary: 'Explore the platform', ctaSecondary: 'See how it works', heroNote: 'A workflow designed for people. With data protection at its heart.',
+        scope: 'Available now: event management and audit logs. Invitations are demonstrations; galleries and deletion requests are planned.',
+        demo: 'Demonstration data', previewTitle: 'Your event workspace', previewOrg: 'Demonstration organization',
+        previewTabs: ['Events', 'Participants', 'Audit log'], eventName: 'Business Forum · Bucharest', eventDate: '18 November 2026', draft: 'Draft',
+        previewGreeting: 'Every event, a clear record.', previewSub: 'Organize. Document. Stay in control.',
+        eventLabel: 'Event', participantsLabel: 'Guests', consentLabel: 'Photo preferences', previewMetrics: ['Demo event', 'Demo guests', 'Demo consents'],
+        sampleStatus: ['Confirmed', 'Photo consent', 'No photo consent'], previewPeople: ['Participant', 'Attendance', 'Preference'],
+        gallery: 'Private photo gallery', planned: 'Planned', galleryNote: 'Gallery concept. Access and downloads are not yet available.', photoAlt: 'Illustrative photograph of a business event',
+        auditTitle: 'Recent activity', auditItems: ['Event created', 'Role assigned', 'Details updated'], auditNote: 'Sample activity; these are not real records.', demoLink: 'View the demo invitation',
+        benefitsEyebrow: 'Data protection, at every step', benefitsTitle: 'More clarity. Fewer questions.',
+        benefits: [
+            { title: 'Documented consent', body: 'Consent with a date, time and relevant context — the aim of the consent workflow.', status: 'Demonstration workflow' },
+            { title: 'Private galleries', body: 'Event photographs organized for access by authorized groups.', status: 'Planned feature' },
+            { title: 'The right to erasure', body: 'A clear request process, from registration through to completion.', status: 'Planned feature' },
         ],
-        principlesTitle: 'How it works, in short',
-        principles: [
-            {
-                title: 'One event file',
-                body: 'Invitation, responses, document version, photo access, rights request, deadline — all linked, not scattered across separate tools.',
-            },
-            {
-                title: 'Deletion tied to one photo',
-                body: 'A deletion request starts from a specific photo, not a generic email to support.',
-            },
-            {
-                title: 'A mandatory decision at 90 days',
-                body: 'Every event has a clear deadline: irreversible deletion or controlled handover to the client — never left undefined.',
-            },
-            {
-                title: 'Fully separated clients',
-                body: 'Each organization sees only its own events and participants — tested automatically, not just promised.',
-            },
+        platformEyebrow: 'One platform. A connected workflow.', platformTitle: 'From the first invitation to the last photograph.',
+        platformSub: 'A workspace for organizers, with a clear development direction for the entire event lifecycle.',
+        features: [
+            { title: 'Invitations and consent', body: 'A simple participant experience, with photo preferences separate from attendance.', points: ['Demo invitation and confirmation', 'Separate photo preferences', 'Demonstration participant board'], status: 'Demo available', link: 'Explore the demo invitation' },
+            { title: 'Secure photo gallery', body: 'A dedicated place for event photographs and access permissions.', points: ['Organized by event', 'Controlled access planned', 'Downloads based on permissions'], status: 'On the roadmap', link: 'See the platform direction' },
+            { title: 'Evidence and erasure', body: 'Audit logging is available. Managing deletion requests is the next step.', points: ['Audit log available', 'Organization-scoped operations', 'Deletion requests planned'], status: 'Audit available', link: 'Open the audit log' },
         ],
-        packagesTitle: 'Three packages, in build order',
-        packageBadge: 'Package',
-        packages: [
-            {
-                name: 'Privacy Setup & RSVP',
-                description: 'Versioned templates, personalized invitations, yes/no responses, separate participation preferences.',
-            },
-            {
-                name: 'Secure Event Gallery',
-                description: 'Protected photo gallery, QR access, signed URLs, deletion requests tied to a specific photo.',
-            },
-            {
-                name: 'Complete Event Privacy File',
-                description: 'The full chain, linked: invitation, gallery, GDPR cases, the 60/90-day cycle, complete audit trail.',
-            },
+        workflowEyebrow: 'How it works', workflowTitle: 'A simple journey. Clear responsibilities.',
+        steps: [
+            { title: 'Prepare your event', body: 'Create an event, set its purpose and retention deadlines.', status: 'Available' },
+            { title: 'Invite and inform', body: 'Explore the invitation and separate participation preferences in the demo.', status: 'Demonstration' },
+            { title: 'Share with care', body: 'Planned direction: private galleries and explicit photo access permissions.', status: 'Planned' },
+            { title: 'Close with a clear record', body: 'Review the audit log. A dedicated deletion request workflow is planned.', status: 'Audit available' },
         ],
-        audiencesTitle: 'Who it’s for',
+        comparisonEyebrow: 'A clearer perspective', comparisonTitle: 'Less scattered information.',
+        comparisonSub: 'A comparison of a manual workflow using files and email with the current platform. This is not an assessment of other services.',
+        comparisonHeaders: ['Activity', 'Manual workflow', 'TrustBridge B2B'],
+        comparisonRows: [
+            ['Event management', 'Separate files and calendars', 'Events in an organization workspace'],
+            ['Activity records', 'Manual documentation', 'Audit log available'],
+            ['Consent', 'Agreements collected separately', 'Photo preferences in the demo workflow'],
+            ['Photo access', 'Permissions managed separately', 'Private gallery planned'],
+            ['Deletion requests', 'Manual tracking', 'Dedicated workflow planned'],
+        ],
+        audiencesEyebrow: 'For organizers', audiencesTitle: 'Memorable events. Thoughtful administration.', audiencesSub: 'For teams that put participant experience and data protection on the same agenda.',
         audiences: ['Event agencies', 'Hotels and venues', 'Companies with client events', 'Associations and organizations'],
-        footerCta: 'Want to see the platform on a real event?',
-        footerDisclaimer:
-            'TrustBridge supports privacy-oriented, documented processes — it does not provide an automatic legal guarantee. Final texts, legal bases and deadlines must be approved per country and event type before production use.',
+        footerCta: 'Build trust, at every event.', footerLabel: 'Event Privacy & Media Platform',
+        footerDisclaimer: 'TrustBridge supports privacy-oriented, documented processes — it does not provide an automatic legal guarantee. Final texts, legal bases and deadlines must be approved per country and event type before production use.',
     },
     de: {
-        htmlTitle: 'TrustBridge',
-        login: 'Anmelden',
-        eyebrow: 'Event Privacy & Media Workflow',
-        headline: 'Einladung, Fotogalerie und Recht auf Löschung — ein durchgängiger Workflow, mit Nachweis bei jedem Schritt.',
-        subheadline:
-            'TrustBridge verbindet, was Eventplattformen und Fotoportale getrennt abdecken: wer eingeladen wurde, was zugestimmt wurde, welche Fotos sichtbar sind und wie sie rechtzeitig verschwinden — ohne eine Löschanfrage, die im Posteingang verloren geht.',
-        ctaSecondary: 'So funktioniert es',
-        gapTitle: 'Die Lücke, die wir schließen',
-        gapSubtitle: 'Kein öffentlich geprüftes Marktsegment deckt die gesamte Kette ab — von der Einladung bis zur Foto-Löschung.',
-        gapHeaders: ['Segment', 'Stärke', 'Lücke gegenüber TrustBridge'],
-        gapRows: [
-            {
-                segment: 'Eventplattformen',
-                strength: 'Einladung, Registrierung, Kommunikation, Check-in',
-                gap: 'Kein Recht am einzelnen Foto, kein 90-Tage-Zyklus',
-            },
-            {
-                segment: 'Eventfoto-Portale',
-                strength: 'QR-Zugang, private Galerie, Download',
-                gap: 'Kein Nachweis der Teilnehmereinwilligung vor dem Event',
-            },
-            {
-                segment: 'DSGVO-Compliance-Tools',
-                strength: 'Verzeichnisse, Richtlinien, dokumentierte Nachweise',
-                gap: 'Kein echter Eventablauf, keine Teilnehmergalerie',
-            },
+        htmlTitle: 'TrustBridge', login: 'Anmelden', menu: 'Menü', skip: 'Zum Inhalt springen',
+        nav: ['Plattform', 'So funktioniert es', 'Für Veranstalter'], eyebrow: 'Event Privacy & Media Workflow',
+        headline: 'Eventfotos. Klare Einwilligung. Volle Kontrolle.',
+        subheadline: 'Verwalten Sie Einladungen, erfassen Sie Einwilligungen, erstellen Sie private Fotogalerien und unterstützen Sie das Recht auf Löschung — in einem transparenten, sicheren Ablauf.',
+        primary: 'Plattform entdecken', ctaSecondary: 'So funktioniert es', heroNote: 'Ein Ablauf für Menschen. Mit Datenschutz im Mittelpunkt.',
+        scope: 'Jetzt verfügbar: Eventverwaltung und Auditprotokoll. Einladungen sind demonstrativ; Galerien und Löschanträge sind geplant.',
+        demo: 'Demonstrationsdaten', previewTitle: 'Ihr Eventbereich', previewOrg: 'Demonstrationsorganisation',
+        previewTabs: ['Events', 'Teilnehmer', 'Auditprotokoll'], eventName: 'Business Forum · Bukarest', eventDate: '18. November 2026', draft: 'Entwurf',
+        previewGreeting: 'Jedes Event, eine klare Akte.', previewSub: 'Organisieren. Dokumentieren. Kontrolle behalten.',
+        eventLabel: 'Event', participantsLabel: 'Gäste', consentLabel: 'Fotopräferenzen', previewMetrics: ['Demo-Event', 'Demo-Gäste', 'Demo-Einwilligungen'],
+        sampleStatus: ['Bestätigt', 'Fotoeinwilligung', 'Keine Fotoeinwilligung'], previewPeople: ['Teilnehmer', 'Teilnahme', 'Präferenz'],
+        gallery: 'Private Fotogalerie', planned: 'Geplant', galleryNote: 'Galeriekonzept. Zugang und Downloads sind noch nicht verfügbar.', photoAlt: 'Illustratives Foto einer Geschäftsveranstaltung',
+        auditTitle: 'Letzte Aktivitäten', auditItems: ['Event erstellt', 'Rolle zugewiesen', 'Details aktualisiert'], auditNote: 'Beispielaktivitäten; keine echten Einträge.', demoLink: 'Demo-Einladung ansehen',
+        benefitsEyebrow: 'Datenschutz bei jedem Schritt', benefitsTitle: 'Mehr Klarheit. Weniger Fragen.',
+        benefits: [
+            { title: 'Dokumentierte Einwilligung', body: 'Einwilligungen mit Datum, Uhrzeit und Kontext — das Ziel des Einwilligungsprozesses.', status: 'Demonstrationsablauf' },
+            { title: 'Private Galerien', body: 'Eventfotos, geordnet für den Zugang durch berechtigte Gruppen.', status: 'Geplante Funktion' },
+            { title: 'Recht auf Löschung', body: 'Ein klarer Prozess für Anträge, von der Erfassung bis zum Abschluss.', status: 'Geplante Funktion' },
         ],
-        principlesTitle: 'So funktioniert es, kurz erklärt',
-        principles: [
-            {
-                title: 'Eine einzige Eventakte',
-                body: 'Einladung, Antworten, Dokumentversion, Fotozugang, Rechteantrag, Frist — alles verknüpft, nicht über verschiedene Tools verstreut.',
-            },
-            {
-                title: 'Löschung am konkreten Foto',
-                body: 'Ein Löschantrag beginnt bei einem bestimmten Foto, nicht bei einer allgemeinen E-Mail an den Support.',
-            },
-            {
-                title: 'Verpflichtende Entscheidung nach 90 Tagen',
-                body: 'Jedes Event hat eine klare Frist: unwiderrufliche Löschung oder kontrollierte Übergabe an den Kunden — nie unbestimmt.',
-            },
-            {
-                title: 'Vollständig getrennte Kunden',
-                body: 'Jede Organisation sieht nur ihre eigenen Events und Teilnehmer — automatisch getestet, nicht nur versprochen.',
-            },
+        platformEyebrow: 'Eine Plattform. Ein verbundener Ablauf.', platformTitle: 'Von der ersten Einladung bis zum letzten Foto.',
+        platformSub: 'Ein Arbeitsbereich für Veranstalter, mit einer klaren Entwicklungsrichtung für den gesamten Eventzyklus.',
+        features: [
+            { title: 'Einladungen und Einwilligungen', body: 'Ein einfacher Ablauf für Teilnehmer, mit Fotopräferenzen getrennt von der Teilnahme.', points: ['Demo-Einladung und Bestätigung', 'Separate Fotopräferenzen', 'Demonstrative Teilnehmerübersicht'], status: 'Demo verfügbar', link: 'Demo-Einladung entdecken' },
+            { title: 'Geschützte Fotogalerie', body: 'Ein eigener Bereich für Eventfotos und Zugangsberechtigungen.', points: ['Nach Events geordnet', 'Kontrollierter Zugang geplant', 'Downloads gemäß Berechtigungen'], status: 'In der Entwicklungsplanung', link: 'Plattformrichtung ansehen' },
+            { title: 'Nachweise und Löschung', body: 'Das Auditprotokoll ist verfügbar. Die Verwaltung von Löschanträgen folgt als nächster Schritt.', points: ['Auditprotokoll verfügbar', 'Organisationsbezogene Aktivitäten', 'Löschanträge geplant'], status: 'Audit verfügbar', link: 'Auditprotokoll öffnen' },
         ],
-        packagesTitle: 'Drei Pakete, in Bau-Reihenfolge',
-        packageBadge: 'Paket',
-        packages: [
-            {
-                name: 'Privacy Setup & RSVP',
-                description: 'Versionierte Vorlagen, personalisierte Einladung, Ja/Nein-Antwort, getrennte Teilnahmepräferenzen.',
-            },
-            {
-                name: 'Secure Event Gallery',
-                description: 'Geschützte Fotogalerie, QR-Zugang, signierte URLs, Löschantrag am konkreten Foto.',
-            },
-            {
-                name: 'Complete Event Privacy File',
-                description: 'Die gesamte Kette verknüpft: Einladung, Galerie, DSGVO-Fälle, 60/90-Tage-Zyklus, vollständiges Audit.',
-            },
+        workflowEyebrow: 'So funktioniert es', workflowTitle: 'Ein einfacher Weg. Klare Verantwortung.',
+        steps: [
+            { title: 'Event vorbereiten', body: 'Erstellen Sie ein Event und legen Sie Zweck und Aufbewahrungsfristen fest.', status: 'Verfügbar' },
+            { title: 'Einladen und informieren', body: 'Entdecken Sie Einladung und separate Teilnahmepräferenzen im Demoablauf.', status: 'Demonstrativ' },
+            { title: 'Bewusst teilen', body: 'Geplante Richtung: private Galerien und ausdrückliche Fotoberechtigungen.', status: 'Geplant' },
+            { title: 'Nachvollziehbar abschließen', body: 'Prüfen Sie das Auditprotokoll. Ein eigener Ablauf für Löschanträge ist geplant.', status: 'Audit verfügbar' },
         ],
-        audiencesTitle: 'Für wen',
+        comparisonEyebrow: 'Ein klarer Überblick', comparisonTitle: 'Weniger verstreute Informationen.',
+        comparisonSub: 'Vergleich eines manuellen Ablaufs mit Dateien und E-Mails mit dem aktuellen Plattformstand. Keine Bewertung anderer Dienste.',
+        comparisonHeaders: ['Aktivität', 'Manueller Ablauf', 'TrustBridge B2B'],
+        comparisonRows: [
+            ['Eventverwaltung', 'Separate Dateien und Kalender', 'Events im Organisationsbereich'],
+            ['Aktivitätsnachweise', 'Manuelle Dokumentation', 'Auditprotokoll verfügbar'],
+            ['Einwilligung', 'Separat gesammelte Vereinbarungen', 'Fotopräferenzen im Demoablauf'],
+            ['Fotozugang', 'Separat verwaltete Berechtigungen', 'Private Galerie geplant'],
+            ['Löschanträge', 'Manuelle Nachverfolgung', 'Eigener Ablauf geplant'],
+        ],
+        audiencesEyebrow: 'Für Veranstalter', audiencesTitle: 'Unvergessliche Events. Sorgfältige Verwaltung.', audiencesSub: 'Für Teams, die Teilnehmererlebnis und Datenschutz auf dieselbe Agenda setzen.',
         audiences: ['Eventagenturen', 'Hotels und Locations', 'Unternehmen mit Kundenveranstaltungen', 'Verbände und Organisationen'],
-        footerCta: 'Möchten Sie die Plattform an einem echten Event sehen?',
-        footerDisclaimer:
-            'TrustBridge unterstützt datenschutzorientierte, dokumentierte Abläufe — es bietet keine automatische Rechtsgarantie. Endgültige Texte, Rechtsgrundlagen und Fristen müssen vor dem produktiven Einsatz pro Land und Veranstaltungstyp freigegeben werden.',
+        footerCta: 'Vertrauen schaffen. Bei jedem Event.', footerLabel: 'Event Privacy & Media Platform',
+        footerDisclaimer: 'TrustBridge unterstützt datenschutzorientierte, dokumentierte Abläufe — es bietet keine automatische Rechtsgarantie. Endgültige Texte, Rechtsgrundlagen und Fristen müssen vor dem produktiven Einsatz pro Land und Veranstaltungstyp freigegeben werden.',
     },
 };
-
-export const LOCALE_LABELS = { ro: 'RO', en: 'EN', de: 'DE' };
