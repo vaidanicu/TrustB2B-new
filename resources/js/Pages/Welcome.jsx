@@ -45,22 +45,34 @@ export default function Welcome({ locale = 'ro' }) {
                 </div>
             </header>
 
-            <section className="mx-auto max-w-4xl px-6 pb-16 pt-20 text-center">
-                <p className="font-mono text-xs font-semibold uppercase tracking-[0.15em] text-accent">{t.eyebrow}</p>
-                <h1 className="mt-5 text-balance font-display text-4xl font-semibold leading-tight text-ink sm:text-5xl">
-                    {t.headline}
-                </h1>
-                <p className="mx-auto mt-5 max-w-2xl text-balance text-base leading-relaxed text-ink-soft">{t.subheadline}</p>
-                <div className="mt-8 flex items-center justify-center gap-4">
-                    <Link
-                        href={route('login')}
-                        className="rounded-md border border-transparent bg-ink px-6 py-3 text-xs font-semibold uppercase tracking-widest text-white transition hover:bg-ink-soft"
-                    >
-                        {t.login}
-                    </Link>
-                    <a href="#cum-functioneaza" className="text-sm font-medium text-accent underline underline-offset-4">
-                        {t.ctaSecondary}
-                    </a>
+            <section className="relative overflow-hidden">
+                <div
+                    className="absolute inset-0 bg-cover bg-[center_30%]"
+                    style={{ backgroundImage: 'url(/images/background.jpg)' }}
+                    aria-hidden="true"
+                />
+                <div
+                    className="absolute inset-0 bg-gradient-to-b from-paper/97 via-paper/94 to-paper"
+                    aria-hidden="true"
+                />
+
+                <div className="relative mx-auto max-w-4xl px-6 pb-16 pt-20 text-center">
+                    <p className="font-mono text-xs font-semibold uppercase tracking-[0.15em] text-accent">{t.eyebrow}</p>
+                    <h1 className="mt-5 text-balance font-display text-4xl font-semibold leading-tight text-ink sm:text-5xl">
+                        {t.headline}
+                    </h1>
+                    <p className="mx-auto mt-5 max-w-2xl text-balance text-base leading-relaxed text-ink-soft">{t.subheadline}</p>
+                    <div className="mt-8 flex items-center justify-center gap-4">
+                        <Link
+                            href={route('login')}
+                            className="rounded-md border border-transparent bg-ink px-6 py-3 text-xs font-semibold uppercase tracking-widest text-white transition hover:bg-ink-soft"
+                        >
+                            {t.login}
+                        </Link>
+                        <a href="#cum-functioneaza" className="text-sm font-medium text-accent underline underline-offset-4">
+                            {t.ctaSecondary}
+                        </a>
+                    </div>
                 </div>
             </section>
 
