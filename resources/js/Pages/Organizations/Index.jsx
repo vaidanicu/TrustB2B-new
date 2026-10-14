@@ -1,5 +1,6 @@
 import AppLayout from '@/Layouts/AppLayout';
-import { Head } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
+import { useState } from 'react';
 
 const STATUS_STYLES = {
     active: { label: 'Activ', dot: 'bg-teal', text: 'text-teal-ink', bg: 'bg-teal-soft' },
@@ -18,12 +19,61 @@ function StatusPill({ status }) {
     );
 }
 
-export default function Index({ organizations }) {
+function NewOrganizationButton() {
     return (
-        <AppLayout title="Clienți" active="organizations">
+        <Link
+            href={route('organizations.create')}
+            className="inline-flex items-center rounded-md border border-transparent bg-ink px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white transition hover:bg-ink-soft"
+        >
+            Client nou
+        </Link>
+    );
+}
+
+function NewAdminCredentialsBanner({ email, password }) {
+    const [copied, setCopied] = useState(false);
+
+    async function copy() {
+        try {
+            await navigator.clipboard.writeText(`${email} / ${password}`);
+            setCopied(true);
+        } catch {
+            setCopied(false);
+        }
+    }
+
+    return (
+        <div className="mb-5 rounded-md border border-teal bg-teal-soft px-4 py-3 text-sm text-teal-ink">
+            <p className="font-medium">Datele de autentificare pentru noul admin (se afișează o singură dată):</p>
+            <div className="mt-1.5 flex flex-wrap items-center gap-3">
+                <span>
+                    Email: <strong>{email}</strong> · Parolă: <strong>{password}</strong>
+                </span>
+                <button type="button" onClick={copy} className="rounded-md border border-teal-ink/30 px-3 py-1 text-xs font-semibold uppercase tracking-wide">
+                    {copied ? 'Copiat ✓' : 'Copiază'}
+                </button>
+            </div>
+        </div>
+    );
+}
+
+export default function Index({ organizations }) {
+    const { flash } = usePage().props;
+
+    return (
+        <AppLayout title="Clienți" active="organizations" actions={<NewOrganizationButton />}>
             <Head title="Clienți" />
 
             <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+                {flash?.status && (
+                    <div className="mb-5 rounded-md border border-teal bg-teal-soft px-4 py-3 text-sm text-teal-ink">
+                        {flash.status}
+                    </div>
+                )}
+                {flash?.newAdminPassword && (
+                    <NewAdminCredentialsBanner email={flash.newAdminEmail} password={flash.newAdminPassword} />
+                )}
+
                 <p className="-mt-2 mb-6 text-sm text-ink-muted">
                     {organizations.length} organiza{organizations.length === 1 ? 'ție' : 'ții'} client
                 </p>
