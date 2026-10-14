@@ -29,6 +29,16 @@ class FortifyServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Breeze's own routes/auth.php already defines every auth route
+        // (login, register, password reset/confirm) under the same names
+        // Fortify would register for itself — without this, both try to
+        // claim e.g. "password.confirm" and route caching fails outright
+        // (`php artisan route:cache`), which is how this surfaced: it
+        // never broke route resolution at runtime, only caching it.
+        // We still use Fortify's actions and two-factor backend below,
+        // just not its routes.
+        Fortify::ignoreRoutes();
+
         Fortify::createUsersUsing(CreateNewUser::class);
         Fortify::updateUserProfileInformationUsing(UpdateUserProfileInformation::class);
         Fortify::updateUserPasswordsUsing(UpdateUserPassword::class);
