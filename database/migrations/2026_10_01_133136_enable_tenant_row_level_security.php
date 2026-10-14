@@ -22,6 +22,14 @@ return new class extends Migration
      * never applies it to a superuser regardless. For this to mean anything
      * in production, the application's DB role must NOT be a superuser.
      * Document/verify that when provisioning the production database.
+     *
+     * CORRECTED by disable_row_level_security_on_users_table: the policy
+     * this migration puts on `users` below does not survive — it blocked
+     * the auth guard's own queries (and every seeder) on real Postgres,
+     * the same circular problem User::booted()'s docblock describes for
+     * the Eloquent scope, just enforced one layer deeper. sqlite has no
+     * RLS at all, so that migration's fix went untested against a real
+     * Postgres database until this one surfaced it for real.
      */
     public function up(): void
     {
