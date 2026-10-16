@@ -13,7 +13,7 @@ export const APP_TRANSLATIONS = {
         dashboard: {
             title: 'Evenimente', newEvent: 'Eveniment nou',
             emptyTitle: 'Niciun eveniment încă', emptyBody: 'Creează primul eveniment ca să începi să trimiți invitații și să colectezi răspunsuri.',
-            activeEvents: 'Evenimente active', colEvent: 'Eveniment', colDate: 'Dată', colStatus: 'Stare', participants: 'Participanți',
+            activeEvents: 'Evenimente active', colEvent: 'Eveniment', colDate: 'Dată', colStatus: 'Stare', participants: 'Participanți', gallery: 'Galerie',
         },
         organizations: {
             index: {
@@ -104,18 +104,32 @@ export const APP_TRANSLATIONS = {
                 { title: 'Participantul răspunde pe linkul lui', body: 'Alege dacă participă și dacă e de acord să apară în fotografii. Răspunsul se salvează direct, fără să mai faci nimic.' },
                 { title: 'Urmărești răspunsurile în timp real', body: 'Pe pagina „Participanți” a evenimentului vezi imediat cine a răspuns și ce a ales.' },
             ],
+            galleryEyebrow: 'Admin-ul unui client', galleryTitle: 'Cum partajezi fotografiile evenimentului',
+            gallerySteps: [
+                { title: 'Deschide evenimentul și apasă „Galerie”', body: 'De aici încarci și administrezi fotografiile evenimentului.' },
+                { title: 'Încarcă fotografii (JPEG, PNG sau WebP)', body: 'Fotograful poate și el încărca direct, dacă are cont — dar nu poate publica.' },
+                { title: 'Apasă „Publică” pe fiecare fotografie aleasă', body: 'Doar admin-ul organizației decide ce ajunge vizibil participanților — încărcarea și publicarea sunt pași separați, intenționat.' },
+                { title: 'Participanții care au confirmat prezența văd galeria', body: 'Apare automat pe pagina lor de confirmare, sub răspunsul trimis. Cine nu participă nu vede nimic.' },
+            ],
             section3Eyebrow: 'Oricine', section3Title: 'Jurnalul de audit',
             section3Steps: [
                 { title: 'Mergi la „Jurnal audit” din meniu', body: 'Vezi cine a făcut ce și când — creare evenimente, participanți invitați, roluri atribuite. Un admin de platformă vede tot; un admin de client vede doar ce s-a întâmplat în organizația lui.' },
             ],
             notYetTitle: 'Ce nu există încă în platformă',
-            notYetItems: ['Galerie foto privată — doar concept, pe pagina de prezentare', 'Cereri de ștergere a datelor (dreptul GDPR la ștergere)', 'Trimitere automată de email pentru invitații sau parole', 'Activare doi factori (2FA) din propriul profil'],
+            notYetItems: ['Cereri de ștergere a datelor (dreptul GDPR la ștergere)', 'Trimitere automată de email pentru invitații sau parole', 'Activare doi factori (2FA) din propriul profil'],
             footerPrefix: 'Ai nevoie de ceva ce nu există încă?', footerLink: 'Verifică jurnalul de audit', footerSuffix: 'sau spune-i direct dezvoltatorului.',
         },
         auditLog: {
             title: 'Jurnal de audit', subtitlePrefix: 'Ultimele', subtitleSuffix: 'evenimente vizibile pentru organizația ta.',
             colDateTime: 'Data / Ora', colActor: 'Actor', colAction: 'Acțiune', colObject: 'Obiect',
             empty: 'Niciun eveniment înregistrat încă.', role: 'rol',
+        },
+        gallery: {
+            title: 'Galerie foto', back: '← Participanți',
+            uploadLabel: 'Adaugă fotografii (JPEG, PNG sau WebP)', uploadButton: 'Încarcă', uploading: 'Se încarcă…',
+            empty: 'Nicio fotografie încărcată încă.',
+            draft: 'Ciornă', published: 'Publicată', publish: 'Publică', delete: 'Șterge',
+            confirmDelete: 'Ștergi definitiv această fotografie?',
         },
     },
     en: {
@@ -126,7 +140,7 @@ export const APP_TRANSLATIONS = {
         dashboard: {
             title: 'Events', newEvent: 'New event',
             emptyTitle: 'No events yet', emptyBody: 'Create your first event to start sending invitations and collecting responses.',
-            activeEvents: 'Active events', colEvent: 'Event', colDate: 'Date', colStatus: 'Status', participants: 'Participants',
+            activeEvents: 'Active events', colEvent: 'Event', colDate: 'Date', colStatus: 'Status', participants: 'Participants', gallery: 'Gallery',
         },
         organizations: {
             index: {
@@ -217,18 +231,32 @@ export const APP_TRANSLATIONS = {
                 { title: 'The participant responds on their own link', body: 'They choose whether they are attending and whether they agree to appear in photos. The response is saved directly, with no extra step from you.' },
                 { title: 'Track responses in real time', body: 'On the event\'s "Participants" page you see immediately who responded and what they chose.' },
             ],
+            galleryEyebrow: "A client's admin", galleryTitle: "How to share the event's photos",
+            gallerySteps: [
+                { title: 'Open the event and click "Gallery"', body: "From here you upload and manage the event's photos." },
+                { title: 'Upload photos (JPEG, PNG or WebP)', body: 'A photographer can also upload directly, if they have an account — but cannot publish.' },
+                { title: 'Click "Publish" on each photo you choose', body: "Only the organization's admin decides what becomes visible to participants — uploading and publishing are deliberately separate steps." },
+                { title: 'Participants who confirmed attendance see the gallery', body: 'It appears automatically on their confirmation page, below their submitted response. Anyone not attending sees nothing.' },
+            ],
             section3Eyebrow: 'Anyone', section3Title: 'The audit log',
             section3Steps: [
                 { title: 'Go to "Audit log" in the menu', body: "See who did what and when — events created, participants invited, roles assigned. A platform admin sees everything; a client admin only sees what happened in their own organization." },
             ],
             notYetTitle: "What the platform doesn't do yet",
-            notYetItems: ['Private photo gallery — concept only, on the marketing page', 'Data deletion requests (the GDPR right to erasure)', 'Automatic email for invitations or passwords', 'Self-service two-factor authentication (2FA) from your profile'],
+            notYetItems: ['Data deletion requests (the GDPR right to erasure)', 'Automatic email for invitations or passwords', 'Self-service two-factor authentication (2FA) from your profile'],
             footerPrefix: 'Need something that doesn\'t exist yet?', footerLink: 'Check the audit log', footerSuffix: 'or tell the developer directly.',
         },
         auditLog: {
             title: 'Audit log', subtitlePrefix: 'The last', subtitleSuffix: 'events visible to your organization.',
             colDateTime: 'Date / time', colActor: 'Actor', colAction: 'Action', colObject: 'Object',
             empty: 'No events recorded yet.', role: 'role',
+        },
+        gallery: {
+            title: 'Photo gallery', back: '← Participants',
+            uploadLabel: 'Add photos (JPEG, PNG or WebP)', uploadButton: 'Upload', uploading: 'Uploading…',
+            empty: 'No photos uploaded yet.',
+            draft: 'Draft', published: 'Published', publish: 'Publish', delete: 'Delete',
+            confirmDelete: 'Permanently delete this photo?',
         },
     },
     de: {
@@ -239,7 +267,7 @@ export const APP_TRANSLATIONS = {
         dashboard: {
             title: 'Events', newEvent: 'Neues Event',
             emptyTitle: 'Noch kein Event', emptyBody: 'Erstellen Sie Ihr erstes Event, um Einladungen zu versenden und Antworten zu sammeln.',
-            activeEvents: 'Aktive Events', colEvent: 'Event', colDate: 'Datum', colStatus: 'Status', participants: 'Teilnehmer',
+            activeEvents: 'Aktive Events', colEvent: 'Event', colDate: 'Datum', colStatus: 'Status', participants: 'Teilnehmer', gallery: 'Galerie',
         },
         organizations: {
             index: {
@@ -330,18 +358,32 @@ export const APP_TRANSLATIONS = {
                 { title: 'Der Teilnehmer antwortet über seinen eigenen Link', body: 'Er wählt, ob er teilnimmt und ob er mit dem Erscheinen auf Fotos einverstanden ist. Die Antwort wird direkt gespeichert, ohne dass Sie etwas tun müssen.' },
                 { title: 'Verfolgen Sie die Antworten in Echtzeit', body: 'Auf der Seite „Teilnehmer" des Events sehen Sie sofort, wer geantwortet hat und was gewählt wurde.' },
             ],
+            galleryEyebrow: 'Der Admin eines Kunden', galleryTitle: 'So teilen Sie die Fotos des Events',
+            gallerySteps: [
+                { title: 'Öffnen Sie das Event und klicken Sie auf „Galerie"', body: 'Hier laden Sie die Fotos des Events hoch und verwalten sie.' },
+                { title: 'Laden Sie Fotos hoch (JPEG, PNG oder WebP)', body: 'Ein Fotograf kann, falls er ein Konto hat, auch direkt hochladen — aber nicht veröffentlichen.' },
+                { title: 'Klicken Sie bei jedem gewählten Foto auf „Veröffentlichen"', body: 'Nur der Admin der Organisation entscheidet, was für Teilnehmer sichtbar wird — Hochladen und Veröffentlichen sind bewusst getrennte Schritte.' },
+                { title: 'Teilnehmer, die ihre Teilnahme bestätigt haben, sehen die Galerie', body: 'Sie erscheint automatisch auf ihrer Bestätigungsseite, unterhalb der gesendeten Antwort. Wer nicht teilnimmt, sieht nichts.' },
+            ],
             section3Eyebrow: 'Jeder', section3Title: 'Das Auditprotokoll',
             section3Steps: [
                 { title: 'Gehen Sie im Menü zu „Auditprotokoll"', body: 'Sehen Sie, wer wann was getan hat — erstellte Events, eingeladene Teilnehmer, zugewiesene Rollen. Ein Plattform-Admin sieht alles; ein Kunden-Admin sieht nur, was in seiner eigenen Organisation geschehen ist.' },
             ],
             notYetTitle: 'Was die Plattform noch nicht kann',
-            notYetItems: ['Private Fotogalerie — nur ein Konzept, auf der Werbeseite', 'Anträge auf Datenlöschung (das DSGVO-Recht auf Löschung)', 'Automatischer E-Mail-Versand für Einladungen oder Passwörter', 'Selbstständige Aktivierung der Zwei-Faktor-Authentifizierung (2FA) im eigenen Profil'],
+            notYetItems: ['Anträge auf Datenlöschung (das DSGVO-Recht auf Löschung)', 'Automatischer E-Mail-Versand für Einladungen oder Passwörter', 'Selbstständige Aktivierung der Zwei-Faktor-Authentifizierung (2FA) im eigenen Profil'],
             footerPrefix: 'Brauchen Sie etwas, das es noch nicht gibt?', footerLink: 'Auditprotokoll prüfen', footerSuffix: 'oder sagen Sie es direkt dem Entwickler.',
         },
         auditLog: {
             title: 'Auditprotokoll', subtitlePrefix: 'Die letzten', subtitleSuffix: 'Ereignisse, die für Ihre Organisation sichtbar sind.',
             colDateTime: 'Datum / Uhrzeit', colActor: 'Akteur', colAction: 'Aktion', colObject: 'Objekt',
             empty: 'Noch keine Ereignisse erfasst.', role: 'Rolle',
+        },
+        gallery: {
+            title: 'Fotogalerie', back: '← Teilnehmer',
+            uploadLabel: 'Fotos hinzufügen (JPEG, PNG oder WebP)', uploadButton: 'Hochladen', uploading: 'Wird hochgeladen…',
+            empty: 'Noch keine Fotos hochgeladen.',
+            draft: 'Entwurf', published: 'Veröffentlicht', publish: 'Veröffentlichen', delete: 'Löschen',
+            confirmDelete: 'Dieses Foto endgültig löschen?',
         },
     },
 };

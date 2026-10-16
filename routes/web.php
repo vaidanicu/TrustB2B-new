@@ -4,6 +4,7 @@ use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\Auth\TwoFactorChallengeController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\GalleryController;
 use App\Http\Controllers\GuideController;
 use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\MarketingController;
@@ -50,6 +51,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/events', [EventController::class, 'store'])->name('events.store');
     Route::get('/events/{event}/participants', [ParticipantController::class, 'statusBoard'])->name('participants.status');
     Route::post('/events/{event}/participants', [ParticipantController::class, 'store'])->name('participants.store');
+    Route::get('/events/{event}/gallery', [GalleryController::class, 'index'])->name('gallery.index');
+    Route::post('/events/{event}/gallery', [GalleryController::class, 'store'])->name('gallery.store');
+    Route::patch('/events/{event}/gallery/{media}/publish', [GalleryController::class, 'publish'])->name('gallery.publish');
+    Route::delete('/events/{event}/gallery/{media}', [GalleryController::class, 'destroy'])->name('gallery.destroy');
     Route::get('/audit-log', [AuditLogController::class, 'index'])->name('audit-log.index');
 });
 

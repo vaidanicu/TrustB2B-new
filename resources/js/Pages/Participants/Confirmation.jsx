@@ -1,7 +1,7 @@
 import Logo from '@/Components/Logo';
 import { Head, Link } from '@inertiajs/react';
 
-export default function Confirmation({ event, participantName, attending, photoConsent }) {
+export default function Confirmation({ event, participantName, attending, photoConsent, photos = [] }) {
     return (
         <div className="min-h-screen bg-paper pb-10">
             <Head title="Răspuns înregistrat" />
@@ -36,6 +36,19 @@ export default function Confirmation({ event, participantName, attending, photoC
                         Poți reveni oricând la acest link ca să-ți schimbi răspunsul, până pe {event.linkExpires}.
                     </p>
                 </div>
+
+                {photos.length > 0 && (
+                    <div className="mt-4 rounded-lg bg-white p-5 shadow-sm">
+                        <p className="mb-3 text-sm font-medium text-ink">Galerie foto</p>
+                        <div className="grid grid-cols-3 gap-2">
+                            {photos.map((photo) => (
+                                <a key={photo.id} href={photo.url} target="_blank" rel="noreferrer">
+                                    <img src={photo.url} alt="" className="aspect-square w-full rounded-md object-cover" />
+                                </a>
+                            ))}
+                        </div>
+                    </div>
+                )}
 
                 <Link href={route('participants.invitation')} className="mt-4 block text-center text-sm text-ink-muted underline">
                     Înapoi la invitație

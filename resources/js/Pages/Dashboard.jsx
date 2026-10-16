@@ -74,9 +74,14 @@ export default function Dashboard({ events }) {
                                             <span className={`h-1.5 w-1.5 rounded-full ${style.dot}`} />
                                             {style.label}
                                         </span>
-                                        <Link href={route('participants.status', event.id)} className="text-xs text-accent underline">
-                                            {t.dashboard.participants}
-                                        </Link>
+                                        <span className="flex items-center justify-end gap-3">
+                                            <Link href={route('participants.status', event.id)} className="text-xs text-accent underline">
+                                                {t.dashboard.participants}
+                                            </Link>
+                                            <Link href={route('gallery.index', event.id)} className="text-xs text-accent underline">
+                                                {t.dashboard.gallery}
+                                            </Link>
+                                        </span>
                                     </div>
                                 );
                             })}

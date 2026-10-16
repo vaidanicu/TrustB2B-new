@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\URL;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 /**
  * AP10-13. invitation()/confirmation() below are the untouched static demo
@@ -165,11 +166,23 @@ class ParticipantController extends Controller
 
     private function renderConfirmation(Participant $participant): Response
     {
+        $attending = $participant->status === 'attending';
+
         return Inertia::render('Participants/Confirmation', [
             'event' => $this->eventPayload($participant),
             'participantName' => $participant->name,
-            'attending' => $participant->status === 'attending',
+            'attending' => $attending,
             'photoConsent' => (bool) $participant->photo_consent,
+            // Whoever attended can see the shared album, regardless of their
+            // own photo_consent — that only governs whether THEY appear in
+            // it, not whether they can look. Declined participants never
+            // see this: they weren't there.
+            'photos' => $attending
+                ? $participant->event->getMedia('gallery')
+                    ->filter(fn (Media $media) => (bool) $media->getCustomProperty('published', false))
+                    ->map(fn (Media $media) => ['id' => $media->id, 'url' => $media->getUrl()])
+                    ->values()
+                : [],
         ]);
     }
 
