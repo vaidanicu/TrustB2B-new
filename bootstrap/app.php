@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureAppDomain;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\SetTenantContext;
 use Illuminate\Foundation\Application;
@@ -21,6 +22,8 @@ return Application::configure(basePath: dirname(__DIR__))
             AddLinkHeadersForPreloadedAssets::class,
             SetTenantContext::class,
         ]);
+
+        $middleware->alias(['app-domain' => EnsureAppDomain::class]);
 
         // The 'web' group's own SubstituteBindings entry (which resolves
         // any {model} route parameter, e.g. EventController's {event})

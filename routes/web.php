@@ -41,7 +41,7 @@ Route::middleware('signed')->group(function () {
     Route::post('/invitatie/{participant}', [ParticipantController::class, 'respond'])->name('participants.respond');
 });
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['app-domain', 'auth', 'verified'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/ghid', [GuideController::class, 'index'])->name('guide.index');
     Route::get('/organizations', [OrganizationController::class, 'index'])->name('organizations.index');
@@ -58,11 +58,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/audit-log', [AuditLogController::class, 'index'])->name('audit-log.index');
 });
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['app-domain', 'auth'])->group(function () {
     Route::patch('/locale', [LocaleController::class, 'update'])->name('locale.update');
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-require __DIR__.'/auth.php';
+// Login/register/password-reset/email-verification: also app-domain-only —
+// otherwise a session started on the bare marketing domain would still
+// carry into every route above the moment it redirects, but any signed
+// link THESE routes generate (email verification) would already be
+// stamped with the wrong host, same failure as participant invitations.
+Route::middleware('app-domain')->group(function () {
+    require __DIR__.'/auth.php';
+});
