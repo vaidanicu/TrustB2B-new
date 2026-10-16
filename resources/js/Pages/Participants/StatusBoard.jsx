@@ -1,7 +1,7 @@
 import AppLayout from '@/Layouts/AppLayout';
 import InputError from '@/Components/InputError';
 import { useAppTranslations } from '@/i18n/appTranslations';
-import { Head, Link, useForm, usePage } from '@inertiajs/react';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 
 // Grupele exacte cerute de A-05: eingeladen, zugestellt, geöffnet,
@@ -135,11 +135,12 @@ export default function StatusBoard({ event, participants }) {
                 </div>
 
                 <div className="overflow-hidden rounded-lg bg-white shadow-sm">
-                    <div className="grid grid-cols-[1.4fr_1.6fr_1fr_1fr] gap-3 border-b border-line px-5 py-3 text-xs font-semibold uppercase tracking-wide text-ink-muted">
+                    <div className="grid grid-cols-[1.4fr_1.6fr_1fr_1fr_auto] gap-3 border-b border-line px-5 py-3 text-xs font-semibold uppercase tracking-wide text-ink-muted">
                         <span>{t.statusBoard.colName}</span>
                         <span>{t.statusBoard.colEmail}</span>
                         <span>{t.statusBoard.colStatus}</span>
                         <span>{t.statusBoard.colRespondedAt}</span>
+                        <span></span>
                     </div>
 
                     {participants.length === 0 ? (
@@ -148,10 +149,16 @@ export default function StatusBoard({ event, participants }) {
                         participants.map((participant) => {
                             const tone = ROW_TONES[participant.status] ?? ROW_TONES.invited;
 
+                            function destroy() {
+                                if (confirm(t.statusBoard.confirmDelete)) {
+                                    router.delete(route('participants.destroy', [event.id, participant.id]), { preserveScroll: true });
+                                }
+                            }
+
                             return (
                                 <div
                                     key={participant.id}
-                                    className="grid grid-cols-[1.4fr_1.6fr_1fr_1fr] items-center gap-3 border-b border-line px-5 py-3.5 text-sm last:border-0 hover:bg-paper-raised"
+                                    className="grid grid-cols-[1.4fr_1.6fr_1fr_1fr_auto] items-center gap-3 border-b border-line px-5 py-3.5 text-sm last:border-0 hover:bg-paper-raised"
                                 >
                                     <span className="font-medium text-ink">{participant.name}</span>
                                     <span className="text-ink-muted">{participant.email}</span>
@@ -160,6 +167,9 @@ export default function StatusBoard({ event, participants }) {
                                         {t.statusRow[participant.status] ?? t.statusRow.invited}
                                     </span>
                                     <span className="text-ink-muted">{participant.respondedAt ?? '—'}</span>
+                                    <button type="button" onClick={destroy} className="text-xs text-ink-muted underline hover:text-danger-ink">
+                                        {t.statusBoard.delete}
+                                    </button>
                                 </div>
                             );
                         })

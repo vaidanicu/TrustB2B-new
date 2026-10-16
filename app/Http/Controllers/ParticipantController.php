@@ -132,6 +132,23 @@ class ParticipantController extends Controller
             ->with('invitationEmailSent', $emailSent);
     }
 
+    public function destroy(Request $request, Event $event, Participant $participant): RedirectResponse
+    {
+        abort_unless($request->user()->organization_id !== null, 403);
+        abort_unless($participant->event_id === $event->id, 404);
+
+        $name = $participant->name;
+
+        activity()
+            ->causedBy($request->user())
+            ->performedOn($participant)
+            ->log('participant removed');
+
+        $participant->delete();
+
+        return back()->with('status', "Participant șters: {$name}");
+    }
+
     public function show(Request $request, int $participant): Response
     {
         // Event carries its own BelongsToOrganization scope too — eager

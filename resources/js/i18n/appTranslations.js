@@ -67,6 +67,7 @@ export const APP_TRANSLATIONS = {
                 empty: 'Niciun participant invitat încă.',
                 emailSent: 'Trimis automat pe email participantului.',
                 emailFailed: 'Emailul nu a putut fi trimis automat — trimite linkul manual.',
+                delete: 'Șterge', confirmDelete: 'Ștergi definitiv acest participant?',
             },
             invitation: {
                 invites: 'te invită', dataProtectionInfo: 'Informații privind protecția datelor (versiunea',
@@ -196,6 +197,7 @@ export const APP_TRANSLATIONS = {
                 empty: 'No participants invited yet.',
                 emailSent: 'Automatically emailed to the participant.',
                 emailFailed: "The email couldn't be sent automatically — send the link manually.",
+                delete: 'Delete', confirmDelete: 'Permanently delete this participant?',
             },
             invitation: {
                 invites: 'invites you', dataProtectionInfo: 'Data protection information (version',
@@ -325,6 +327,7 @@ export const APP_TRANSLATIONS = {
                 empty: 'Noch keine Teilnehmer eingeladen.',
                 emailSent: 'Automatisch per E-Mail an den Teilnehmer gesendet.',
                 emailFailed: 'Die E-Mail konnte nicht automatisch gesendet werden — senden Sie den Link manuell.',
+                delete: 'Löschen', confirmDelete: 'Diesen Teilnehmer endgültig löschen?',
             },
             invitation: {
                 invites: 'lädt Sie ein', dataProtectionInfo: 'Datenschutzinformationen (Version',

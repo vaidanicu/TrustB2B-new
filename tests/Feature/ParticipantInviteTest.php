@@ -135,4 +135,43 @@ class ParticipantInviteTest extends TestCase
                 ->where('participants.0.name', 'Participant A')
             );
     }
+
+    public function test_an_organizer_can_delete_a_participant(): void
+    {
+        $organization = Organization::factory()->create();
+        $user = User::factory()->forOrganization($organization)->create();
+        $event = Event::factory()->for($organization)->create(['franchise_partner_id' => $organization->franchise_partner_id]);
+        $participant = Participant::factory()->for($event)->create([
+            'organization_id' => $event->organization_id,
+            'franchise_partner_id' => $event->franchise_partner_id,
+        ]);
+
+        $this->actingAs($user)
+            ->delete(route('participants.destroy', [$event, $participant]))
+            ->assertRedirect();
+
+        $this->assertSame(0, Participant::count());
+    }
+
+    public function test_an_organizer_cannot_delete_a_participant_from_another_organizations_event(): void
+    {
+        $otherOrganization = Organization::factory()->create();
+        $otherEvent = Event::factory()->for($otherOrganization)->create(['franchise_partner_id' => $otherOrganization->franchise_partner_id]);
+        $otherParticipant = Participant::factory()->for($otherEvent)->create([
+            'organization_id' => $otherEvent->organization_id,
+            'franchise_partner_id' => $otherEvent->franchise_partner_id,
+        ]);
+
+        $user = User::factory()->forOrganization()->create();
+
+        $this->actingAs($user)
+            ->delete(route('participants.destroy', [$otherEvent, $otherParticipant]))
+            ->assertNotFound();
+
+        // Participant::count() alone would be scoped to the ACTING user's
+        // own (empty) organization after this request and pass either way
+        // — withoutGlobalScopes() is what actually proves the other org's
+        // row survived.
+        $this->assertSame(1, Participant::withoutGlobalScopes()->count());
+    }
 }
