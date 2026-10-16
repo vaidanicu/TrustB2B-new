@@ -65,7 +65,7 @@ function InviteForm({ eventId, t }) {
     );
 }
 
-function InvitationLinkBanner({ url, t, common }) {
+function InvitationLinkBanner({ url, emailSent, t, common }) {
     const [copied, setCopied] = useState(false);
 
     async function copy() {
@@ -78,11 +78,14 @@ function InvitationLinkBanner({ url, t, common }) {
     }
 
     return (
-        <div className="mb-5 flex flex-wrap items-center justify-between gap-3 rounded-md border border-teal bg-teal-soft px-4 py-3 text-sm text-teal-ink">
-            <span className="break-all">{t.statusBoard.linkLabel} {url}</span>
-            <button type="button" onClick={copy} className="shrink-0 rounded-md border border-teal-ink/30 px-3 py-1 text-xs font-semibold uppercase tracking-wide">
-                {copied ? common.copied : common.copy}
-            </button>
+        <div className={'mb-5 rounded-md border px-4 py-3 text-sm ' + (emailSent ? 'border-teal bg-teal-soft text-teal-ink' : 'border-amber-600 bg-amber-50 text-amber-700')}>
+            <p className="mb-1.5 font-medium">{emailSent ? t.statusBoard.emailSent : t.statusBoard.emailFailed}</p>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+                <span className="break-all">{t.statusBoard.linkLabel} {url}</span>
+                <button type="button" onClick={copy} className="shrink-0 rounded-md border border-current/30 px-3 py-1 text-xs font-semibold uppercase tracking-wide">
+                    {copied ? common.copied : common.copy}
+                </button>
+            </div>
         </div>
     );
 }
@@ -116,7 +119,7 @@ export default function StatusBoard({ event, participants }) {
                         {flash.status}
                     </div>
                 )}
-                {flash?.invitationUrl && <InvitationLinkBanner url={flash.invitationUrl} t={t} common={all.common} />}
+                {flash?.invitationUrl && <InvitationLinkBanner url={flash.invitationUrl} emailSent={flash.invitationEmailSent} t={t} common={all.common} />}
 
                 <InviteForm eventId={event.id} t={t} />
 

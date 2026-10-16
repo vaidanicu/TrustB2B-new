@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\ParticipantInvited;
 use App\Models\Event;
 use App\Models\Participant;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
@@ -107,8 +110,26 @@ class ParticipantController extends Controller
             ['participant' => $participant->id],
         );
 
+        // The link banner stays regardless of whether this succeeds — a
+        // participant creation must never fail just because SMTP is
+        // temporarily unreachable, and the organizer can always copy/send
+        // the link by hand either way.
+        $emailSent = true;
+
+        try {
+            Mail::to($participant->email)->send(new ParticipantInvited($participant, $invitationUrl));
+        } catch (\Throwable $e) {
+            $emailSent = false;
+
+            Log::warning('Participant invitation email failed to send', [
+                'participant_id' => $participant->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
         return back()->with('status', "Invitație creată pentru {$participant->name}")
-            ->with('invitationUrl', $invitationUrl);
+            ->with('invitationUrl', $invitationUrl)
+            ->with('invitationEmailSent', $emailSent);
     }
 
     public function show(Request $request, int $participant): Response

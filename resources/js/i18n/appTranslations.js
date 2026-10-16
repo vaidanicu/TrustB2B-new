@@ -65,6 +65,8 @@ export const APP_TRANSLATIONS = {
                 inviteEmailLabel: 'Email', inviteEmailPlaceholder: 'nume@exemplu.ro', inviteButton: 'Invită',
                 linkLabel: 'Link de invitație:', colName: 'Nume', colEmail: 'Email', colStatus: 'Stare', colRespondedAt: 'Dată răspuns',
                 empty: 'Niciun participant invitat încă.',
+                emailSent: 'Trimis automat pe email participantului.',
+                emailFailed: 'Emailul nu a putut fi trimis automat — trimite linkul manual.',
             },
             invitation: {
                 invites: 'te invită', dataProtectionInfo: 'Informații privind protecția datelor (versiunea',
@@ -192,6 +194,8 @@ export const APP_TRANSLATIONS = {
                 inviteEmailLabel: 'Email', inviteEmailPlaceholder: 'name@example.com', inviteButton: 'Invite',
                 linkLabel: 'Invitation link:', colName: 'Name', colEmail: 'Email', colStatus: 'Status', colRespondedAt: 'Responded on',
                 empty: 'No participants invited yet.',
+                emailSent: 'Automatically emailed to the participant.',
+                emailFailed: "The email couldn't be sent automatically — send the link manually.",
             },
             invitation: {
                 invites: 'invites you', dataProtectionInfo: 'Data protection information (version',
@@ -319,6 +323,8 @@ export const APP_TRANSLATIONS = {
                 inviteEmailLabel: 'E-Mail', inviteEmailPlaceholder: 'name@beispiel.de', inviteButton: 'Einladen',
                 linkLabel: 'Einladungslink:', colName: 'Name', colEmail: 'E-Mail', colStatus: 'Status', colRespondedAt: 'Antwortdatum',
                 empty: 'Noch keine Teilnehmer eingeladen.',
+                emailSent: 'Automatisch per E-Mail an den Teilnehmer gesendet.',
+                emailFailed: 'Die E-Mail konnte nicht automatisch gesendet werden — senden Sie den Link manuell.',
             },
             invitation: {
                 invites: 'lädt Sie ein', dataProtectionInfo: 'Datenschutzinformationen (Version',

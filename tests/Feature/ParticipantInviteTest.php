@@ -2,11 +2,13 @@
 
 namespace Tests\Feature;
 
+use App\Mail\ParticipantInvited;
 use App\Models\Event;
 use App\Models\Organization;
 use App\Models\Participant;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
 /**
@@ -20,6 +22,8 @@ class ParticipantInviteTest extends TestCase
 
     public function test_organizer_can_invite_a_participant_and_receives_an_invitation_link(): void
     {
+        Mail::fake();
+
         $organization = Organization::factory()->create();
         $user = User::factory()->forOrganization($organization)->create();
         $event = Event::factory()->for($organization)->create(['franchise_partner_id' => $organization->franchise_partner_id]);
@@ -46,6 +50,28 @@ class ParticipantInviteTest extends TestCase
         $this->assertSame($organization->franchise_partner_id, $participant->franchise_partner_id);
         $this->assertSame('invited', $participant->status);
         $this->assertNull($participant->responded_at);
+
+        Mail::assertSent(ParticipantInvited::class, fn (ParticipantInvited $mail) => $mail->hasTo('andrei.popescu@exemplu.ro')
+            && $mail->participant->is($participant));
+    }
+
+    public function test_the_participant_is_still_created_when_the_invitation_email_fails(): void
+    {
+        Mail::shouldReceive('to')->andThrow(new \RuntimeException('SMTP unreachable'));
+
+        $organization = Organization::factory()->create();
+        $user = User::factory()->forOrganization($organization)->create();
+        $event = Event::factory()->for($organization)->create(['franchise_partner_id' => $organization->franchise_partner_id]);
+
+        $response = $this->actingAs($user)->post(route('participants.store', $event), [
+            'name' => 'Andrei Popescu',
+            'email' => 'andrei.popescu@exemplu.ro',
+        ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHas('invitationUrl');
+        $response->assertSessionHas('invitationEmailSent', false);
+        $this->assertSame(1, Participant::count());
     }
 
     public function test_the_same_email_cannot_be_invited_twice_to_the_same_event(): void
