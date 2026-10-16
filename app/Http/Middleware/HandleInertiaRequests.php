@@ -41,9 +41,19 @@ class HandleInertiaRequests extends Middleware
                     'franchise_partner' => $user->franchisePartner?->only(['id', 'name', 'region_code']),
                 ] : null,
             ],
-            'flash' => [
-                'status' => fn () => $request->session()->get('status'),
-            ],
+            // Shares whatever a controller actually flashed on the PREVIOUS
+            // request (redirect()->with('status', ...), ->with('invitationUrl', ...),
+            // etc.) instead of a hand-picked key list — the previous
+            // 'status'-only list silently dropped invitationUrl/
+            // newAdminEmail/newAdminPassword, so those banners never
+            // rendered even though the backend set them correctly.
+            // '_flash.old' (not '_flash.new') is deliberate: StartSession's
+            // ageFlashData() already ran before this middleware, moving the
+            // flashed keys from 'new' to 'old' for exactly this request —
+            // 'new' has already been reset to empty by the time we get here.
+            'flash' => fn () => collect($request->session()->get('_flash.old', []))
+                ->mapWithKeys(fn (string $key) => [$key => $request->session()->get($key)])
+                ->all(),
         ];
     }
 }

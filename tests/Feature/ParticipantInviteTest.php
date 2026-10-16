@@ -32,6 +32,14 @@ class ParticipantInviteTest extends TestCase
         $response->assertRedirect();
         $response->assertSessionHas('invitationUrl');
 
+        // The session having it isn't enough on its own — HandleInertiaRequests
+        // has to actually forward it as a page prop, or the banner the
+        // organizer is supposed to see never renders. This regressed once
+        // already (a hand-picked 'flash' key list silently dropped it).
+        $this->actingAs($user)
+            ->get(route('participants.status', $event))
+            ->assertInertia(fn ($page) => $page->where('flash.invitationUrl', fn ($url) => str_contains($url, '/invitatie/')));
+
         $participant = Participant::sole();
         $this->assertSame($event->id, $participant->event_id);
         $this->assertSame($organization->id, $participant->organization_id);
