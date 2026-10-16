@@ -3,6 +3,7 @@
 use App\Http\Middleware\EnsureAppDomain;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\SetTenantContext;
+use Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -41,6 +42,21 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->prependToPriorityList(
             before: SubstituteBindings::class,
             prepend: SetTenantContext::class,
+        );
+
+        // Same class of bug, same fix: EnsureAppDomain is listed first in
+        // every route group it's used in, but Laravel's own priority list
+        // IS respected ahead of plain array order, so the sorter ran
+        // 'auth' first regardless — redirecting a logged-out visitor to
+        // the WRONG domain's /login before the domain check ever got a
+        // chance to run. The priority list names the 'auth' middleware by
+        // its AuthenticatesRequests CONTRACT, not the concrete Authenticate
+        // class — passing the concrete class here silently fails to match
+        // (in_array() on the raw priority array), so this failed the exact
+        // same way a first attempt did, just one class reference removed.
+        $middleware->prependToPriorityList(
+            before: AuthenticatesRequests::class,
+            prepend: EnsureAppDomain::class,
         );
     })
     ->withExceptions(function (Exceptions $exceptions): void {

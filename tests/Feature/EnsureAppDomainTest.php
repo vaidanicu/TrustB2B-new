@@ -32,6 +32,21 @@ class EnsureAppDomainTest extends TestCase
             ->assertRedirect(config('app.url').'/dashboard');
     }
 
+    /**
+     * actingAs() pre-authenticates outside the middleware pipeline, so the
+     * test above never actually exercises ordering against 'auth' — this
+     * is the scenario that broke in production: a logged-OUT visit hits
+     * Authenticate before EnsureAppDomain gets a chance to run (unless
+     * EnsureAppDomain is in the priority list, not just first in the route
+     * group array) and redirects to login on the WRONG domain instead of
+     * to the app domain first.
+     */
+    public function test_a_guest_on_the_marketing_domain_is_sent_to_the_app_domain_not_the_wrong_login(): void
+    {
+        $this->get('http://trustbridgeb2b.example/dashboard')
+            ->assertRedirect(config('app.url').'/dashboard');
+    }
+
     public function test_the_app_domain_itself_is_not_redirected(): void
     {
         $user = User::factory()->forOrganization()->create();
