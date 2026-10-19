@@ -14,6 +14,7 @@ export const APP_TRANSLATIONS = {
             title: 'Evenimente', newEvent: 'Eveniment nou',
             emptyTitle: 'Niciun eveniment încă', emptyBody: 'Creează primul eveniment ca să începi să trimiți invitații și să colectezi răspunsuri.',
             activeEvents: 'Evenimente active', colEvent: 'Eveniment', colDate: 'Dată', colStatus: 'Stare', participants: 'Participanți', gallery: 'Galerie',
+            delete: 'Șterge', confirmDelete: 'Ștergi definitiv acest eveniment, cu tot ce ține de el (participanți, fotografii)?',
         },
         organizations: {
             index: {
@@ -144,6 +145,7 @@ export const APP_TRANSLATIONS = {
             title: 'Events', newEvent: 'New event',
             emptyTitle: 'No events yet', emptyBody: 'Create your first event to start sending invitations and collecting responses.',
             activeEvents: 'Active events', colEvent: 'Event', colDate: 'Date', colStatus: 'Status', participants: 'Participants', gallery: 'Gallery',
+            delete: 'Delete', confirmDelete: 'Permanently delete this event, along with everything attached to it (participants, photos)?',
         },
         organizations: {
             index: {
@@ -274,6 +276,7 @@ export const APP_TRANSLATIONS = {
             title: 'Events', newEvent: 'Neues Event',
             emptyTitle: 'Noch kein Event', emptyBody: 'Erstellen Sie Ihr erstes Event, um Einladungen zu versenden und Antworten zu sammeln.',
             activeEvents: 'Aktive Events', colEvent: 'Event', colDate: 'Datum', colStatus: 'Status', participants: 'Teilnehmer', gallery: 'Galerie',
+            delete: 'Löschen', confirmDelete: 'Dieses Event endgültig löschen, mit allem, was dazugehört (Teilnehmer, Fotos)?',
         },
         organizations: {
             index: {

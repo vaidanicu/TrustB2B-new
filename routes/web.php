@@ -49,6 +49,7 @@ Route::middleware(['app-domain', 'auth', 'verified'])->group(function () {
     Route::post('/organizations', [OrganizationController::class, 'store'])->name('organizations.store');
     Route::get('/events/create', [EventController::class, 'create'])->name('events.create');
     Route::post('/events', [EventController::class, 'store'])->name('events.store');
+    Route::delete('/events/{event}', [EventController::class, 'destroy'])->name('events.destroy');
     Route::get('/events/{event}/participants', [ParticipantController::class, 'statusBoard'])->name('participants.status');
     Route::post('/events/{event}/participants', [ParticipantController::class, 'store'])->name('participants.store');
     Route::delete('/events/{event}/participants/{participant}', [ParticipantController::class, 'destroy'])->name('participants.destroy');

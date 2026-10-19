@@ -57,4 +57,24 @@ class EventController extends Controller
 
         return redirect()->route('dashboard')->with('status', "Eveniment creat: {$event->name}");
     }
+
+    public function destroy(Request $request, Event $event): RedirectResponse
+    {
+        abort_unless($request->user()->organization_id !== null, 403);
+
+        $name = $event->name;
+
+        activity()
+            ->causedBy($request->user())
+            ->performedOn($event)
+            ->log('event deleted');
+
+        // Participants cascade via the events.id foreign key; gallery
+        // photos (spatie/laravel-medialibrary) clean up their own files
+        // through the model's own deleting event — neither needs doing
+        // by hand here.
+        $event->delete();
+
+        return redirect()->route('dashboard')->with('status', "Eveniment șters: {$name}");
+    }
 }

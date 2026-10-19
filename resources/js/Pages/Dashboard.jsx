@@ -1,6 +1,6 @@
 import AppLayout from '@/Layouts/AppLayout';
 import { useAppTranslations } from '@/i18n/appTranslations';
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 
 function NewEventButton({ label }) {
     return (
@@ -63,6 +63,12 @@ export default function Dashboard({ events }) {
                             {events.map((event) => {
                                 const style = statusStyles[event.status] ?? statusStyles.draft;
 
+                                function destroy() {
+                                    if (confirm(t.dashboard.confirmDelete)) {
+                                        router.delete(route('events.destroy', event.id));
+                                    }
+                                }
+
                                 return (
                                     <div
                                         key={event.id}
@@ -81,6 +87,9 @@ export default function Dashboard({ events }) {
                                             <Link href={route('gallery.index', event.id)} className="text-xs text-accent underline">
                                                 {t.dashboard.gallery}
                                             </Link>
+                                            <button type="button" onClick={destroy} className="text-xs text-ink-muted underline hover:text-danger-ink">
+                                                {t.dashboard.delete}
+                                            </button>
                                         </span>
                                     </div>
                                 );
