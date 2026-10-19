@@ -1,7 +1,13 @@
 import Logo from '@/Components/Logo';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 
-export default function Confirmation({ event, participantName, attending, photoConsent, photos = [] }) {
+export default function Confirmation({ event, participantName, attending, photoConsent, photos = [], signedUrl = null }) {
+    function requestDeletion() {
+        if (confirm('Sigur vrei să ceri ștergerea datelor tale pentru acest eveniment? Organizatorul va procesa cererea.')) {
+            router.patch(signedUrl);
+        }
+    }
+
     return (
         <div className="min-h-screen bg-paper pb-10">
             <Head title="Răspuns înregistrat" />
@@ -53,6 +59,16 @@ export default function Confirmation({ event, participantName, attending, photoC
                 <Link href={route('participants.invitation')} className="mt-4 block text-center text-sm text-ink-muted underline">
                     Înapoi la invitație
                 </Link>
+
+                {signedUrl && (
+                    <button
+                        type="button"
+                        onClick={requestDeletion}
+                        className="mt-3 block w-full text-center text-xs text-ink-muted underline hover:text-danger-ink"
+                    >
+                        Vreau să fiu șters din sistem
+                    </button>
+                )}
             </div>
         </div>
     );

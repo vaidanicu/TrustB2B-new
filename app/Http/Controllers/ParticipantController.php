@@ -78,6 +78,7 @@ class ParticipantController extends Controller
                 'status' => $participant->status,
                 'photoConsent' => $participant->photo_consent,
                 'respondedAt' => $participant->responded_at?->format('d M.'),
+                'deletionRequested' => $participant->deletion_requested_at !== null,
             ]),
         ]);
     }
@@ -138,15 +139,31 @@ class ParticipantController extends Controller
         abort_unless($participant->event_id === $event->id, 404);
 
         $name = $participant->name;
+        $wasRequested = $participant->deletion_requested_at !== null;
 
         activity()
             ->causedBy($request->user())
             ->performedOn($participant)
-            ->log('participant removed');
+            ->log($wasRequested ? 'deletion request approved, participant removed' : 'participant removed');
 
         $participant->delete();
 
         return back()->with('status', "Participant șters: {$name}");
+    }
+
+    public function denyDeletionRequest(Request $request, Event $event, Participant $participant): RedirectResponse
+    {
+        abort_unless($request->user()->organization_id !== null, 403);
+        abort_unless($participant->event_id === $event->id, 404);
+
+        $participant->forceFill(['deletion_requested_at' => null])->save();
+
+        activity()
+            ->causedBy($request->user())
+            ->performedOn($participant)
+            ->log('deletion request declined');
+
+        return back()->with('status', "Cerere de ștergere respinsă pentru {$participant->name}");
     }
 
     public function show(Request $request, int $participant): Response
@@ -159,8 +176,18 @@ class ParticipantController extends Controller
             ->with(['event' => fn ($query) => $query->withoutGlobalScopes()])
             ->findOrFail($participant);
 
+        // Takes priority over both other states — once requested, there is
+        // nothing else meaningful to show the participant regardless of
+        // whether they'd already responded.
+        if ($participant->deletion_requested_at !== null) {
+            return Inertia::render('Participants/DeletionRequested', [
+                'event' => $this->eventPayload($participant),
+                'participantName' => $participant->name,
+            ]);
+        }
+
         if ($participant->responded_at !== null) {
-            return $this->renderConfirmation($participant);
+            return $this->renderConfirmation($participant, $request->fullUrl());
         }
 
         if ($participant->status === 'invited') {
@@ -182,7 +209,7 @@ class ParticipantController extends Controller
         // button) is harmless and idempotent — redirect straight to the
         // confirmation show() renders for a responded participant, without
         // overwriting what was already saved.
-        if ($participant->responded_at === null) {
+        if ($participant->responded_at === null && $participant->deletion_requested_at === null) {
             $data = $request->validate([
                 'name' => ['required', 'string', 'max:255'],
                 'attending' => ['required', 'boolean'],
@@ -202,7 +229,26 @@ class ParticipantController extends Controller
         return redirect($request->fullUrl());
     }
 
-    private function renderConfirmation(Participant $participant): Response
+    /**
+     * Shares the same signed URL as show()/respond() (PATCH instead of
+     * GET/POST) so the participant's page never needs a second signature —
+     * the "deletion request" link just reuses the signedUrl prop already on
+     * the page.
+     */
+    public function requestDeletion(Request $request, int $participant): RedirectResponse
+    {
+        $participant = Participant::withoutGlobalScopes()->findOrFail($participant);
+
+        if ($participant->deletion_requested_at === null) {
+            $participant->forceFill(['deletion_requested_at' => now()])->save();
+
+            activity()->performedOn($participant)->log('participant requested deletion');
+        }
+
+        return redirect($request->fullUrl());
+    }
+
+    private function renderConfirmation(Participant $participant, ?string $signedUrl = null): Response
     {
         $attending = $participant->status === 'attending';
 
@@ -211,6 +257,7 @@ class ParticipantController extends Controller
             'participantName' => $participant->name,
             'attending' => $attending,
             'photoConsent' => (bool) $participant->photo_consent,
+            'signedUrl' => $signedUrl,
             // Whoever attended can see the shared album, regardless of their
             // own photo_consent — that only governs whether THEY appear in
             // it, not whether they can look. Declined participants never

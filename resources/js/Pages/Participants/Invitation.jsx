@@ -1,6 +1,6 @@
 import Logo from '@/Components/Logo';
 import InputError from '@/Components/InputError';
-import { Head, Link, useForm } from '@inertiajs/react';
+import { Head, Link, router, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 
 function RsvpOption({ selected, onClick, label, hint }) {
@@ -43,6 +43,12 @@ export default function Invitation({ event, participantName, signedUrl }) {
     function submitReal(e) {
         e.preventDefault();
         post(signedUrl);
+    }
+
+    function requestDeletion() {
+        if (confirm('Sigur vrei să ceri ștergerea datelor tale pentru acest eveniment? Organizatorul va procesa cererea.')) {
+            router.patch(signedUrl);
+        }
     }
 
     const attending = isReal ? data.attending : demoAttending;
@@ -151,6 +157,16 @@ export default function Invitation({ event, participantName, signedUrl }) {
                 <p className="mt-4 text-center text-xs text-ink-muted">
                     Acest link e personal și expiră pe {event.linkExpires}.
                 </p>
+
+                {isReal && (
+                    <button
+                        type="button"
+                        onClick={requestDeletion}
+                        className="mt-3 block w-full text-center text-xs text-ink-muted underline hover:text-danger-ink"
+                    >
+                        Vreau să fiu șters din sistem
+                    </button>
+                )}
             </form>
         </div>
     );

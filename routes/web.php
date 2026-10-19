@@ -40,6 +40,7 @@ Route::get('/invitatie/confirmare', [ParticipantController::class, 'confirmation
 Route::middleware('signed')->group(function () {
     Route::get('/invitatie/{participant}', [ParticipantController::class, 'show'])->name('participants.show');
     Route::post('/invitatie/{participant}', [ParticipantController::class, 'respond'])->name('participants.respond');
+    Route::patch('/invitatie/{participant}', [ParticipantController::class, 'requestDeletion'])->name('participants.request-deletion');
 });
 
 Route::middleware(['app-domain', 'auth', 'verified'])->group(function () {
@@ -54,6 +55,7 @@ Route::middleware(['app-domain', 'auth', 'verified'])->group(function () {
     Route::get('/events/{event}/participants', [ParticipantController::class, 'statusBoard'])->name('participants.status');
     Route::post('/events/{event}/participants', [ParticipantController::class, 'store'])->name('participants.store');
     Route::delete('/events/{event}/participants/{participant}', [ParticipantController::class, 'destroy'])->name('participants.destroy');
+    Route::patch('/events/{event}/participants/{participant}/refuza-stergere', [ParticipantController::class, 'denyDeletionRequest'])->name('participants.deny-deletion');
     Route::get('/events/{event}/gallery', [GalleryController::class, 'index'])->name('gallery.index');
     Route::post('/events/{event}/gallery', [GalleryController::class, 'store'])->name('gallery.store');
     Route::patch('/events/{event}/gallery/{media}/publish', [GalleryController::class, 'publish'])->name('gallery.publish');

@@ -44,6 +44,7 @@ export default function Index() {
                 <Section eyebrow={g.section1Eyebrow} title={g.section1Title} steps={g.section1Steps} />
                 <Section eyebrow={g.section2Eyebrow} title={g.section2Title} steps={g.section2Steps} />
                 <Section eyebrow={g.galleryEyebrow} title={g.galleryTitle} steps={g.gallerySteps} />
+                <Section eyebrow={g.deletionEyebrow} title={g.deletionTitle} steps={g.deletionSteps} />
                 <Section eyebrow={g.section3Eyebrow} title={g.section3Title} steps={g.section3Steps} />
 
                 <section className="rounded-lg border border-line bg-paper-sunken p-7">

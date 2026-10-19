@@ -87,6 +87,9 @@ export const APP_TRANSLATIONS = {
                 emailSent: 'Trimis automat pe email participantului.',
                 emailFailed: 'Emailul nu a putut fi trimis automat — trimite linkul manual.',
                 delete: 'Șterge', confirmDelete: 'Ștergi definitiv acest participant?',
+                pendingDeletions: (count) => `${count} ${count === 1 ? 'cerere de ștergere așteaptă' : 'cereri de ștergere așteaptă'} procesare.`,
+                deletionRequestedBadge: 'Cerere ștergere', approveDeletion: 'Aprobă și șterge',
+                confirmApproveDeletion: 'Aprobi cererea și ștergi definitiv acest participant?', denyDeletion: 'Respinge cererea',
             },
             invitation: {
                 invites: 'te invită', dataProtectionInfo: 'Informații privind protecția datelor (versiunea',
@@ -133,12 +136,18 @@ export const APP_TRANSLATIONS = {
                 { title: 'Apasă „Publică” pe fiecare fotografie aleasă', body: 'Doar admin-ul organizației decide ce ajunge vizibil participanților — încărcarea și publicarea sunt pași separați, intenționat.' },
                 { title: 'Participanții care au confirmat prezența văd galeria', body: 'Apare automat pe pagina lor de confirmare, sub răspunsul trimis. Cine nu participă nu vede nimic.' },
             ],
+            deletionEyebrow: 'Dreptul la ștergere', deletionTitle: 'Cum procesezi o cerere de ștergere a datelor',
+            deletionSteps: [
+                { title: 'Participantul cere ștergerea din propriul link', body: 'Pe pagina lui de invitație sau confirmare apasă „Vreau să fiu șters din sistem”.' },
+                { title: 'Cererea apare pe pagina „Participanți” a evenimentului', body: 'Participantul e marcat vizibil și apare un banner cu numărul de cereri în așteptare.' },
+                { title: 'Aprobi și ștergi, sau respingi cererea', body: 'Aprobarea șterge definitiv participantul (nume, email, răspuns). Respingerea doar anulează cererea, fără să șteargă nimic.' },
+            ],
             section3Eyebrow: 'Oricine', section3Title: 'Jurnalul de audit',
             section3Steps: [
                 { title: 'Mergi la „Jurnal audit” din meniu', body: 'Vezi cine a făcut ce și când — creare evenimente, participanți invitați, roluri atribuite. Un admin de platformă vede tot; un admin de client vede doar ce s-a întâmplat în organizația lui.' },
             ],
             notYetTitle: 'Ce nu există încă în platformă',
-            notYetItems: ['Cereri de ștergere a datelor (dreptul GDPR la ștergere)', 'Trimitere automată de email pentru invitații sau parole', 'Activare doi factori (2FA) din propriul profil'],
+            notYetItems: ['Trimitere automată de email pentru parolele noilor conturi', 'Descărcare foto în rezoluție originală', 'Activare doi factori (2FA) din propriul profil'],
             footerPrefix: 'Ai nevoie de ceva ce nu există încă?', footerLink: 'Verifică jurnalul de audit', footerSuffix: 'sau spune-i direct dezvoltatorului.',
         },
         auditLog: {
@@ -236,6 +245,9 @@ export const APP_TRANSLATIONS = {
                 emailSent: 'Automatically emailed to the participant.',
                 emailFailed: "The email couldn't be sent automatically — send the link manually.",
                 delete: 'Delete', confirmDelete: 'Permanently delete this participant?',
+                pendingDeletions: (count) => `${count} deletion ${count === 1 ? 'request is' : 'requests are'} awaiting review.`,
+                deletionRequestedBadge: 'Deletion requested', approveDeletion: 'Approve and delete',
+                confirmApproveDeletion: 'Approve the request and permanently delete this participant?', denyDeletion: 'Deny request',
             },
             invitation: {
                 invites: 'invites you', dataProtectionInfo: 'Data protection information (version',
@@ -282,12 +294,18 @@ export const APP_TRANSLATIONS = {
                 { title: 'Click "Publish" on each photo you choose', body: "Only the organization's admin decides what becomes visible to participants — uploading and publishing are deliberately separate steps." },
                 { title: 'Participants who confirmed attendance see the gallery', body: 'It appears automatically on their confirmation page, below their submitted response. Anyone not attending sees nothing.' },
             ],
+            deletionEyebrow: 'The right to erasure', deletionTitle: 'How to process a data deletion request',
+            deletionSteps: [
+                { title: 'The participant requests deletion from their own link', body: 'On their invitation or confirmation page, they click "I want to be removed from the system".' },
+                { title: 'The request shows up on the event\'s "Participants" page', body: 'The participant is visibly marked and a banner shows the number of pending requests.' },
+                { title: 'You approve and delete, or deny the request', body: 'Approving permanently deletes the participant (name, email, response). Denying just clears the request without deleting anything.' },
+            ],
             section3Eyebrow: 'Anyone', section3Title: 'The audit log',
             section3Steps: [
                 { title: 'Go to "Audit log" in the menu', body: "See who did what and when — events created, participants invited, roles assigned. A platform admin sees everything; a client admin only sees what happened in their own organization." },
             ],
             notYetTitle: "What the platform doesn't do yet",
-            notYetItems: ['Data deletion requests (the GDPR right to erasure)', 'Automatic email for invitations or passwords', 'Self-service two-factor authentication (2FA) from your profile'],
+            notYetItems: ['Automatic email for new account passwords', 'Downloading photos in original resolution', 'Self-service two-factor authentication (2FA) from your profile'],
             footerPrefix: 'Need something that doesn\'t exist yet?', footerLink: 'Check the audit log', footerSuffix: 'or tell the developer directly.',
         },
         auditLog: {
@@ -385,6 +403,9 @@ export const APP_TRANSLATIONS = {
                 emailSent: 'Automatisch per E-Mail an den Teilnehmer gesendet.',
                 emailFailed: 'Die E-Mail konnte nicht automatisch gesendet werden — senden Sie den Link manuell.',
                 delete: 'Löschen', confirmDelete: 'Diesen Teilnehmer endgültig löschen?',
+                pendingDeletions: (count) => `${count} ${count === 1 ? 'Löschanfrage wartet' : 'Löschanfragen warten'} auf Bearbeitung.`,
+                deletionRequestedBadge: 'Löschung angefragt', approveDeletion: 'Genehmigen und löschen',
+                confirmApproveDeletion: 'Anfrage genehmigen und diesen Teilnehmer endgültig löschen?', denyDeletion: 'Anfrage ablehnen',
             },
             invitation: {
                 invites: 'lädt Sie ein', dataProtectionInfo: 'Datenschutzinformationen (Version',
@@ -431,12 +452,18 @@ export const APP_TRANSLATIONS = {
                 { title: 'Klicken Sie bei jedem gewählten Foto auf „Veröffentlichen"', body: 'Nur der Admin der Organisation entscheidet, was für Teilnehmer sichtbar wird — Hochladen und Veröffentlichen sind bewusst getrennte Schritte.' },
                 { title: 'Teilnehmer, die ihre Teilnahme bestätigt haben, sehen die Galerie', body: 'Sie erscheint automatisch auf ihrer Bestätigungsseite, unterhalb der gesendeten Antwort. Wer nicht teilnimmt, sieht nichts.' },
             ],
+            deletionEyebrow: 'Das Recht auf Löschung', deletionTitle: 'So bearbeiten Sie einen Löschantrag',
+            deletionSteps: [
+                { title: 'Der Teilnehmer beantragt die Löschung über seinen eigenen Link', body: 'Auf seiner Einladungs- oder Bestätigungsseite klickt er auf „Ich möchte aus dem System entfernt werden".' },
+                { title: 'Der Antrag erscheint auf der „Teilnehmer"-Seite des Events', body: 'Der Teilnehmer wird sichtbar markiert, und ein Banner zeigt die Anzahl ausstehender Anträge.' },
+                { title: 'Sie genehmigen und löschen, oder lehnen den Antrag ab', body: 'Die Genehmigung löscht den Teilnehmer endgültig (Name, E-Mail, Antwort). Die Ablehnung hebt den Antrag nur auf, ohne etwas zu löschen.' },
+            ],
             section3Eyebrow: 'Jeder', section3Title: 'Das Auditprotokoll',
             section3Steps: [
                 { title: 'Gehen Sie im Menü zu „Auditprotokoll"', body: 'Sehen Sie, wer wann was getan hat — erstellte Events, eingeladene Teilnehmer, zugewiesene Rollen. Ein Plattform-Admin sieht alles; ein Kunden-Admin sieht nur, was in seiner eigenen Organisation geschehen ist.' },
             ],
             notYetTitle: 'Was die Plattform noch nicht kann',
-            notYetItems: ['Anträge auf Datenlöschung (das DSGVO-Recht auf Löschung)', 'Automatischer E-Mail-Versand für Einladungen oder Passwörter', 'Selbstständige Aktivierung der Zwei-Faktor-Authentifizierung (2FA) im eigenen Profil'],
+            notYetItems: ['Automatischer E-Mail-Versand für Passwörter neuer Konten', 'Download von Fotos in Originalauflösung', 'Selbstständige Aktivierung der Zwei-Faktor-Authentifizierung (2FA) im eigenen Profil'],
             footerPrefix: 'Brauchen Sie etwas, das es noch nicht gibt?', footerLink: 'Auditprotokoll prüfen', footerSuffix: 'oder sagen Sie es direkt dem Entwickler.',
         },
         auditLog: {

@@ -100,6 +100,8 @@ export default function StatusBoard({ event, participants }) {
         counts[participant.status] = (counts[participant.status] ?? 0) + 1;
     });
 
+    const pendingDeletions = participants.filter((participant) => participant.deletionRequested);
+
     return (
         <AppLayout title={event.name} active="dashboard">
             <Head title={`${t.statusBoard.colName} — ${event.name}`} />
@@ -120,6 +122,12 @@ export default function StatusBoard({ event, participants }) {
                     </div>
                 )}
                 {flash?.invitationUrl && <InvitationLinkBanner url={flash.invitationUrl} emailSent={flash.invitationEmailSent} t={t} common={all.common} />}
+
+                {pendingDeletions.length > 0 && (
+                    <div className="mb-5 rounded-md border border-danger bg-danger-soft px-4 py-3 text-sm text-danger-ink">
+                        {t.statusBoard.pendingDeletions(pendingDeletions.length)}
+                    </div>
+                )}
 
                 <InviteForm eventId={event.id} t={t} />
 
@@ -155,21 +163,52 @@ export default function StatusBoard({ event, participants }) {
                                 }
                             }
 
+                            function approveDeletion() {
+                                if (confirm(t.statusBoard.confirmApproveDeletion)) {
+                                    router.delete(route('participants.destroy', [event.id, participant.id]), { preserveScroll: true });
+                                }
+                            }
+
+                            function denyDeletion() {
+                                router.patch(route('participants.deny-deletion', [event.id, participant.id]), {}, { preserveScroll: true });
+                            }
+
                             return (
                                 <div
                                     key={participant.id}
-                                    className="grid grid-cols-[1.4fr_1.6fr_1fr_1fr_auto] items-center gap-3 border-b border-line px-5 py-3.5 text-sm last:border-0 hover:bg-paper-raised"
+                                    className={
+                                        'grid grid-cols-[1.4fr_1.6fr_1fr_1fr_auto] items-center gap-3 border-b border-line px-5 py-3.5 text-sm last:border-0 hover:bg-paper-raised ' +
+                                        (participant.deletionRequested ? 'bg-danger-soft/40' : '')
+                                    }
                                 >
-                                    <span className="font-medium text-ink">{participant.name}</span>
+                                    <span className="font-medium text-ink">
+                                        {participant.name}
+                                        {participant.deletionRequested && (
+                                            <span className="ml-2 inline-flex items-center rounded-full bg-danger-soft px-2 py-0.5 text-[10px] font-semibold uppercase text-danger-ink">
+                                                {t.statusBoard.deletionRequestedBadge}
+                                            </span>
+                                        )}
+                                    </span>
                                     <span className="text-ink-muted">{participant.email}</span>
                                     <span className={`inline-flex w-fit items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold ${tone.bg} ${tone.text}`}>
                                         <span className={`h-1.5 w-1.5 rounded-full ${tone.dot}`} />
                                         {t.statusRow[participant.status] ?? t.statusRow.invited}
                                     </span>
                                     <span className="text-ink-muted">{participant.respondedAt ?? '—'}</span>
-                                    <button type="button" onClick={destroy} className="text-xs text-ink-muted underline hover:text-danger-ink">
-                                        {t.statusBoard.delete}
-                                    </button>
+                                    {participant.deletionRequested ? (
+                                        <span className="flex items-center gap-3">
+                                            <button type="button" onClick={approveDeletion} className="text-xs font-semibold text-danger-ink underline">
+                                                {t.statusBoard.approveDeletion}
+                                            </button>
+                                            <button type="button" onClick={denyDeletion} className="text-xs text-ink-muted underline hover:text-ink-soft">
+                                                {t.statusBoard.denyDeletion}
+                                            </button>
+                                        </span>
+                                    ) : (
+                                        <button type="button" onClick={destroy} className="text-xs text-ink-muted underline hover:text-danger-ink">
+                                            {t.statusBoard.delete}
+                                        </button>
+                                    )}
                                 </div>
                             );
                         })
