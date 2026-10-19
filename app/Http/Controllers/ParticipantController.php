@@ -265,7 +265,7 @@ class ParticipantController extends Controller
             'photos' => $attending
                 ? $participant->event->getMedia('gallery')
                     ->filter(fn (Media $media) => (bool) $media->getCustomProperty('published', false))
-                    ->map(fn (Media $media) => ['id' => $media->id, 'url' => $media->getUrl()])
+                    ->map(fn (Media $media) => ['id' => $media->id, 'url' => $media->getUrl(), 'fileName' => $media->file_name])
                     ->values()
                 : [],
         ]);

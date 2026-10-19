@@ -80,6 +80,7 @@ class GalleryController extends Controller
             'id' => $media->id,
             'url' => $media->getUrl(),
             'name' => $media->name,
+            'fileName' => $media->file_name,
             'published' => (bool) $media->getCustomProperty('published', false),
         ];
     }

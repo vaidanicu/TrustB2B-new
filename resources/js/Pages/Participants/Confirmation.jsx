@@ -48,9 +48,21 @@ export default function Confirmation({ event, participantName, attending, photoC
                         <p className="mb-3 text-sm font-medium text-ink">Galerie foto</p>
                         <div className="grid grid-cols-3 gap-2">
                             {photos.map((photo) => (
-                                <a key={photo.id} href={photo.url} target="_blank" rel="noreferrer">
-                                    <img src={photo.url} alt="" className="aspect-square w-full rounded-md object-cover" />
-                                </a>
+                                <div key={photo.id} className="group relative">
+                                    <a href={photo.url} target="_blank" rel="noreferrer">
+                                        <img src={photo.url} alt="" className="aspect-square w-full rounded-md object-cover" />
+                                    </a>
+                                    <a
+                                        href={photo.url}
+                                        download={photo.fileName}
+                                        title="Descarcă în rezoluție originală"
+                                        className="absolute bottom-1 right-1 flex h-7 w-7 items-center justify-center rounded-full bg-ink/70 text-white transition hover:bg-ink"
+                                    >
+                                        <svg width="14" height="14" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M10 3v10m0 0l-4-4m4 4l4-4M4 16h12" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+                                        </svg>
+                                    </a>
+                                </div>
                             ))}
                         </div>
                     </div>

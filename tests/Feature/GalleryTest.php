@@ -126,7 +126,9 @@ class GalleryTest extends TestCase
 
         $this->get($signedUrl)
             ->assertOk()
-            ->assertInertia(fn ($page) => $page->component('Participants/Confirmation')->has('photos', 1));
+            ->assertInertia(fn ($page) => $page->component('Participants/Confirmation')
+                ->has('photos', 1)
+                ->where('photos.0.fileName', 'published.jpg'));
     }
 
     public function test_a_declined_participant_sees_no_photos(): void

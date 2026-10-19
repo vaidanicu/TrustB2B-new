@@ -137,6 +137,7 @@ export const APP_TRANSLATIONS = {
                 { title: 'Încarcă fotografii (JPEG, PNG sau WebP)', body: 'Fotograful poate și el încărca direct, dacă are cont — dar nu poate publica.' },
                 { title: 'Apasă „Publică” pe fiecare fotografie aleasă', body: 'Doar admin-ul organizației decide ce ajunge vizibil participanților — încărcarea și publicarea sunt pași separați, intenționat.' },
                 { title: 'Participanții care au confirmat prezența văd galeria', body: 'Apare automat pe pagina lor de confirmare, sub răspunsul trimis. Cine nu participă nu vede nimic.' },
+                { title: 'Oricine vede o fotografie o poate și descărca', body: 'Butonul de descărcare (pe galeria internă și pe cea a participantului) salvează fișierul original, nu o variantă comprimată.' },
             ],
             deletionEyebrow: 'Dreptul la ștergere', deletionTitle: 'Cum procesezi o cerere de ștergere a datelor',
             deletionSteps: [
@@ -149,7 +150,7 @@ export const APP_TRANSLATIONS = {
                 { title: 'Mergi la „Jurnal audit” din meniu', body: 'Vezi cine a făcut ce și când — creare evenimente, participanți invitați, roluri atribuite. Un admin de platformă vede tot; un admin de client vede doar ce s-a întâmplat în organizația lui.' },
             ],
             notYetTitle: 'Ce nu există încă în platformă',
-            notYetItems: ['Descărcare foto în rezoluție originală', 'Activare doi factori (2FA) din propriul profil'],
+            notYetItems: ['Activare doi factori (2FA) din propriul profil'],
             footerPrefix: 'Ai nevoie de ceva ce nu există încă?', footerLink: 'Verifică jurnalul de audit', footerSuffix: 'sau spune-i direct dezvoltatorului.',
         },
         auditLog: {
@@ -161,7 +162,7 @@ export const APP_TRANSLATIONS = {
             title: 'Galerie foto', back: '← Participanți',
             uploadLabel: 'Adaugă fotografii (JPEG, PNG sau WebP)', uploadButton: 'Încarcă', uploading: 'Se încarcă…',
             empty: 'Nicio fotografie încărcată încă.',
-            draft: 'Ciornă', published: 'Publicată', publish: 'Publică', delete: 'Șterge',
+            draft: 'Ciornă', published: 'Publicată', publish: 'Publică', delete: 'Șterge', download: 'Descarcă',
             confirmDelete: 'Ștergi definitiv această fotografie?',
         },
     },
@@ -297,6 +298,7 @@ export const APP_TRANSLATIONS = {
                 { title: 'Upload photos (JPEG, PNG or WebP)', body: 'A photographer can also upload directly, if they have an account — but cannot publish.' },
                 { title: 'Click "Publish" on each photo you choose', body: "Only the organization's admin decides what becomes visible to participants — uploading and publishing are deliberately separate steps." },
                 { title: 'Participants who confirmed attendance see the gallery', body: 'It appears automatically on their confirmation page, below their submitted response. Anyone not attending sees nothing.' },
+                { title: 'Anyone who can see a photo can also download it', body: "The download button (in both the internal gallery and the participant's) saves the original file, not a compressed copy." },
             ],
             deletionEyebrow: 'The right to erasure', deletionTitle: 'How to process a data deletion request',
             deletionSteps: [
@@ -309,7 +311,7 @@ export const APP_TRANSLATIONS = {
                 { title: 'Go to "Audit log" in the menu', body: "See who did what and when — events created, participants invited, roles assigned. A platform admin sees everything; a client admin only sees what happened in their own organization." },
             ],
             notYetTitle: "What the platform doesn't do yet",
-            notYetItems: ['Downloading photos in original resolution', 'Self-service two-factor authentication (2FA) from your profile'],
+            notYetItems: ['Self-service two-factor authentication (2FA) from your profile'],
             footerPrefix: 'Need something that doesn\'t exist yet?', footerLink: 'Check the audit log', footerSuffix: 'or tell the developer directly.',
         },
         auditLog: {
@@ -321,7 +323,7 @@ export const APP_TRANSLATIONS = {
             title: 'Photo gallery', back: '← Participants',
             uploadLabel: 'Add photos (JPEG, PNG or WebP)', uploadButton: 'Upload', uploading: 'Uploading…',
             empty: 'No photos uploaded yet.',
-            draft: 'Draft', published: 'Published', publish: 'Publish', delete: 'Delete',
+            draft: 'Draft', published: 'Published', publish: 'Publish', delete: 'Delete', download: 'Download',
             confirmDelete: 'Permanently delete this photo?',
         },
     },
@@ -457,6 +459,7 @@ export const APP_TRANSLATIONS = {
                 { title: 'Laden Sie Fotos hoch (JPEG, PNG oder WebP)', body: 'Ein Fotograf kann, falls er ein Konto hat, auch direkt hochladen — aber nicht veröffentlichen.' },
                 { title: 'Klicken Sie bei jedem gewählten Foto auf „Veröffentlichen"', body: 'Nur der Admin der Organisation entscheidet, was für Teilnehmer sichtbar wird — Hochladen und Veröffentlichen sind bewusst getrennte Schritte.' },
                 { title: 'Teilnehmer, die ihre Teilnahme bestätigt haben, sehen die Galerie', body: 'Sie erscheint automatisch auf ihrer Bestätigungsseite, unterhalb der gesendeten Antwort. Wer nicht teilnimmt, sieht nichts.' },
+                { title: 'Wer ein Foto sehen kann, kann es auch herunterladen', body: 'Die Download-Schaltfläche (in der internen Galerie und in der des Teilnehmers) speichert die Originaldatei, keine komprimierte Kopie.' },
             ],
             deletionEyebrow: 'Das Recht auf Löschung', deletionTitle: 'So bearbeiten Sie einen Löschantrag',
             deletionSteps: [
@@ -469,7 +472,7 @@ export const APP_TRANSLATIONS = {
                 { title: 'Gehen Sie im Menü zu „Auditprotokoll"', body: 'Sehen Sie, wer wann was getan hat — erstellte Events, eingeladene Teilnehmer, zugewiesene Rollen. Ein Plattform-Admin sieht alles; ein Kunden-Admin sieht nur, was in seiner eigenen Organisation geschehen ist.' },
             ],
             notYetTitle: 'Was die Plattform noch nicht kann',
-            notYetItems: ['Download von Fotos in Originalauflösung', 'Selbstständige Aktivierung der Zwei-Faktor-Authentifizierung (2FA) im eigenen Profil'],
+            notYetItems: ['Selbstständige Aktivierung der Zwei-Faktor-Authentifizierung (2FA) im eigenen Profil'],
             footerPrefix: 'Brauchen Sie etwas, das es noch nicht gibt?', footerLink: 'Auditprotokoll prüfen', footerSuffix: 'oder sagen Sie es direkt dem Entwickler.',
         },
         auditLog: {
@@ -481,7 +484,7 @@ export const APP_TRANSLATIONS = {
             title: 'Fotogalerie', back: '← Teilnehmer',
             uploadLabel: 'Fotos hinzufügen (JPEG, PNG oder WebP)', uploadButton: 'Hochladen', uploading: 'Wird hochgeladen…',
             empty: 'Noch keine Fotos hochgeladen.',
-            draft: 'Entwurf', published: 'Veröffentlicht', publish: 'Veröffentlichen', delete: 'Löschen',
+            draft: 'Entwurf', published: 'Veröffentlicht', publish: 'Veröffentlichen', delete: 'Löschen', download: 'Herunterladen',
             confirmDelete: 'Dieses Foto endgültig löschen?',
         },
     },

@@ -67,9 +67,14 @@ function PhotoCard({ photo, eventId, canPublish, t }) {
                         {t.gallery.publish}
                     </button>
                 ) : <span />}
-                <button type="button" onClick={destroy} className="text-xs text-ink-muted underline hover:text-danger-ink">
-                    {t.gallery.delete}
-                </button>
+                <div className="flex items-center gap-2">
+                    <a href={photo.url} download={photo.fileName} className="text-xs text-ink-muted underline hover:text-ink">
+                        {t.gallery.download}
+                    </a>
+                    <button type="button" onClick={destroy} className="text-xs text-ink-muted underline hover:text-danger-ink">
+                        {t.gallery.delete}
+                    </button>
+                </div>
             </div>
         </div>
     );
