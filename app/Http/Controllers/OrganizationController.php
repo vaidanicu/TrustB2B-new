@@ -107,7 +107,9 @@ class OrganizationController extends Controller
         $emailSent = (new SendAccountCreatedEmail)->send(
             $admin,
             $password,
-            "Ai fost desemnat admin pentru organizația {$organization->name}.",
+            'organization-admin',
+            $organization->name,
+            $request->user()->locale ?? 'ro',
         );
 
         return redirect()->route('organizations.index')

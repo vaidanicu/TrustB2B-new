@@ -118,7 +118,7 @@ class ParticipantController extends Controller
         $emailSent = true;
 
         try {
-            Mail::to($participant->email)->send(new ParticipantInvited($participant, $invitationUrl));
+            Mail::to($participant->email)->send(new ParticipantInvited($participant, $invitationUrl, $request->user()->locale ?? 'ro'));
         } catch (\Throwable $e) {
             $emailSent = false;
 

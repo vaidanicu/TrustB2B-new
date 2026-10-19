@@ -81,7 +81,9 @@ class UserController extends Controller
         $emailSent = (new SendAccountCreatedEmail)->send(
             $staff,
             $password,
-            "Ai fost adăugat în echipa organizației {$actor->organization->name}.",
+            'organization-staff',
+            $actor->organization->name,
+            $actor->locale ?? 'ro',
         );
 
         return redirect()->route('users.index')

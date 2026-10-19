@@ -15,13 +15,16 @@ use Illuminate\Support\Facades\Mail;
  * created, same reasoning as ParticipantController@store with
  * ParticipantInvited; the caller gets a bool back to flash a fallback
  * banner with the password either way.
+ *
+ * $locale is the acting user's — see StaffAccountCreated's docblock for
+ * why the new account's own (not-yet-set) locale isn't used instead.
  */
 class SendAccountCreatedEmail
 {
-    public function send(User $account, string $password, string $context): bool
+    public function send(User $account, string $password, string $contextType, string $organizationName, string $locale = 'ro'): bool
     {
         try {
-            Mail::to($account->email)->send(new StaffAccountCreated($account, $password, $context));
+            Mail::to($account->email)->send(new StaffAccountCreated($account, $password, $contextType, $organizationName, $locale));
 
             return true;
         } catch (\Throwable $e) {
