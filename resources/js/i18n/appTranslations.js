@@ -32,7 +32,7 @@ export const APP_TRANSLATIONS = {
                 countryLabel: 'Țară', dpoLabel: 'Contact protecția datelor', dpoPlaceholder: 'opțional',
                 franchiseLabel: 'Franciză parteneră',
                 sectionAdminTitle: 'Primul admin al organizației',
-                sectionAdminBody: 'Acest cont va gestiona evenimentele și participanții organizației. Parola generată se afișează o singură dată — nu există încă trimitere automată de email.',
+                sectionAdminBody: 'Acest cont va gestiona evenimentele și participanții organizației. Parola generată se trimite automat pe email și apare și pe ecran, o singură dată.',
                 adminNameLabel: 'Nume', adminNamePlaceholder: 'ex. Bianca Ionescu',
                 adminEmailLabel: 'Email', adminEmailPlaceholder: 'ex. bianca@hotelaurora.ro',
                 submit: 'Creează client', submitting: 'Se creează…',
@@ -50,7 +50,7 @@ export const APP_TRANSLATIONS = {
             },
             create: {
                 title: 'Coleg nou',
-                sectionTitle: 'Date cont', sectionBody: 'Parola generată se afișează o singură dată — nu există încă trimitere automată de email.',
+                sectionTitle: 'Date cont', sectionBody: 'Parola generată se trimite automat pe email și apare și pe ecran, o singură dată.',
                 nameLabel: 'Nume', namePlaceholder: 'ex. Grup Media Est SRL',
                 emailLabel: 'Email', emailPlaceholder: 'ex. fotograf@exemplu.ro',
                 roleLabel: 'Rol',
@@ -119,7 +119,7 @@ export const APP_TRANSLATIONS = {
                 { title: 'Mergi la „Clienți” din meniu', body: 'E pagina care listează toate organizațiile client existente.' },
                 { title: 'Apasă „Client nou”', body: 'Completezi numele organizației, țara și contactul pentru protecția datelor.' },
                 { title: 'Completezi primul admin al clientului', body: 'Numele și emailul persoanei care va administra evenimentele acelui client.' },
-                { title: 'Copiezi parola generată și o trimiți clientului', body: 'Parola apare o singură dată, pe pagina „Clienți”, imediat după creare — nu există încă trimitere automată de email, deci trebuie transmisă manual (telefon, email, etc.).' },
+                { title: 'Parola ajunge automat pe emailul clientului', body: 'Se trimite automat pe emailul adminului, în limba contului tău. Apare și pe pagina „Clienți”, o singură dată, ca rezervă (dacă emailul nu ajunge, o poți transmite manual).' },
             ],
             section2Eyebrow: 'Admin-ul unui client', section2Title: 'Cum organizezi un eveniment, de la zero la răspunsuri',
             section2Steps: [
@@ -149,7 +149,7 @@ export const APP_TRANSLATIONS = {
                 { title: 'Mergi la „Jurnal audit” din meniu', body: 'Vezi cine a făcut ce și când — creare evenimente, participanți invitați, roluri atribuite. Un admin de platformă vede tot; un admin de client vede doar ce s-a întâmplat în organizația lui.' },
             ],
             notYetTitle: 'Ce nu există încă în platformă',
-            notYetItems: ['Trimitere automată de email pentru parolele noilor conturi', 'Descărcare foto în rezoluție originală', 'Activare doi factori (2FA) din propriul profil'],
+            notYetItems: ['Descărcare foto în rezoluție originală', 'Activare doi factori (2FA) din propriul profil'],
             footerPrefix: 'Ai nevoie de ceva ce nu există încă?', footerLink: 'Verifică jurnalul de audit', footerSuffix: 'sau spune-i direct dezvoltatorului.',
         },
         auditLog: {
@@ -192,7 +192,7 @@ export const APP_TRANSLATIONS = {
                 countryLabel: 'Country', dpoLabel: 'Data protection contact', dpoPlaceholder: 'optional',
                 franchiseLabel: 'Franchise partner',
                 sectionAdminTitle: "The organization's first admin",
-                sectionAdminBody: "This account will manage the organization's events and participants. The generated password is shown only once — there is no automatic email yet.",
+                sectionAdminBody: "This account will manage the organization's events and participants. The generated password is emailed automatically and also shown on screen, once.",
                 adminNameLabel: 'Name', adminNamePlaceholder: 'e.g. Bianca Ionescu',
                 adminEmailLabel: 'Email', adminEmailPlaceholder: 'e.g. bianca@hotelaurora.ro',
                 submit: 'Create client', submitting: 'Creating…',
@@ -210,7 +210,7 @@ export const APP_TRANSLATIONS = {
             },
             create: {
                 title: 'New colleague',
-                sectionTitle: 'Account details', sectionBody: 'The generated password is shown only once — there is no automatic email yet.',
+                sectionTitle: 'Account details', sectionBody: 'The generated password is emailed automatically and also shown on screen, once.',
                 nameLabel: 'Name', namePlaceholder: 'e.g. Grup Media Est SRL',
                 emailLabel: 'Email', emailPlaceholder: 'e.g. photographer@example.com',
                 roleLabel: 'Role',
@@ -279,7 +279,7 @@ export const APP_TRANSLATIONS = {
                 { title: 'Go to "Clients" in the menu', body: 'The page listing every existing client organization.' },
                 { title: 'Click "New client"', body: "Fill in the organization's name, country and data protection contact." },
                 { title: "Fill in the client's first admin", body: "The name and email of the person who will manage that client's events." },
-                { title: 'Copy the generated password and send it to the client', body: 'The password appears once, on the "Clients" page, right after creation — there is no automatic email yet, so it must be sent manually (phone, email, etc.).' },
+                { title: "The password is emailed to the client automatically", body: "It's sent automatically to the admin's email, in your account's language. It also appears once on the \"Clients\" page as a fallback (if the email doesn't arrive, you can send it manually)." },
             ],
             section2Eyebrow: "A client's admin", section2Title: 'How to run an event, from scratch to responses',
             section2Steps: [
@@ -309,7 +309,7 @@ export const APP_TRANSLATIONS = {
                 { title: 'Go to "Audit log" in the menu', body: "See who did what and when — events created, participants invited, roles assigned. A platform admin sees everything; a client admin only sees what happened in their own organization." },
             ],
             notYetTitle: "What the platform doesn't do yet",
-            notYetItems: ['Automatic email for new account passwords', 'Downloading photos in original resolution', 'Self-service two-factor authentication (2FA) from your profile'],
+            notYetItems: ['Downloading photos in original resolution', 'Self-service two-factor authentication (2FA) from your profile'],
             footerPrefix: 'Need something that doesn\'t exist yet?', footerLink: 'Check the audit log', footerSuffix: 'or tell the developer directly.',
         },
         auditLog: {
@@ -352,7 +352,7 @@ export const APP_TRANSLATIONS = {
                 countryLabel: 'Land', dpoLabel: 'Datenschutzkontakt', dpoPlaceholder: 'optional',
                 franchiseLabel: 'Franchise-Partner',
                 sectionAdminTitle: 'Der erste Admin der Organisation',
-                sectionAdminBody: 'Dieses Konto verwaltet die Events und Teilnehmer der Organisation. Das generierte Passwort wird nur einmal angezeigt — es gibt noch keinen automatischen E-Mail-Versand.',
+                sectionAdminBody: 'Dieses Konto verwaltet die Events und Teilnehmer der Organisation. Das generierte Passwort wird automatisch per E-Mail gesendet und einmalig auch auf dem Bildschirm angezeigt.',
                 adminNameLabel: 'Name', adminNamePlaceholder: 'z. B. Bianca Ionescu',
                 adminEmailLabel: 'E-Mail', adminEmailPlaceholder: 'z. B. bianca@hotelaurora.ro',
                 submit: 'Kunde erstellen', submitting: 'Wird erstellt…',
@@ -370,7 +370,7 @@ export const APP_TRANSLATIONS = {
             },
             create: {
                 title: 'Neuer Kollege',
-                sectionTitle: 'Kontodaten', sectionBody: 'Das generierte Passwort wird nur einmal angezeigt — es gibt noch keinen automatischen E-Mail-Versand.',
+                sectionTitle: 'Kontodaten', sectionBody: 'Das generierte Passwort wird automatisch per E-Mail gesendet und einmalig auch auf dem Bildschirm angezeigt.',
                 nameLabel: 'Name', namePlaceholder: 'z. B. Grup Media Est SRL',
                 emailLabel: 'E-Mail', emailPlaceholder: 'z. B. fotograf@beispiel.de',
                 roleLabel: 'Rolle',
@@ -439,7 +439,7 @@ export const APP_TRANSLATIONS = {
                 { title: 'Gehen Sie im Menü zu „Kunden"', body: 'Die Seite listet alle bestehenden Kundenorganisationen auf.' },
                 { title: 'Klicken Sie auf „Neuer Kunde"', body: 'Geben Sie den Namen der Organisation, das Land und den Datenschutzkontakt ein.' },
                 { title: 'Erfassen Sie den ersten Admin des Kunden', body: 'Name und E-Mail der Person, die die Events dieses Kunden verwaltet.' },
-                { title: 'Kopieren Sie das generierte Passwort und senden Sie es an den Kunden', body: 'Das Passwort erscheint nur einmal, auf der Seite „Kunden", direkt nach der Erstellung — es gibt noch keinen automatischen E-Mail-Versand, es muss also manuell übermittelt werden (Telefon, E-Mail usw.).' },
+                { title: 'Das Passwort wird dem Kunden automatisch per E-Mail gesendet', body: 'Es wird automatisch an die E-Mail-Adresse des Admins gesendet, in der Sprache Ihres Kontos. Es erscheint einmalig auch auf der Seite „Kunden" als Rückfallebene (falls die E-Mail nicht ankommt, können Sie es manuell übermitteln).' },
             ],
             section2Eyebrow: 'Der Admin eines Kunden', section2Title: 'So organisieren Sie ein Event, von Grund auf bis zu den Antworten',
             section2Steps: [
@@ -469,7 +469,7 @@ export const APP_TRANSLATIONS = {
                 { title: 'Gehen Sie im Menü zu „Auditprotokoll"', body: 'Sehen Sie, wer wann was getan hat — erstellte Events, eingeladene Teilnehmer, zugewiesene Rollen. Ein Plattform-Admin sieht alles; ein Kunden-Admin sieht nur, was in seiner eigenen Organisation geschehen ist.' },
             ],
             notYetTitle: 'Was die Plattform noch nicht kann',
-            notYetItems: ['Automatischer E-Mail-Versand für Passwörter neuer Konten', 'Download von Fotos in Originalauflösung', 'Selbstständige Aktivierung der Zwei-Faktor-Authentifizierung (2FA) im eigenen Profil'],
+            notYetItems: ['Download von Fotos in Originalauflösung', 'Selbstständige Aktivierung der Zwei-Faktor-Authentifizierung (2FA) im eigenen Profil'],
             footerPrefix: 'Brauchen Sie etwas, das es noch nicht gibt?', footerLink: 'Auditprotokoll prüfen', footerSuffix: 'oder sagen Sie es direkt dem Entwickler.',
         },
         auditLog: {
