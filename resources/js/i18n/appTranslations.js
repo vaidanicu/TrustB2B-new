@@ -6,7 +6,7 @@ export const APP_INTL_LOCALES = { ro: 'ro-RO', en: 'en-GB', de: 'de-DE' };
 
 export const APP_TRANSLATIONS = {
     ro: {
-        nav: { dashboard: 'Dashboard', organizations: 'Clienți', auditLog: 'Jurnal audit', guide: 'Ghid', profile: 'Profil', logout: 'Ieșire' },
+        nav: { dashboard: 'Dashboard', organizations: 'Clienți', team: 'Echipă', auditLog: 'Jurnal audit', guide: 'Ghid', profile: 'Profil', logout: 'Ieșire' },
         common: { cancel: 'Anulează', copy: 'Copiază', copied: 'Copiat ✓' },
         statusEvent: { active: 'Activ', draft: 'Ciornă', locked: 'Blocat', archived: 'Arhivat' },
         statusOrganization: { active: 'Activ', onboarding: 'În activare', suspended: 'Suspendat' },
@@ -35,6 +35,24 @@ export const APP_TRANSLATIONS = {
                 adminNameLabel: 'Nume', adminNamePlaceholder: 'ex. Bianca Ionescu',
                 adminEmailLabel: 'Email', adminEmailPlaceholder: 'ex. bianca@hotelaurora.ro',
                 submit: 'Creează client', submitting: 'Se creează…',
+            },
+        },
+        users: {
+            roles: { 'customer-admin': 'Admin organizație', 'event-manager': 'Manager eveniment', 'data-protection-officer': 'Responsabil protecția datelor', photographer: 'Fotograf' },
+            index: {
+                title: 'Echipă', newUser: 'Adaugă coleg',
+                credentialsIntro: 'Datele de autentificare pentru noul coleg (se afișează o singură dată):',
+                emailLabel: 'Email', passwordLabel: 'Parolă',
+                colName: 'Nume', colEmail: 'Email', colRole: 'Rol', empty: 'Niciun coleg adăugat încă.',
+                you: '(tu)', delete: 'Șterge', confirmDelete: 'Ștergi definitiv acest cont?',
+            },
+            create: {
+                title: 'Coleg nou',
+                sectionTitle: 'Date cont', sectionBody: 'Parola generată se afișează o singură dată — nu există încă trimitere automată de email.',
+                nameLabel: 'Nume', namePlaceholder: 'ex. Grup Media Est SRL',
+                emailLabel: 'Email', emailPlaceholder: 'ex. fotograf@exemplu.ro',
+                roleLabel: 'Rol',
+                submit: 'Adaugă coleg', submitting: 'Se adaugă…',
             },
         },
         events: {
@@ -137,7 +155,7 @@ export const APP_TRANSLATIONS = {
         },
     },
     en: {
-        nav: { dashboard: 'Dashboard', organizations: 'Clients', auditLog: 'Audit log', guide: 'Guide', profile: 'Profile', logout: 'Sign out' },
+        nav: { dashboard: 'Dashboard', organizations: 'Clients', team: 'Team', auditLog: 'Audit log', guide: 'Guide', profile: 'Profile', logout: 'Sign out' },
         common: { cancel: 'Cancel', copy: 'Copy', copied: 'Copied ✓' },
         statusEvent: { active: 'Active', draft: 'Draft', locked: 'Locked', archived: 'Archived' },
         statusOrganization: { active: 'Active', onboarding: 'Onboarding', suspended: 'Suspended' },
@@ -166,6 +184,24 @@ export const APP_TRANSLATIONS = {
                 adminNameLabel: 'Name', adminNamePlaceholder: 'e.g. Bianca Ionescu',
                 adminEmailLabel: 'Email', adminEmailPlaceholder: 'e.g. bianca@hotelaurora.ro',
                 submit: 'Create client', submitting: 'Creating…',
+            },
+        },
+        users: {
+            roles: { 'customer-admin': 'Organization admin', 'event-manager': 'Event manager', 'data-protection-officer': 'Data protection officer', photographer: 'Photographer' },
+            index: {
+                title: 'Team', newUser: 'Add colleague',
+                credentialsIntro: 'Login details for the new colleague (shown only once):',
+                emailLabel: 'Email', passwordLabel: 'Password',
+                colName: 'Name', colEmail: 'Email', colRole: 'Role', empty: 'No colleagues added yet.',
+                you: '(you)', delete: 'Delete', confirmDelete: 'Permanently delete this account?',
+            },
+            create: {
+                title: 'New colleague',
+                sectionTitle: 'Account details', sectionBody: 'The generated password is shown only once — there is no automatic email yet.',
+                nameLabel: 'Name', namePlaceholder: 'e.g. Grup Media Est SRL',
+                emailLabel: 'Email', emailPlaceholder: 'e.g. photographer@example.com',
+                roleLabel: 'Role',
+                submit: 'Add colleague', submitting: 'Adding…',
             },
         },
         events: {
@@ -268,7 +304,7 @@ export const APP_TRANSLATIONS = {
         },
     },
     de: {
-        nav: { dashboard: 'Dashboard', organizations: 'Kunden', auditLog: 'Auditprotokoll', guide: 'Anleitung', profile: 'Profil', logout: 'Abmelden' },
+        nav: { dashboard: 'Dashboard', organizations: 'Kunden', team: 'Team', auditLog: 'Auditprotokoll', guide: 'Anleitung', profile: 'Profil', logout: 'Abmelden' },
         common: { cancel: 'Abbrechen', copy: 'Kopieren', copied: 'Kopiert ✓' },
         statusEvent: { active: 'Aktiv', draft: 'Entwurf', locked: 'Gesperrt', archived: 'Archiviert' },
         statusOrganization: { active: 'Aktiv', onboarding: 'In Einrichtung', suspended: 'Gesperrt' },
@@ -297,6 +333,24 @@ export const APP_TRANSLATIONS = {
                 adminNameLabel: 'Name', adminNamePlaceholder: 'z. B. Bianca Ionescu',
                 adminEmailLabel: 'E-Mail', adminEmailPlaceholder: 'z. B. bianca@hotelaurora.ro',
                 submit: 'Kunde erstellen', submitting: 'Wird erstellt…',
+            },
+        },
+        users: {
+            roles: { 'customer-admin': 'Organisations-Admin', 'event-manager': 'Event-Manager', 'data-protection-officer': 'Datenschutzbeauftragter', photographer: 'Fotograf' },
+            index: {
+                title: 'Team', newUser: 'Kollegen hinzufügen',
+                credentialsIntro: 'Anmeldedaten für den neuen Kollegen (werden nur einmal angezeigt):',
+                emailLabel: 'E-Mail', passwordLabel: 'Passwort',
+                colName: 'Name', colEmail: 'E-Mail', colRole: 'Rolle', empty: 'Noch keine Kollegen hinzugefügt.',
+                you: '(Sie)', delete: 'Löschen', confirmDelete: 'Dieses Konto endgültig löschen?',
+            },
+            create: {
+                title: 'Neuer Kollege',
+                sectionTitle: 'Kontodaten', sectionBody: 'Das generierte Passwort wird nur einmal angezeigt — es gibt noch keinen automatischen E-Mail-Versand.',
+                nameLabel: 'Name', namePlaceholder: 'z. B. Grup Media Est SRL',
+                emailLabel: 'E-Mail', emailPlaceholder: 'z. B. fotograf@beispiel.de',
+                roleLabel: 'Rolle',
+                submit: 'Kollegen hinzufügen', submitting: 'Wird hinzugefügt…',
             },
         },
         events: {

@@ -51,9 +51,17 @@ export default function AppLayout({ title, active = null, actions = null, childr
     // OrganizationController/AuditLogController — this used to require
     // franchise_partner_id too, which silently left a system operator with
     // no navigation at all beyond Profil/Ieșire.
+    // 'users.manage' is only granted to customer-admin among the four
+    // organization-level roles (RolesAndPermissionsSeeder) — checking the
+    // role name client-side avoids sharing a raw permissions array just
+    // for this one nav item, and matches exactly what UserController's
+    // own authorizeTeamManagement() enforces server-side regardless.
+    const canManageTeam = (user?.roles ?? []).includes('customer-admin');
+
     const navItems = isOrganizationScope
         ? [
               { key: 'dashboard', label: t.nav.dashboard, href: route('dashboard') },
+              ...(canManageTeam ? [{ key: 'users', label: t.nav.team, href: route('users.index') }] : []),
               { key: 'audit-log', label: t.nav.auditLog, href: route('audit-log.index') },
               { key: 'guide', label: t.nav.guide, href: route('guide.index') },
           ]

@@ -11,6 +11,7 @@ use App\Http\Controllers\MarketingController;
 use App\Http\Controllers\OrganizationController;
 use App\Http\Controllers\ParticipantController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 // trustbridgeb2b.com (any path below) and app.trustbridgeb2b.com share this
@@ -58,6 +59,10 @@ Route::middleware(['app-domain', 'auth', 'verified'])->group(function () {
     Route::patch('/events/{event}/gallery/{media}/publish', [GalleryController::class, 'publish'])->name('gallery.publish');
     Route::delete('/events/{event}/gallery/{media}', [GalleryController::class, 'destroy'])->name('gallery.destroy');
     Route::get('/audit-log', [AuditLogController::class, 'index'])->name('audit-log.index');
+    Route::get('/echipa', [UserController::class, 'index'])->name('users.index');
+    Route::get('/echipa/adauga', [UserController::class, 'create'])->name('users.create');
+    Route::post('/echipa', [UserController::class, 'store'])->name('users.store');
+    Route::delete('/echipa/{user}', [UserController::class, 'destroy'])->name('users.destroy');
 });
 
 Route::middleware(['app-domain', 'auth'])->group(function () {
