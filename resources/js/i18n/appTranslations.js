@@ -19,7 +19,8 @@ export const APP_TRANSLATIONS = {
         organizations: {
             index: {
                 title: 'Clienți', newOrganization: 'Client nou',
-                credentialsIntro: 'Datele de autentificare pentru noul admin (se afișează o singură dată):',
+                emailSent: 'Trimis automat pe email noului admin. Datele apar și aici, o singură dată:',
+                emailFailed: 'Emailul nu a putut fi trimis automat — trimite datele manual (apar o singură dată):',
                 emailLabel: 'Email', passwordLabel: 'Parolă',
                 countOne: 'organizație client', countOther: 'organizații client',
                 colOrg: 'Organizație', colCountry: 'Țară', colStatus: 'Stare', empty: 'Niciun client încă.',
@@ -41,7 +42,8 @@ export const APP_TRANSLATIONS = {
             roles: { 'customer-admin': 'Admin organizație', 'event-manager': 'Manager eveniment', 'data-protection-officer': 'Responsabil protecția datelor', photographer: 'Fotograf' },
             index: {
                 title: 'Echipă', newUser: 'Adaugă coleg',
-                credentialsIntro: 'Datele de autentificare pentru noul coleg (se afișează o singură dată):',
+                emailSent: 'Trimis automat pe email noului coleg. Datele apar și aici, o singură dată:',
+                emailFailed: 'Emailul nu a putut fi trimis automat — trimite datele manual (apar o singură dată):',
                 emailLabel: 'Email', passwordLabel: 'Parolă',
                 colName: 'Nume', colEmail: 'Email', colRole: 'Rol', empty: 'Niciun coleg adăugat încă.',
                 you: '(tu)', delete: 'Șterge', confirmDelete: 'Ștergi definitiv acest cont?',
@@ -177,7 +179,8 @@ export const APP_TRANSLATIONS = {
         organizations: {
             index: {
                 title: 'Clients', newOrganization: 'New client',
-                credentialsIntro: 'Login details for the new admin (shown only once):',
+                emailSent: 'Automatically emailed to the new admin. The details also appear here, once:',
+                emailFailed: "The email couldn't be sent automatically — send the details manually (they appear here, once):",
                 emailLabel: 'Email', passwordLabel: 'Password',
                 countOne: 'client organization', countOther: 'client organizations',
                 colOrg: 'Organization', colCountry: 'Country', colStatus: 'Status', empty: 'No clients yet.',
@@ -199,7 +202,8 @@ export const APP_TRANSLATIONS = {
             roles: { 'customer-admin': 'Organization admin', 'event-manager': 'Event manager', 'data-protection-officer': 'Data protection officer', photographer: 'Photographer' },
             index: {
                 title: 'Team', newUser: 'Add colleague',
-                credentialsIntro: 'Login details for the new colleague (shown only once):',
+                emailSent: 'Automatically emailed to the new colleague. The details also appear here, once:',
+                emailFailed: "The email couldn't be sent automatically — send the details manually (they appear here, once):",
                 emailLabel: 'Email', passwordLabel: 'Password',
                 colName: 'Name', colEmail: 'Email', colRole: 'Role', empty: 'No colleagues added yet.',
                 you: '(you)', delete: 'Delete', confirmDelete: 'Permanently delete this account?',
@@ -335,7 +339,8 @@ export const APP_TRANSLATIONS = {
         organizations: {
             index: {
                 title: 'Kunden', newOrganization: 'Neuer Kunde',
-                credentialsIntro: 'Anmeldedaten für den neuen Admin (werden nur einmal angezeigt):',
+                emailSent: 'Automatisch an den neuen Admin gesendet. Die Daten erscheinen auch hier, einmalig:',
+                emailFailed: 'Die E-Mail konnte nicht automatisch gesendet werden — senden Sie die Daten manuell (sie erscheinen hier, einmalig):',
                 emailLabel: 'E-Mail', passwordLabel: 'Passwort',
                 countOne: 'Kundenorganisation', countOther: 'Kundenorganisationen',
                 colOrg: 'Organisation', colCountry: 'Land', colStatus: 'Status', empty: 'Noch keine Kunden.',
@@ -357,7 +362,8 @@ export const APP_TRANSLATIONS = {
             roles: { 'customer-admin': 'Organisations-Admin', 'event-manager': 'Event-Manager', 'data-protection-officer': 'Datenschutzbeauftragter', photographer: 'Fotograf' },
             index: {
                 title: 'Team', newUser: 'Kollegen hinzufügen',
-                credentialsIntro: 'Anmeldedaten für den neuen Kollegen (werden nur einmal angezeigt):',
+                emailSent: 'Automatisch an den neuen Kollegen gesendet. Die Daten erscheinen auch hier, einmalig:',
+                emailFailed: 'Die E-Mail konnte nicht automatisch gesendet werden — senden Sie die Daten manuell (sie erscheinen hier, einmalig):',
                 emailLabel: 'E-Mail', passwordLabel: 'Passwort',
                 colName: 'Name', colEmail: 'E-Mail', colRole: 'Rolle', empty: 'Noch keine Kollegen hinzugefügt.',
                 you: '(Sie)', delete: 'Löschen', confirmDelete: 'Dieses Konto endgültig löschen?',

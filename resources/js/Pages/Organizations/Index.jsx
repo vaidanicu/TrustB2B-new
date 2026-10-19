@@ -14,7 +14,7 @@ function NewOrganizationButton({ label }) {
     );
 }
 
-function NewAdminCredentialsBanner({ email, password, t }) {
+function NewAdminCredentialsBanner({ email, password, emailSent, t }) {
     const [copied, setCopied] = useState(false);
 
     async function copy() {
@@ -27,13 +27,13 @@ function NewAdminCredentialsBanner({ email, password, t }) {
     }
 
     return (
-        <div className="mb-5 rounded-md border border-teal bg-teal-soft px-4 py-3 text-sm text-teal-ink">
-            <p className="font-medium">{t.organizations.index.credentialsIntro}</p>
+        <div className={'mb-5 rounded-md border px-4 py-3 text-sm ' + (emailSent ? 'border-teal bg-teal-soft text-teal-ink' : 'border-amber-600 bg-amber-50 text-amber-700')}>
+            <p className="font-medium">{emailSent ? t.organizations.index.emailSent : t.organizations.index.emailFailed}</p>
             <div className="mt-1.5 flex flex-wrap items-center gap-3">
                 <span>
                     {t.organizations.index.emailLabel}: <strong>{email}</strong> · {t.organizations.index.passwordLabel}: <strong>{password}</strong>
                 </span>
-                <button type="button" onClick={copy} className="shrink-0 rounded-md border border-teal-ink/30 px-3 py-1 text-xs font-semibold uppercase tracking-wide">
+                <button type="button" onClick={copy} className="shrink-0 rounded-md border border-current/30 px-3 py-1 text-xs font-semibold uppercase tracking-wide">
                     {copied ? t.common.copied : t.common.copy}
                 </button>
             </div>
@@ -61,7 +61,7 @@ export default function Index({ organizations }) {
                     </div>
                 )}
                 {flash?.newAdminPassword && (
-                    <NewAdminCredentialsBanner email={flash.newAdminEmail} password={flash.newAdminPassword} t={t} />
+                    <NewAdminCredentialsBanner email={flash.newAdminEmail} password={flash.newAdminPassword} emailSent={flash.newAdminEmailSent} t={t} />
                 )}
 
                 <p className="-mt-2 mb-6 text-sm text-ink-muted">

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Actions\Tenancy\AssignRole;
+use App\Actions\Tenancy\SendAccountCreatedEmail;
 use App\Models\FranchisePartner;
 use App\Models\Organization;
 use App\Models\User;
@@ -22,10 +23,10 @@ use Inertia\Response;
  *
  * AP06. store() creates the organization AND its first customer-admin
  * together, atomically — an organization with no admin is a dead end
- * nobody can log into. There is no outbound email yet (same honest
- * limitation as the participant invitation link), so the generated
- * password is shown once, in the redirect flash, for the creating admin
- * to relay themselves.
+ * nobody can log into. The generated password is emailed (StaffAccountCreated)
+ * AND kept in the redirect flash as a fallback — same non-blocking
+ * try/catch pattern as ParticipantController@store, since account creation
+ * must never fail just because SMTP is briefly unreachable.
  */
 class OrganizationController extends Controller
 {
@@ -96,15 +97,23 @@ class OrganizationController extends Controller
             'password' => Hash::make($password),
             'organization_id' => $organization->id,
             'franchise_partner_id' => $franchisePartnerId,
+            'email_verified_at' => now(),
         ]);
 
         (new AssignRole)->grant($admin, 'customer-admin', 'organization created via admin UI');
 
         activity()->causedBy($request->user())->performedOn($organization)->log('organization created');
 
+        $emailSent = (new SendAccountCreatedEmail)->send(
+            $admin,
+            $password,
+            "Ai fost desemnat admin pentru organizația {$organization->name}.",
+        );
+
         return redirect()->route('organizations.index')
             ->with('status', "Organizație creată: {$organization->name}")
             ->with('newAdminEmail', $admin->email)
-            ->with('newAdminPassword', $password);
+            ->with('newAdminPassword', $password)
+            ->with('newAdminEmailSent', $emailSent);
     }
 }

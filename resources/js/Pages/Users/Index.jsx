@@ -14,7 +14,7 @@ function NewUserButton({ label }) {
     );
 }
 
-function NewStaffCredentialsBanner({ email, password, t }) {
+function NewStaffCredentialsBanner({ email, password, emailSent, t }) {
     const [copied, setCopied] = useState(false);
 
     async function copy() {
@@ -27,13 +27,13 @@ function NewStaffCredentialsBanner({ email, password, t }) {
     }
 
     return (
-        <div className="mb-5 rounded-md border border-teal bg-teal-soft px-4 py-3 text-sm text-teal-ink">
-            <p className="font-medium">{t.users.index.credentialsIntro}</p>
+        <div className={'mb-5 rounded-md border px-4 py-3 text-sm ' + (emailSent ? 'border-teal bg-teal-soft text-teal-ink' : 'border-amber-600 bg-amber-50 text-amber-700')}>
+            <p className="font-medium">{emailSent ? t.users.index.emailSent : t.users.index.emailFailed}</p>
             <div className="mt-1.5 flex flex-wrap items-center gap-3">
                 <span>
                     {t.users.index.emailLabel}: <strong>{email}</strong> · {t.users.index.passwordLabel}: <strong>{password}</strong>
                 </span>
-                <button type="button" onClick={copy} className="shrink-0 rounded-md border border-teal-ink/30 px-3 py-1 text-xs font-semibold uppercase tracking-wide">
+                <button type="button" onClick={copy} className="shrink-0 rounded-md border border-current/30 px-3 py-1 text-xs font-semibold uppercase tracking-wide">
                     {copied ? t.common.copied : t.common.copy}
                 </button>
             </div>
@@ -62,7 +62,7 @@ export default function Index({ users }) {
                     </div>
                 )}
                 {flash?.newStaffPassword && (
-                    <NewStaffCredentialsBanner email={flash.newStaffEmail} password={flash.newStaffPassword} t={t} />
+                    <NewStaffCredentialsBanner email={flash.newStaffEmail} password={flash.newStaffPassword} emailSent={flash.newStaffEmailSent} t={t} />
                 )}
 
                 <div className="overflow-hidden rounded-lg bg-white shadow-sm">

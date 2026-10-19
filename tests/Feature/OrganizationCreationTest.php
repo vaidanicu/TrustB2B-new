@@ -2,18 +2,20 @@
 
 namespace Tests\Feature;
 
+use App\Mail\StaffAccountCreated;
 use App\Models\FranchisePartner;
 use App\Models\Organization;
 use App\Models\User;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
 /**
  * AP06: onboarding a new client organization has to also create its first
- * admin — an organization nobody can log into is a dead end. No outbound
- * email yet, so the generated password travels through the response flash,
- * same honest limitation as the participant invitation link.
+ * admin — an organization nobody can log into is a dead end. The password
+ * is emailed (StaffAccountCreated) AND kept in the response flash as a
+ * fallback, same non-blocking pattern as the participant invitation email.
  */
 class OrganizationCreationTest extends TestCase
 {
@@ -21,6 +23,7 @@ class OrganizationCreationTest extends TestCase
 
     public function test_a_franchise_partner_admin_can_create_a_client_organization_with_its_first_admin(): void
     {
+        Mail::fake();
         $this->seed(RolesAndPermissionsSeeder::class);
 
         $franchisePartner = FranchisePartner::factory()->create();
@@ -46,10 +49,15 @@ class OrganizationCreationTest extends TestCase
         $this->assertSame($organization->id, $admin->organization_id);
         $this->assertSame($franchisePartner->id, $admin->franchise_partner_id);
         $this->assertTrue($admin->hasRole('customer-admin'));
+        $this->assertNotNull($admin->email_verified_at);
+
+        Mail::assertSent(StaffAccountCreated::class, fn (StaffAccountCreated $mail) => $mail->hasTo('bianca@hotelaurora.ro')
+            && $mail->account->is($admin));
     }
 
     public function test_a_franchise_partner_admin_cannot_assign_a_different_franchise_to_the_organization(): void
     {
+        Mail::fake();
         $this->seed(RolesAndPermissionsSeeder::class);
 
         $ownFranchise = FranchisePartner::factory()->create();

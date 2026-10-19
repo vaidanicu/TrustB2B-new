@@ -3,10 +3,12 @@
 namespace Tests\Feature;
 
 use App\Actions\Tenancy\AssignRole;
+use App\Mail\StaffAccountCreated;
 use App\Models\Organization;
 use App\Models\User;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
 /**
@@ -28,6 +30,7 @@ class UserManagementTest extends TestCase
 
     public function test_a_customer_admin_can_add_a_colleague(): void
     {
+        Mail::fake();
         $this->seed(RolesAndPermissionsSeeder::class);
 
         $organization = Organization::factory()->create();
@@ -45,6 +48,10 @@ class UserManagementTest extends TestCase
         $staff = User::where('email', 'fotograf@exemplu.ro')->sole();
         $this->assertSame($organization->id, $staff->organization_id);
         $this->assertTrue($staff->hasRole('photographer'));
+        $this->assertNotNull($staff->email_verified_at);
+
+        Mail::assertSent(StaffAccountCreated::class, fn (StaffAccountCreated $mail) => $mail->hasTo('fotograf@exemplu.ro')
+            && $mail->account->is($staff));
     }
 
     public function test_a_photographer_cannot_add_colleagues(): void

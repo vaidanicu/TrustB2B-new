@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Actions\Tenancy\AssignRole;
+use App\Actions\Tenancy\SendAccountCreatedEmail;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -77,10 +78,17 @@ class UserController extends Controller
 
         (new AssignRole)->grant($staff, $data['role'], 'added via team screen');
 
+        $emailSent = (new SendAccountCreatedEmail)->send(
+            $staff,
+            $password,
+            "Ai fost adăugat în echipa organizației {$actor->organization->name}.",
+        );
+
         return redirect()->route('users.index')
             ->with('status', "Coleg adăugat: {$staff->name}")
             ->with('newStaffEmail', $staff->email)
-            ->with('newStaffPassword', $password);
+            ->with('newStaffPassword', $password)
+            ->with('newStaffEmailSent', $emailSent);
     }
 
     public function destroy(Request $request, User $user): RedirectResponse
