@@ -61,4 +61,22 @@ class EnsureAppDomainTest extends TestCase
         $this->get('http://trustbridgeb2b.example/login')
             ->assertRedirect(config('app.url').'/login');
     }
+
+    /**
+     * A plain redirect() here breaks for an Inertia XHR visit — the
+     * browser blocks the cross-origin follow via CORS, since
+     * app.trustbridgeb2b.com sends no Access-Control-Allow-Origin for
+     * trustbridgeb2b.com. This is what the marketing page's "Autentificare"
+     * link hit before it was changed to a plain <a> tag: Inertia's <Link>
+     * visits via XHR even for a plain GET. Inertia::location()'s 409 +
+     * X-Inertia-Location is what the Inertia client itself knows how to
+     * turn into a real navigation instead.
+     */
+    public function test_an_inertia_visit_on_the_marketing_domain_gets_an_inertia_location_response(): void
+    {
+        $this->withHeaders(['X-Inertia' => 'true'])
+            ->get('http://trustbridgeb2b.example/login')
+            ->assertStatus(409)
+            ->assertHeader('X-Inertia-Location', config('app.url').'/login');
+    }
 }
