@@ -65,9 +65,9 @@ export default function TwoFactorAuthenticationForm({ initiallyEnabled, classNam
 
                 return pendingAction.current?.();
             })
-            .catch((error) => {
+            .catch(() => {
                 setConfirmingAction(false);
-                setPasswordError(error.response?.data?.errors?.password?.[0] ?? 'Parolă incorectă.');
+                setPasswordError('Parolă incorectă.');
                 passwordInput.current?.focus();
             });
     }
@@ -126,9 +126,9 @@ export default function TwoFactorAuthenticationForm({ initiallyEnabled, classNam
                 setCode('');
                 setProcessing(false);
             })
-            .catch((error) => {
+            .catch(() => {
                 setProcessing(false);
-                setCodeError(error.response?.data?.errors?.code?.[0] ?? 'Codul introdus nu este valid.');
+                setCodeError('Codul introdus nu este valid.');
             });
     }
 

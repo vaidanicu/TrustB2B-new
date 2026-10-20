@@ -54,7 +54,7 @@ export default function TwoFactorChallenge() {
                             onChange={(e) => setData('recovery_code', e.target.value)}
                             className="mt-1 block w-full text-center text-lg tracking-widest"
                         />
-                        <InputError message={errors.recovery_code} className="mt-2" />
+                        <InputError message={errors.recovery_code && 'Codul de recuperare introdus nu este valid.'} className="mt-2" />
                     </>
                 ) : (
                     <>
@@ -68,7 +68,7 @@ export default function TwoFactorChallenge() {
                             onChange={(e) => setData('code', e.target.value)}
                             className="mt-1 block w-full text-center text-xl tracking-[0.3em]"
                         />
-                        <InputError message={errors.code} className="mt-2" />
+                        <InputError message={errors.code && 'Codul introdus nu este valid.'} className="mt-2" />
                     </>
                 )}
 

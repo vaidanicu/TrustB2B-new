@@ -56,7 +56,7 @@ class LoginRequest extends FormRequest
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
-                'email' => trans('auth.failed'),
+                'email' => 'Aceste date de autentificare nu corespund evidențelor noastre.',
             ]);
         }
 
@@ -92,10 +92,7 @@ class LoginRequest extends FormRequest
         $seconds = RateLimiter::availableIn($this->throttleKey());
 
         throw ValidationException::withMessages([
-            'email' => trans('auth.throttle', [
-                'seconds' => $seconds,
-                'minutes' => ceil($seconds / 60),
-            ]),
+            'email' => "Prea multe încercări de autentificare. Te rugăm să reîncerci peste {$seconds} de secunde.",
         ]);
     }
 
