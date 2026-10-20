@@ -149,8 +149,14 @@ export const APP_TRANSLATIONS = {
             section3Steps: [
                 { title: 'Mergi la „Jurnal audit” din meniu', body: 'Vezi cine a făcut ce și când — creare evenimente, participanți invitați, roluri atribuite. Un admin de platformă vede tot; un admin de client vede doar ce s-a întâmplat în organizația lui.' },
             ],
+            twoFactorEyebrow: 'Oricine', twoFactorTitle: 'Cum activezi verificarea în doi pași',
+            twoFactorSteps: [
+                { title: 'Mergi la „Profil” din meniu și apasă „Activează 2FA”', body: 'Ți se cere să-ți confirmi parola — o singură dată, apoi rămâne valabilă câteva ore.' },
+                { title: 'Scanează codul QR cu o aplicație de autentificare', body: 'Google Authenticator, Authy etc. Dacă nu poți scana, poți introduce manual cheia afișată sub cod.' },
+                { title: 'Introdu codul generat ca să confirmi', body: 'Primești 8 coduri de recuperare — păstrează-le undeva sigur, fiecare funcționează o singură dată dacă pierzi accesul la aplicație.' },
+            ],
             notYetTitle: 'Ce nu există încă în platformă',
-            notYetItems: ['Activare doi factori (2FA) din propriul profil'],
+            notYetItems: [],
             footerPrefix: 'Ai nevoie de ceva ce nu există încă?', footerLink: 'Verifică jurnalul de audit', footerSuffix: 'sau spune-i direct dezvoltatorului.',
         },
         auditLog: {
@@ -310,8 +316,14 @@ export const APP_TRANSLATIONS = {
             section3Steps: [
                 { title: 'Go to "Audit log" in the menu', body: "See who did what and when — events created, participants invited, roles assigned. A platform admin sees everything; a client admin only sees what happened in their own organization." },
             ],
+            twoFactorEyebrow: 'Anyone', twoFactorTitle: 'How to turn on two-factor verification',
+            twoFactorSteps: [
+                { title: 'Go to "Profile" in the menu and click "Enable 2FA"', body: "You'll be asked to confirm your password once — it then stays valid for a few hours." },
+                { title: 'Scan the QR code with an authenticator app', body: "Google Authenticator, Authy, etc. If you can't scan it, you can type in the key shown below the code instead." },
+                { title: 'Enter the generated code to confirm', body: "You'll get 8 recovery codes — keep them somewhere safe, each works once if you lose access to the app." },
+            ],
             notYetTitle: "What the platform doesn't do yet",
-            notYetItems: ['Self-service two-factor authentication (2FA) from your profile'],
+            notYetItems: [],
             footerPrefix: 'Need something that doesn\'t exist yet?', footerLink: 'Check the audit log', footerSuffix: 'or tell the developer directly.',
         },
         auditLog: {
@@ -471,8 +483,14 @@ export const APP_TRANSLATIONS = {
             section3Steps: [
                 { title: 'Gehen Sie im Menü zu „Auditprotokoll"', body: 'Sehen Sie, wer wann was getan hat — erstellte Events, eingeladene Teilnehmer, zugewiesene Rollen. Ein Plattform-Admin sieht alles; ein Kunden-Admin sieht nur, was in seiner eigenen Organisation geschehen ist.' },
             ],
+            twoFactorEyebrow: 'Jeder', twoFactorTitle: 'So aktivieren Sie die Zwei-Faktor-Verifizierung',
+            twoFactorSteps: [
+                { title: 'Gehen Sie im Menü zu „Profil" und klicken Sie auf „2FA aktivieren"', body: 'Sie werden einmal gebeten, Ihr Passwort zu bestätigen — danach bleibt es einige Stunden gültig.' },
+                { title: 'Scannen Sie den QR-Code mit einer Authenticator-App', body: 'Google Authenticator, Authy usw. Falls Sie nicht scannen können, geben Sie stattdessen den darunter angezeigten Schlüssel manuell ein.' },
+                { title: 'Geben Sie den generierten Code zur Bestätigung ein', body: 'Sie erhalten 8 Wiederherstellungscodes — bewahren Sie diese sicher auf, jeder funktioniert einmalig, falls Sie den Zugriff auf die App verlieren.' },
+            ],
             notYetTitle: 'Was die Plattform noch nicht kann',
-            notYetItems: ['Selbstständige Aktivierung der Zwei-Faktor-Authentifizierung (2FA) im eigenen Profil'],
+            notYetItems: [],
             footerPrefix: 'Brauchen Sie etwas, das es noch nicht gibt?', footerLink: 'Auditprotokoll prüfen', footerSuffix: 'oder sagen Sie es direkt dem Entwickler.',
         },
         auditLog: {

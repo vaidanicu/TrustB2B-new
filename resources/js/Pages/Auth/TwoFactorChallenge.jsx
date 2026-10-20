@@ -1,12 +1,27 @@
 import GuestLayout from '@/Layouts/GuestLayout';
+import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
-import { Head } from '@inertiajs/react';
+import { Head, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 
 export default function TwoFactorChallenge() {
-    const [code, setCode] = useState('');
+    const [usingRecoveryCode, setUsingRecoveryCode] = useState(false);
+    const { data, setData, post, processing, errors, reset } = useForm({
+        code: '',
+        recovery_code: '',
+    });
+
+    function toggleRecoveryCode() {
+        setUsingRecoveryCode((using) => !using);
+        reset('code', 'recovery_code');
+    }
+
+    function submit(e) {
+        e.preventDefault();
+        post(route('two-factor.login.store'));
+    }
 
     return (
         <GuestLayout>
@@ -22,27 +37,47 @@ export default function TwoFactorChallenge() {
             </div>
 
             <p className="mb-5 text-sm leading-relaxed text-ink-soft">
-                Introdu codul din aplicația de autentificare pentru a continua.
+                {usingRecoveryCode
+                    ? 'Introdu unul dintre codurile de recuperare primite la activarea 2FA.'
+                    : 'Introdu codul din aplicația de autentificare pentru a continua.'}
             </p>
 
-            <form>
-                <InputLabel htmlFor="code" value="Cod de verificare" />
-                <TextInput
-                    id="code"
-                    inputMode="numeric"
-                    autoComplete="one-time-code"
-                    autoFocus
-                    value={code}
-                    onChange={(e) => setCode(e.target.value)}
-                    className="mt-1 block w-full text-center text-xl tracking-[0.3em]"
-                />
+            <form onSubmit={submit}>
+                {usingRecoveryCode ? (
+                    <>
+                        <InputLabel htmlFor="recovery_code" value="Cod de recuperare" />
+                        <TextInput
+                            id="recovery_code"
+                            autoComplete="one-time-code"
+                            autoFocus
+                            value={data.recovery_code}
+                            onChange={(e) => setData('recovery_code', e.target.value)}
+                            className="mt-1 block w-full text-center text-lg tracking-widest"
+                        />
+                        <InputError message={errors.recovery_code} className="mt-2" />
+                    </>
+                ) : (
+                    <>
+                        <InputLabel htmlFor="code" value="Cod de verificare" />
+                        <TextInput
+                            id="code"
+                            inputMode="numeric"
+                            autoComplete="one-time-code"
+                            autoFocus
+                            value={data.code}
+                            onChange={(e) => setData('code', e.target.value)}
+                            className="mt-1 block w-full text-center text-xl tracking-[0.3em]"
+                        />
+                        <InputError message={errors.code} className="mt-2" />
+                    </>
+                )}
 
                 <div className="mt-5 flex items-center justify-between">
-                    <button type="button" className="text-sm text-ink-soft underline hover:text-ink">
-                        Folosește un cod de recuperare
+                    <button type="button" onClick={toggleRecoveryCode} className="text-sm text-ink-soft underline hover:text-ink">
+                        {usingRecoveryCode ? 'Folosește codul din aplicație' : 'Folosește un cod de recuperare'}
                     </button>
 
-                    <PrimaryButton type="submit" disabled>
+                    <PrimaryButton type="submit" disabled={processing}>
                         Confirmă
                     </PrimaryButton>
                 </div>

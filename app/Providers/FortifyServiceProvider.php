@@ -29,16 +29,28 @@ class FortifyServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Breeze's own routes/auth.php already defines every auth route
-        // (login, register, password reset/confirm) under the same names
-        // Fortify would register for itself — without this, both try to
-        // claim e.g. "password.confirm" and route caching fails outright
-        // (`php artisan route:cache`), which is how this surfaced: it
-        // never broke route resolution at runtime, only caching it.
-        // We still use Fortify's actions and two-factor backend below,
-        // just not its routes.
-        Fortify::ignoreRoutes();
-
+        // Deliberately NOT calling Fortify::ignoreRoutes() here, despite
+        // Breeze's own routes/auth.php defining login/register/password
+        // under the same route names Fortify would also register: that
+        // call sets a process-wide static flag (Fortify::$registersRoutes)
+        // that PHPUnit's single long-lived test process leaks across test
+        // cases — whichever test boots the app first sees it true (Fortify
+        // registers everything), every test after that inherits it already
+        // false from the previous boot, so Fortify's two-factor/passkey
+        // management routes (two-factor.enable, two-factor.qr-code, etc.
+        // — never redefined by this app, so they only exist if Fortify
+        // registers them) would silently vanish depending on test order.
+        // Letting Fortify always register its full route table instead is
+        // safe: Laravel's RouteCollection keys routes by method+URI, so
+        // routes/auth.php's later registration of the exact same
+        // login/register/password URIs (loaded after every provider has
+        // booted) simply overwrites Fortify's entries for those — verified
+        // via route:list, our own controllers still handle those requests.
+        // The one real cost is config/fortify.php's own doc comment on
+        // this: php artisan route:cache would throw on the duplicate
+        // names — moot here since this app's deploy process never caches
+        // routes (opcache staleness on the production FPM pool makes a
+        // cached route table unreliable there regardless).
         Fortify::createUsersUsing(CreateNewUser::class);
         Fortify::updateUserProfileInformationUsing(UpdateUserProfileInformation::class);
         Fortify::updateUserPasswordsUsing(UpdateUserPassword::class);

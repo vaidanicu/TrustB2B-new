@@ -34,15 +34,25 @@ class LoginRequest extends FormRequest
     }
 
     /**
-     * Attempt to authenticate the request's credentials.
+     * Attempt to authenticate the request's credentials. Returns true once
+     * the session is actually logged in, false when the credentials were
+     * valid but the account has two-factor authentication confirmed — in
+     * that case nothing is logged in yet; 'login.id'/'login.remember' are
+     * stashed in session using the same keys Fortify's own
+     * TwoFactorLoginRequest reads, so the already-registered
+     * two-factor.login.store route (Laravel\Fortify's own controller) can
+     * complete the login once the code is verified.
      *
      * @throws ValidationException
      */
-    public function authenticate(): void
+    public function authenticate(): bool
     {
         $this->ensureIsNotRateLimited();
 
-        if (! Auth::attempt($this->only('email', 'password'), $this->boolean('remember'))) {
+        $provider = Auth::guard('web')->getProvider();
+        $user = $provider->retrieveByCredentials($this->only('email', 'password'));
+
+        if (! $user || ! $provider->validateCredentials($user, ['password' => $this->string('password')->toString()])) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
@@ -51,6 +61,19 @@ class LoginRequest extends FormRequest
         }
 
         RateLimiter::clear($this->throttleKey());
+
+        if ($user->two_factor_secret !== null && $user->two_factor_confirmed_at !== null) {
+            $this->session()->put([
+                'login.id' => $user->getKey(),
+                'login.remember' => $this->boolean('remember'),
+            ]);
+
+            return false;
+        }
+
+        Auth::login($user, $this->boolean('remember'));
+
+        return true;
     }
 
     /**

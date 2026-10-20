@@ -46,13 +46,16 @@ export default function Index() {
                 <Section eyebrow={g.galleryEyebrow} title={g.galleryTitle} steps={g.gallerySteps} />
                 <Section eyebrow={g.deletionEyebrow} title={g.deletionTitle} steps={g.deletionSteps} />
                 <Section eyebrow={g.section3Eyebrow} title={g.section3Title} steps={g.section3Steps} />
+                <Section eyebrow={g.twoFactorEyebrow} title={g.twoFactorTitle} steps={g.twoFactorSteps} />
 
-                <section className="rounded-lg border border-line bg-paper-sunken p-7">
-                    <h2 className="text-sm font-semibold text-ink">{g.notYetTitle}</h2>
-                    <ul className="mt-3 list-disc pl-5 text-sm text-ink-soft">
-                        {g.notYetItems.map((item) => <li key={item}>{item}</li>)}
-                    </ul>
-                </section>
+                {g.notYetItems.length > 0 && (
+                    <section className="rounded-lg border border-line bg-paper-sunken p-7">
+                        <h2 className="text-sm font-semibold text-ink">{g.notYetTitle}</h2>
+                        <ul className="mt-3 list-disc pl-5 text-sm text-ink-soft">
+                            {g.notYetItems.map((item) => <li key={item}>{item}</li>)}
+                        </ul>
+                    </section>
+                )}
 
                 <p className="text-center text-xs text-ink-muted">
                     {g.footerPrefix}{' '}

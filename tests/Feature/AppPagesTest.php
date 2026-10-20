@@ -20,9 +20,12 @@ class AppPagesTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_two_factor_challenge_page_renders_for_a_guest(): void
+    public function test_two_factor_challenge_page_renders_for_a_guest_with_a_pending_login(): void
     {
-        $this->get(route('two-factor.challenge'))
+        $user = User::factory()->create();
+
+        $this->withSession(['login.id' => $user->id])
+            ->get(route('two-factor.login'))
             ->assertOk()
             ->assertInertia(fn ($page) => $page->component('Auth/TwoFactorChallenge'));
     }

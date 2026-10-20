@@ -21,9 +21,16 @@ Route::get('/', [MarketingController::class, 'show'])->name('marketing.ro');
 Route::get('/en', [MarketingController::class, 'show'])->defaults('locale', 'en')->name('marketing.en');
 Route::get('/de', [MarketingController::class, 'show'])->defaults('locale', 'de')->name('marketing.de');
 
+// Named 'two-factor.login' (not something of our own) because Fortify's own
+// FailedTwoFactorLoginResponse redirects a wrong-code submission back to a
+// route of that exact name — Fortify's own GET registration under this name
+// never actually reaches the route table (its POST sibling at the same URI
+// does, as Laravel\Fortify\...\TwoFactorAuthenticatedSessionController@store,
+// still used below), so this claims the name itself rather than leaving it
+// to crash with RouteNotFoundException on the first wrong code.
 Route::get('/two-factor-challenge', [TwoFactorChallengeController::class, 'show'])
     ->middleware('guest')
-    ->name('two-factor.challenge');
+    ->name('two-factor.login');
 
 // Public, static walkthrough with one sample event — what the marketing
 // page's "Vezi invitația demo" actually links to. Deliberately untouched by
