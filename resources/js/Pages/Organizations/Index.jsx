@@ -69,10 +69,11 @@ export default function Index({ organizations }) {
                 </p>
 
                 <div className="overflow-hidden rounded-lg bg-white shadow-sm">
-                    <div className="grid grid-cols-[2.4fr_1fr_1fr] gap-3 border-b border-line px-5 py-3 text-xs font-semibold uppercase tracking-wide text-ink-muted">
+                    <div className="grid grid-cols-[2.4fr_1fr_1fr_auto] gap-3 border-b border-line px-5 py-3 text-xs font-semibold uppercase tracking-wide text-ink-muted">
                         <span>{t.organizations.index.colOrg}</span>
                         <span>{t.organizations.index.colCountry}</span>
                         <span>{t.organizations.index.colStatus}</span>
+                        <span></span>
                     </div>
 
                     {organizations.length === 0 && (
@@ -85,13 +86,18 @@ export default function Index({ organizations }) {
                         return (
                             <div
                                 key={organization.id}
-                                className="grid grid-cols-[2.4fr_1fr_1fr] items-center gap-3 border-b border-line px-5 py-4 text-sm last:border-0 hover:bg-paper-raised"
+                                className="grid grid-cols-[2.4fr_1fr_1fr_auto] items-center gap-3 border-b border-line px-5 py-4 text-sm last:border-0 hover:bg-paper-raised"
                             >
                                 <span className="font-medium text-ink">{organization.name}</span>
                                 <span className="text-ink-soft">{organization.country}</span>
                                 <span className={`inline-flex w-fit items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold ${style.bg} ${style.text}`}>
                                     <span className={`h-1.5 w-1.5 rounded-full ${style.dot}`} />
                                     {style.label}
+                                </span>
+                                <span className="flex items-center justify-end">
+                                    <Link href={route('organizations.events', organization.id)} className="text-xs text-accent underline">
+                                        {t.organizations.events.title}
+                                    </Link>
                                 </span>
                             </div>
                         );

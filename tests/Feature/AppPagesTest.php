@@ -75,16 +75,24 @@ class AppPagesTest extends TestCase
         $this->actingAs($user)->get(route('organizations.index'))->assertForbidden();
     }
 
-    public function test_franchise_scoped_user_cannot_reach_the_event_create_page(): void
+    public function test_an_organization_scoped_user_cannot_reach_the_event_create_page(): void
     {
-        $user = User::factory()->forFranchisePartner()->create();
+        $this->seed(RolesAndPermissionsSeeder::class);
+
+        $organization = Organization::factory()->create();
+        $user = User::factory()->forOrganization($organization)->create();
+        (new AssignRole)->grant($user, 'customer-admin', 'test');
 
         $this->actingAs($user)->get(route('events.create'))->assertForbidden();
     }
 
-    public function test_organization_scoped_user_can_reach_the_event_create_page(): void
+    public function test_a_franchise_partner_admin_can_reach_the_event_create_page(): void
     {
-        $user = User::factory()->forOrganization()->create();
+        $this->seed(RolesAndPermissionsSeeder::class);
+
+        $franchisePartner = FranchisePartner::factory()->create();
+        $user = User::factory()->forFranchisePartner($franchisePartner)->create();
+        (new AssignRole)->grant($user, 'franchise-partner-admin', 'test');
 
         $this->actingAs($user)
             ->get(route('events.create'))

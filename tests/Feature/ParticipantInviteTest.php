@@ -174,4 +174,32 @@ class ParticipantInviteTest extends TestCase
         // row survived.
         $this->assertSame(1, Participant::withoutGlobalScopes()->count());
     }
+
+    public function test_a_restaurant_event_cannot_have_participants_invited(): void
+    {
+        $organization = Organization::factory()->create();
+        $user = User::factory()->forOrganization($organization)->create();
+        $event = Event::factory()->for($organization)->create([
+            'franchise_partner_id' => $organization->franchise_partner_id,
+            'is_restaurant' => true,
+        ]);
+
+        $this->actingAs($user)
+            ->post(route('participants.store', $event), ['name' => 'x', 'email' => 'x@example.test'])
+            ->assertNotFound();
+
+        $this->assertSame(0, Participant::count());
+    }
+
+    public function test_a_restaurant_events_status_board_is_not_reachable(): void
+    {
+        $organization = Organization::factory()->create();
+        $user = User::factory()->forOrganization($organization)->create();
+        $event = Event::factory()->for($organization)->create([
+            'franchise_partner_id' => $organization->franchise_partner_id,
+            'is_restaurant' => true,
+        ]);
+
+        $this->actingAs($user)->get(route('participants.status', $event))->assertNotFound();
+    }
 }

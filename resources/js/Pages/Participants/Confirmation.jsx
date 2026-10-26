@@ -1,7 +1,7 @@
 import Logo from '@/Components/Logo';
 import { Head, Link, router } from '@inertiajs/react';
 
-export default function Confirmation({ event, participantName, attending, photoConsent, photos = [], signedUrl = null }) {
+export default function Confirmation({ event, participantName, attending, photoConsent, gdprAccepted = false, photos = [], signedUrl = null }) {
     function requestDeletion() {
         if (confirm('Sigur vrei să ceri ștergerea datelor tale pentru acest eveniment? Organizatorul va procesa cererea.')) {
             router.patch(signedUrl);
@@ -36,6 +36,10 @@ export default function Confirmation({ event, participantName, attending, photoC
                         <p className="mt-2 text-sm text-ink-muted">
                             Preferință foto: {photoConsent ? 'ești de acord să apari în fotografiile oficiale.' : 'ai ales să nu apari în fotografiile oficiale.'}
                         </p>
+                    )}
+
+                    {attending && gdprAccepted && (
+                        <p className="mt-2 text-xs text-ink-muted">Ai citit și acceptat termenii contractului GDPR al evenimentului.</p>
                     )}
 
                     <p className="mt-4 text-xs text-ink-muted">

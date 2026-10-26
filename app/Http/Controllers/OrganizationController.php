@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Actions\Tenancy\AssignRole;
 use App\Actions\Tenancy\SendAccountCreatedEmail;
+use App\Models\Event;
 use App\Models\FranchisePartner;
 use App\Models\Organization;
 use App\Models\User;
@@ -46,6 +47,32 @@ class OrganizationController extends Controller
                 'name' => $organization->name,
                 'country' => $organization->country,
                 'status' => $organization->contract_status,
+            ]),
+        ]);
+    }
+
+    /**
+     * The events belonging to one client — where a franchise/platform actor
+     * (the only ones who can create events now, see EventController) sees
+     * what they've set up and starts a new one. Event's own TenantScope
+     * already guarantees $organization is one this actor can see (route
+     * model binding resolves it the same tenant-scoped way); events.manage
+     * guards actually touching it, same as EventController itself.
+     */
+    public function events(Request $request, Organization $organization): Response
+    {
+        abort_unless($request->user()->can('events.manage'), 403);
+
+        $events = $organization->events()->orderByDesc('starts_at')->get(['id', 'name', 'starts_at', 'status', 'is_restaurant']);
+
+        return Inertia::render('Organizations/Events', [
+            'organization' => ['id' => $organization->id, 'name' => $organization->name],
+            'events' => $events->map(fn (Event $event) => [
+                'id' => $event->id,
+                'name' => $event->name,
+                'date' => $event->starts_at->format('d.m.Y'),
+                'status' => $event->status,
+                'isRestaurant' => $event->is_restaurant,
             ]),
         ]);
     }

@@ -31,6 +31,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
     'retention_days', 'end_of_cycle_action', 'status', 'created_by',
     'organizer', 'co_organizer', 'location', 'agency', 'photographer',
     'data_protection_contact', 'final_package_recipient',
+    'organization_id', 'is_restaurant', 'gdpr_contract_text',
 ])]
 class Event extends Model implements HasMedia
 {
@@ -49,6 +50,7 @@ class Event extends Model implements HasMedia
             'starts_at' => 'date',
             'ends_at' => 'date',
             'retention_days' => 'integer',
+            'is_restaurant' => 'boolean',
         ];
     }
 

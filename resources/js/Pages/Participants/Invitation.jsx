@@ -38,6 +38,7 @@ export default function Invitation({ event, participantName, signedUrl }) {
         name: participantName ?? '',
         attending: true,
         photo_consent: true,
+        gdpr_accepted: false,
     });
 
     function submitReal(e) {
@@ -114,6 +115,25 @@ export default function Invitation({ event, participantName, signedUrl }) {
                         </div>
                     )}
                 </div>
+
+                {isReal && attending && event.gdprContractText && (
+                    <div className="mt-4 rounded-lg bg-white p-5 shadow-sm">
+                        <p className="mb-2 text-sm font-medium text-ink">Contract GDPR</p>
+                        <div className="max-h-56 overflow-y-auto whitespace-pre-wrap rounded-md border border-line bg-paper-sunken p-3 text-xs leading-relaxed text-ink-soft">
+                            {event.gdprContractText}
+                        </div>
+                        <label className="mt-3 flex min-h-[44px] items-start gap-3">
+                            <input
+                                type="checkbox"
+                                checked={data.gdpr_accepted}
+                                onChange={(e) => setData('gdpr_accepted', e.target.checked)}
+                                className="mt-0.5 h-5 w-5 rounded border-line text-accent focus:ring-accent"
+                            />
+                            <span className="text-sm text-ink-soft">Am citit și sunt de acord cu termenii de mai sus.</span>
+                        </label>
+                        <InputError message={errors.gdpr_accepted} className="mt-1" />
+                    </div>
+                )}
 
                 <div className="mt-4 rounded-lg bg-white p-5 shadow-sm">
                     <label className="flex min-h-[44px] items-start gap-3">

@@ -22,21 +22,25 @@ class RolesAndPermissionsSeeder extends Seeder
      */
     private const ROLE_PERMISSIONS = [
         'platform-admin' => [
-            'franchise-partners.manage', 'organizations.manage', 'users.manage', 'audit-log.view',
+            'franchise-partners.manage', 'organizations.manage', 'users.manage', 'events.manage', 'audit-log.view',
         ],
         'franchisor-admin' => [
-            'franchise-partners.manage', 'organizations.manage', 'users.manage', 'audit-log.view',
+            'franchise-partners.manage', 'organizations.manage', 'users.manage', 'events.manage', 'audit-log.view',
         ],
         'franchise-partner-admin' => [
-            'organizations.manage', 'users.manage', 'audit-log.view',
+            'organizations.manage', 'users.manage', 'events.manage', 'audit-log.view',
         ],
+        // events.manage moved to franchise/platform level: events (and the
+        // GDPR contract participants must accept) are set up by the agency
+        // on the client's behalf, never by the client's own staff — see
+        // EventController's docblock.
         'customer-admin' => [
-            'users.manage', 'events.manage', 'participants.view', 'participants.export',
+            'users.manage', 'participants.view', 'participants.export',
             'media.upload', 'media.publish', 'media.moderate-deletion-requests',
             'gdpr-cases.manage', 'audit-log.view',
         ],
         'event-manager' => [
-            'events.manage', 'participants.view', 'participants.export', 'media.upload', 'media.publish',
+            'participants.view', 'participants.export', 'media.upload', 'media.publish',
         ],
         'data-protection-officer' => [
             'participants.view', 'media.moderate-deletion-requests', 'gdpr-cases.manage', 'audit-log.view',

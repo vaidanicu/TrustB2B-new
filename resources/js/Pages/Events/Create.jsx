@@ -1,4 +1,5 @@
 import AppLayout from '@/Layouts/AppLayout';
+import Checkbox from '@/Components/Checkbox';
 import InputError from '@/Components/InputError';
 import InputLabel from '@/Components/InputLabel';
 import TextInput from '@/Components/TextInput';
@@ -39,11 +40,12 @@ function Field({ label, field, errors, ...props }) {
     );
 }
 
-export default function Create() {
+export default function Create({ organizations, selectedOrganizationId }) {
     const { t } = useAppTranslations();
     const c = t.events.create;
 
     const { data, setData, post, processing, errors } = useForm({
+        organization_id: selectedOrganizationId ? String(selectedOrganizationId) : (organizations[0]?.id ? String(organizations[0].id) : ''),
         name: '',
         purpose: '',
         country: 'RO',
@@ -59,6 +61,8 @@ export default function Create() {
         photographer: '',
         data_protection_contact: '',
         final_package_recipient: '',
+        is_restaurant: false,
+        gdpr_contract_text: '',
     });
 
     function submit(e) {
@@ -76,6 +80,33 @@ export default function Create() {
                     <p className="mt-0.5 text-sm text-ink-muted">{c.sectionDetailsBody}</p>
 
                     <div className="mt-5 flex flex-col gap-4">
+                        <div>
+                            <InputLabel value={c.organizationLabel} />
+                            <select
+                                value={data.organization_id}
+                                onChange={(e) => setData('organization_id', e.target.value)}
+                                className="mt-1 block w-full rounded-md border-line shadow-sm focus:border-accent focus:ring-accent"
+                            >
+                                <option value="" disabled>{c.organizationPlaceholder}</option>
+                                {organizations.map((organization) => (
+                                    <option key={organization.id} value={organization.id}>{organization.name}</option>
+                                ))}
+                            </select>
+                            <InputError message={errors.organization_id} className="mt-1" />
+                        </div>
+
+                        <label className="flex cursor-pointer items-start gap-2.5 rounded-lg border border-line px-4 py-3.5">
+                            <Checkbox
+                                checked={data.is_restaurant}
+                                onChange={(e) => setData('is_restaurant', e.target.checked)}
+                                className="mt-0.5"
+                            />
+                            <span>
+                                <span className="block text-sm font-medium text-ink">{c.restaurantLabel}</span>
+                                <span className="block text-xs text-ink-muted">{c.restaurantHint}</span>
+                            </span>
+                        </label>
+
                         <Field
                             label={c.nameLabel}
                             placeholder={c.namePlaceholder}
@@ -172,8 +203,30 @@ export default function Create() {
                     </div>
                 </section>
 
+                {!data.is_restaurant && (
+                    <section className="rounded-lg bg-white p-7 shadow-sm">
+                        <h2 className="text-base font-semibold text-ink">{c.sectionGdprTitle}</h2>
+                        <p className="mt-0.5 text-sm text-ink-muted">{c.sectionGdprBody}</p>
+
+                        <div className="mt-5">
+                            <InputLabel value={c.gdprContractLabel} />
+                            <textarea
+                                value={data.gdpr_contract_text}
+                                onChange={(e) => setData('gdpr_contract_text', e.target.value)}
+                                placeholder={c.gdprContractPlaceholder}
+                                rows={8}
+                                className="mt-1 block w-full rounded-md border-line text-sm shadow-sm focus:border-accent focus:ring-accent"
+                            />
+                            <InputError message={errors.gdpr_contract_text} className="mt-1" />
+                        </div>
+                    </section>
+                )}
+
                 <div className="flex items-center justify-end gap-3 pb-4">
-                    <Link href={route('dashboard')} className="text-sm text-ink-muted hover:text-ink">
+                    <Link
+                        href={data.organization_id ? route('organizations.events', data.organization_id) : route('organizations.index')}
+                        className="text-sm text-ink-muted hover:text-ink"
+                    >
                         {t.common.cancel}
                     </Link>
                     <button

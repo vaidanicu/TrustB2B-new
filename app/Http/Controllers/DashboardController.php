@@ -30,7 +30,7 @@ class DashboardController extends Controller
 
         $events = Event::query()
             ->orderBy('starts_at')
-            ->get(['id', 'name', 'starts_at', 'status']);
+            ->get(['id', 'name', 'starts_at', 'status', 'is_restaurant']);
 
         return Inertia::render('Dashboard', [
             'events' => $events->map(fn (Event $event) => [
@@ -38,6 +38,7 @@ class DashboardController extends Controller
                 'name' => $event->name,
                 'date' => $event->starts_at->format('d.m.Y'),
                 'status' => $event->status,
+                'isRestaurant' => $event->is_restaurant,
             ]),
         ]);
     }

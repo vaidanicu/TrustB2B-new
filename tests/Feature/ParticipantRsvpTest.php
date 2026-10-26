@@ -104,6 +104,62 @@ class ParticipantRsvpTest extends TestCase
         $this->assertNull($participant->photo_consent);
     }
 
+    public function test_attending_requires_accepting_the_gdpr_contract_when_the_event_has_one(): void
+    {
+        $event = Event::factory()->create(['gdpr_contract_text' => 'Sunt de acord cu prelucrarea datelor mele.']);
+        $participant = Participant::factory()->for($event)->create([
+            'organization_id' => $event->organization_id,
+            'franchise_partner_id' => $event->franchise_partner_id,
+            'status' => 'invited',
+        ]);
+
+        $url = $this->signedUrlFor($participant);
+
+        $this->post($url, ['name' => 'Maria Ionescu', 'attending' => true])
+            ->assertSessionHasErrors('gdpr_accepted');
+
+        $this->assertNull($participant->fresh()->responded_at);
+    }
+
+    public function test_accepting_the_gdpr_contract_records_the_acceptance_timestamp_and_ip(): void
+    {
+        $event = Event::factory()->create(['gdpr_contract_text' => 'Sunt de acord cu prelucrarea datelor mele.']);
+        $participant = Participant::factory()->for($event)->create([
+            'organization_id' => $event->organization_id,
+            'franchise_partner_id' => $event->franchise_partner_id,
+            'status' => 'invited',
+        ]);
+
+        $url = $this->signedUrlFor($participant);
+
+        $this->post($url, ['name' => 'Maria Ionescu', 'attending' => true, 'gdpr_accepted' => true])
+            ->assertRedirect($url);
+
+        $participant->refresh();
+        $this->assertSame('attending', $participant->status);
+        $this->assertNotNull($participant->gdpr_accepted_at);
+        $this->assertNotNull($participant->gdpr_accepted_ip);
+    }
+
+    public function test_declining_does_not_require_gdpr_acceptance(): void
+    {
+        $event = Event::factory()->create(['gdpr_contract_text' => 'Sunt de acord cu prelucrarea datelor mele.']);
+        $participant = Participant::factory()->for($event)->create([
+            'organization_id' => $event->organization_id,
+            'franchise_partner_id' => $event->franchise_partner_id,
+            'status' => 'invited',
+        ]);
+
+        $url = $this->signedUrlFor($participant);
+
+        $this->post($url, ['name' => 'Radu Constantin', 'attending' => false])
+            ->assertRedirect($url);
+
+        $participant->refresh();
+        $this->assertSame('declined', $participant->status);
+        $this->assertNull($participant->gdpr_accepted_at);
+    }
+
     public function test_resubmitting_an_already_recorded_response_does_not_overwrite_it(): void
     {
         $event = Event::factory()->create();

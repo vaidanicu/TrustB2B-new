@@ -1,17 +1,6 @@
 import AppLayout from '@/Layouts/AppLayout';
 import { useAppTranslations } from '@/i18n/appTranslations';
-import { Head, Link, router, usePage } from '@inertiajs/react';
-
-function NewEventButton({ label }) {
-    return (
-        <Link
-            href={route('events.create')}
-            className="inline-flex items-center rounded-md border border-transparent bg-ink px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white transition hover:bg-ink-soft"
-        >
-            {label}
-        </Link>
-    );
-}
+import { Head, Link, usePage } from '@inertiajs/react';
 
 export default function Dashboard({ events }) {
     const { flash } = usePage().props;
@@ -25,7 +14,7 @@ export default function Dashboard({ events }) {
     const activeCount = events.filter((event) => event.status === 'active').length;
 
     return (
-        <AppLayout title={t.dashboard.title} active="dashboard" actions={<NewEventButton label={t.dashboard.newEvent} />}>
+        <AppLayout title={t.dashboard.title} active="dashboard">
             <Head title={t.dashboard.title} />
 
             <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -39,9 +28,6 @@ export default function Dashboard({ events }) {
                     <div className="rounded-lg bg-white px-6 py-14 text-center shadow-sm">
                         <p className="text-sm font-medium text-ink">{t.dashboard.emptyTitle}</p>
                         <p className="mx-auto mt-1 max-w-sm text-sm text-ink-muted">{t.dashboard.emptyBody}</p>
-                        <div className="mt-5">
-                            <NewEventButton label={t.dashboard.newEvent} />
-                        </div>
                     </div>
                 ) : (
                     <>
@@ -63,33 +49,33 @@ export default function Dashboard({ events }) {
                             {events.map((event) => {
                                 const style = statusStyles[event.status] ?? statusStyles.draft;
 
-                                function destroy() {
-                                    if (confirm(t.dashboard.confirmDelete)) {
-                                        router.delete(route('events.destroy', event.id));
-                                    }
-                                }
-
                                 return (
                                     <div
                                         key={event.id}
                                         className="grid grid-cols-[2.2fr_1fr_1.2fr_auto] items-center gap-3 border-b border-line px-5 py-4 text-sm last:border-0 hover:bg-paper-raised"
                                     >
-                                        <span className="font-medium text-ink">{event.name}</span>
+                                        <span className="font-medium text-ink">
+                                            {event.name}
+                                            {event.isRestaurant && (
+                                                <span className="ml-2 rounded-full bg-paper-sunken px-2 py-0.5 text-xs font-semibold text-ink-muted">
+                                                    {t.dashboard.restaurantBadge}
+                                                </span>
+                                            )}
+                                        </span>
                                         <span className="text-ink-soft">{event.date}</span>
                                         <span className={`inline-flex w-fit items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold ${style.bg} ${style.text}`}>
                                             <span className={`h-1.5 w-1.5 rounded-full ${style.dot}`} />
                                             {style.label}
                                         </span>
                                         <span className="flex items-center justify-end gap-3">
-                                            <Link href={route('participants.status', event.id)} className="text-xs text-accent underline">
-                                                {t.dashboard.participants}
-                                            </Link>
+                                            {!event.isRestaurant && (
+                                                <Link href={route('participants.status', event.id)} className="text-xs text-accent underline">
+                                                    {t.dashboard.participants}
+                                                </Link>
+                                            )}
                                             <Link href={route('gallery.index', event.id)} className="text-xs text-accent underline">
                                                 {t.dashboard.gallery}
                                             </Link>
-                                            <button type="button" onClick={destroy} className="text-xs text-ink-muted underline hover:text-danger-ink">
-                                                {t.dashboard.delete}
-                                            </button>
                                         </span>
                                     </div>
                                 );

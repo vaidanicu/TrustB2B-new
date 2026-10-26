@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
@@ -61,6 +62,7 @@ class ParticipantController extends Controller
     public function statusBoard(Request $request, Event $event): Response
     {
         abort_unless($request->user()->organization_id !== null, 403);
+        abort_if($event->is_restaurant, 404);
 
         $participants = $event->participants()->orderByDesc('created_at')->get();
 
@@ -86,6 +88,7 @@ class ParticipantController extends Controller
     public function store(Request $request, Event $event): RedirectResponse
     {
         abort_unless($request->user()->organization_id !== null, 403);
+        abort_if($event->is_restaurant, 404);
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -203,7 +206,13 @@ class ParticipantController extends Controller
 
     public function respond(Request $request, int $participant): RedirectResponse
     {
-        $participant = Participant::withoutGlobalScopes()->findOrFail($participant);
+        // Eager-loaded with its own scope bypassed too — same reasoning as
+        // show(): an anonymous participant request has no tenant context,
+        // and the GDPR-acceptance check below is the first thing in this
+        // method that actually touches $participant->event.
+        $participant = Participant::withoutGlobalScopes()
+            ->with(['event' => fn ($query) => $query->withoutGlobalScopes()])
+            ->findOrFail($participant);
 
         // Resubmitting an already-recorded response (double-click, back
         // button) is harmless and idempotent — redirect straight to the
@@ -216,11 +225,30 @@ class ParticipantController extends Controller
                 'photo_consent' => ['nullable', 'boolean'],
             ]);
 
+            // Only gate on acceptance when the event actually has contract
+            // text to accept — events created before this existed have none,
+            // and requiring a checkbox for text that was never shown would
+            // just lock out every participant already mid-flow on one of
+            // those. New events always have text (EventController::store()
+            // requires it unless is_restaurant), so this is effectively
+            // "always required" going forward.
+            $requiresGdprAcceptance = $data['attending']
+                && ! $participant->event->is_restaurant
+                && filled($participant->event->gdpr_contract_text);
+
+            if ($requiresGdprAcceptance && ! $request->boolean('gdpr_accepted')) {
+                throw ValidationException::withMessages([
+                    'gdpr_accepted' => 'Trebuie să confirmi că ești de acord cu termenii de mai sus pentru a participa.',
+                ]);
+            }
+
             $participant->forceFill([
                 'name' => $data['name'],
                 'status' => $data['attending'] ? 'attending' : 'declined',
                 'photo_consent' => $data['attending'] ? $request->boolean('photo_consent') : null,
                 'responded_at' => now(),
+                'gdpr_accepted_at' => $data['attending'] && $request->boolean('gdpr_accepted') ? now() : null,
+                'gdpr_accepted_ip' => $data['attending'] && $request->boolean('gdpr_accepted') ? $request->ip() : null,
             ])->save();
 
             activity()->performedOn($participant)->log('participant responded');
@@ -257,6 +285,7 @@ class ParticipantController extends Controller
             'participantName' => $participant->name,
             'attending' => $attending,
             'photoConsent' => (bool) $participant->photo_consent,
+            'gdprAccepted' => $participant->gdpr_accepted_at !== null,
             'signedUrl' => $signedUrl,
             // Whoever attended can see the shared album, regardless of their
             // own photo_consent — that only governs whether THEY appear in
@@ -282,6 +311,7 @@ class ParticipantController extends Controller
             'location' => $event->location ?? '',
             'documentVersion' => '1.0',
             'linkExpires' => $participant->link_expires_at->format('d F Y'),
+            'gdprContractText' => $event->gdpr_contract_text ?? '',
         ];
     }
 }
