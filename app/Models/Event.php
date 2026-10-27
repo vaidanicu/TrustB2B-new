@@ -32,16 +32,28 @@ use Spatie\MediaLibrary\InteractsWithMedia;
     'organizer', 'co_organizer', 'location', 'agency', 'photographer',
     'data_protection_contact', 'final_package_recipient',
     'organization_id', 'is_restaurant', 'gdpr_contract_text',
+    'client_contact_name', 'client_contact_email', 'client_address', 'client_tax_number',
+    'photographer_user_id',
 ])]
 class Event extends Model implements HasMedia
 {
     /** @use HasFactory<EventFactory> */
     use BelongsToOrganization, HasFactory, InteractsWithMedia;
 
+    /**
+     * 'gallery' holds the event's photos/videos — see GalleryController's
+     * docblock for the upload/publish split. 'gdpr-contract' is a single
+     * optional PDF, supplementing (not replacing) gdpr_contract_text; it's
+     * singleFile() so re-uploading replaces rather than accumulates.
+     */
     public function registerMediaCollections(): void
     {
         $this->addMediaCollection('gallery')
-            ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp']);
+            ->acceptsMimeTypes(['image/jpeg', 'image/png', 'image/webp', 'video/mp4', 'video/quicktime', 'video/webm']);
+
+        $this->addMediaCollection('gdpr-contract')
+            ->singleFile()
+            ->acceptsMimeTypes(['application/pdf']);
     }
 
     protected function casts(): array
@@ -60,6 +72,19 @@ class Event extends Model implements HasMedia
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /**
+     * The single person allowed to upload to this event's gallery when set
+     * — see GalleryController's authorizeUpload(). Distinct from the plain
+     * `photographer` text field, which is just a display name and existed
+     * before this account-backed enforcement did.
+     *
+     * @return BelongsTo<User, $this>
+     */
+    public function photographerUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'photographer_user_id');
     }
 
     /**

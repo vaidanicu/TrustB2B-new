@@ -48,6 +48,12 @@ Route::middleware('signed')->group(function () {
     Route::get('/invitatie/{participant}', [ParticipantController::class, 'show'])->name('participants.show');
     Route::post('/invitatie/{participant}', [ParticipantController::class, 'respond'])->name('participants.respond');
     Route::patch('/invitatie/{participant}', [ParticipantController::class, 'requestDeletion'])->name('participants.request-deletion');
+
+    // One link/QR code per EVENT (not per participant) — anyone who has it
+    // can view published photos and ask for one to be taken down. Both
+    // verbs share the same signed address, same reasoning as above.
+    Route::get('/evenimente/{event}/galerie', [GalleryController::class, 'publicGallery'])->name('gallery.public');
+    Route::post('/evenimente/{event}/galerie', [GalleryController::class, 'requestRemoval'])->name('gallery.public.request-removal');
 });
 
 Route::middleware(['app-domain', 'auth', 'verified'])->group(function () {
@@ -64,10 +70,14 @@ Route::middleware(['app-domain', 'auth', 'verified'])->group(function () {
     Route::post('/events/{event}/participants', [ParticipantController::class, 'store'])->name('participants.store');
     Route::delete('/events/{event}/participants/{participant}', [ParticipantController::class, 'destroy'])->name('participants.destroy');
     Route::patch('/events/{event}/participants/{participant}/refuza-stergere', [ParticipantController::class, 'denyDeletionRequest'])->name('participants.deny-deletion');
+    Route::get('/events/{event}/check-in', [ParticipantController::class, 'checkin'])->name('participants.checkin');
+    Route::post('/events/{event}/check-in', [ParticipantController::class, 'checkinStore'])->name('participants.checkin.store');
     Route::get('/events/{event}/gallery', [GalleryController::class, 'index'])->name('gallery.index');
     Route::post('/events/{event}/gallery', [GalleryController::class, 'store'])->name('gallery.store');
     Route::patch('/events/{event}/gallery/{media}/publish', [GalleryController::class, 'publish'])->name('gallery.publish');
     Route::delete('/events/{event}/gallery/{media}', [GalleryController::class, 'destroy'])->name('gallery.destroy');
+    Route::patch('/events/{event}/gallery/{media}/aproba-eliminare', [GalleryController::class, 'approveRemoval'])->name('gallery.approve-removal');
+    Route::patch('/events/{event}/gallery/{media}/refuza-eliminare', [GalleryController::class, 'denyRemoval'])->name('gallery.deny-removal');
     Route::get('/audit-log', [AuditLogController::class, 'index'])->name('audit-log.index');
     Route::get('/echipa', [UserController::class, 'index'])->name('users.index');
     Route::get('/echipa/adauga', [UserController::class, 'create'])->name('users.create');

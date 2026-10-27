@@ -58,6 +58,26 @@ class ParticipantInviteTest extends TestCase
             && $mail->participant->is($participant));
     }
 
+    public function test_an_invitation_stores_address_and_company_and_generates_a_checkin_code(): void
+    {
+        $organization = Organization::factory()->create();
+        $user = User::factory()->forOrganization($organization)->create();
+        $event = Event::factory()->for($organization)->create(['franchise_partner_id' => $organization->franchise_partner_id]);
+
+        $this->actingAs($user)->post(route('participants.store', $event), [
+            'name' => 'Andrei Popescu',
+            'email' => 'andrei.popescu@exemplu.ro',
+            'address' => 'Str. Exemplu 1, Cluj-Napoca',
+            'company_name' => 'Exemplu SRL',
+        ]);
+
+        $participant = Participant::sole();
+        $this->assertSame('Str. Exemplu 1, Cluj-Napoca', $participant->address);
+        $this->assertSame('Exemplu SRL', $participant->company_name);
+        $this->assertNotNull($participant->checkin_code);
+        $this->assertSame(6, strlen($participant->checkin_code));
+    }
+
     public function test_the_participant_is_still_created_when_the_invitation_email_fails(): void
     {
         Mail::shouldReceive('to')->andThrow(new \RuntimeException('SMTP unreachable'));

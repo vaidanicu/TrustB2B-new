@@ -59,10 +59,16 @@ export default function Create({ organizations, selectedOrganizationId }) {
         location: '',
         agency: '',
         photographer: '',
+        photographer_email: '',
         data_protection_contact: '',
         final_package_recipient: '',
         is_restaurant: false,
         gdpr_contract_text: '',
+        gdpr_contract_file: null,
+        client_contact_name: '',
+        client_contact_email: '',
+        client_address: '',
+        client_tax_number: '',
     });
 
     function submit(e) {
@@ -137,6 +143,18 @@ export default function Create({ organizations, selectedOrganizationId }) {
                 </section>
 
                 <section className="rounded-lg bg-white p-7 shadow-sm">
+                    <h2 className="text-base font-semibold text-ink">{c.sectionClientTitle}</h2>
+                    <p className="mt-0.5 text-sm text-ink-muted">{c.sectionClientBody}</p>
+
+                    <div className="mt-5 grid grid-cols-2 gap-x-4 gap-y-4">
+                        <Field label={c.clientContactNameLabel} placeholder={c.optional} field={{ value: data.client_contact_name, onChange: (e) => setData('client_contact_name', e.target.value) }} errors={errors.client_contact_name} />
+                        <Field label={c.clientContactEmailLabel} type="email" placeholder={c.optional} field={{ value: data.client_contact_email, onChange: (e) => setData('client_contact_email', e.target.value) }} errors={errors.client_contact_email} />
+                        <Field label={c.clientAddressLabel} placeholder={c.optional} field={{ value: data.client_address, onChange: (e) => setData('client_address', e.target.value) }} errors={errors.client_address} />
+                        <Field label={c.clientTaxNumberLabel} placeholder={c.optional} field={{ value: data.client_tax_number, onChange: (e) => setData('client_tax_number', e.target.value) }} errors={errors.client_tax_number} />
+                    </div>
+                </section>
+
+                <section className="rounded-lg bg-white p-7 shadow-sm">
                     <h2 className="text-base font-semibold text-ink">{c.sectionRetentionTitle}</h2>
                     <p className="mt-0.5 text-sm text-ink-muted">{c.sectionRetentionBody}</p>
 
@@ -196,6 +214,16 @@ export default function Create({ organizations, selectedOrganizationId }) {
                         <Field label={c.locationLabel} field={{ value: data.location, onChange: (e) => setData('location', e.target.value) }} errors={errors.location} />
                         <Field label={c.agencyLabel} placeholder={c.optional} field={{ value: data.agency, onChange: (e) => setData('agency', e.target.value) }} errors={errors.agency} />
                         <Field label={c.photographerLabel} placeholder={c.optional} field={{ value: data.photographer, onChange: (e) => setData('photographer', e.target.value) }} errors={errors.photographer} />
+                        <div>
+                            <Field
+                                label={c.photographerEmailLabel}
+                                type="email"
+                                placeholder={c.optional}
+                                field={{ value: data.photographer_email, onChange: (e) => setData('photographer_email', e.target.value) }}
+                                errors={errors.photographer_email}
+                            />
+                            <p className="mt-1 text-xs text-ink-muted">{c.photographerEmailHint}</p>
+                        </div>
                         <Field label={c.dpoContactLabel} type="email" field={{ value: data.data_protection_contact, onChange: (e) => setData('data_protection_contact', e.target.value) }} errors={errors.data_protection_contact} />
                         <div className="col-span-2">
                             <Field label={c.finalRecipientLabel} field={{ value: data.final_package_recipient, onChange: (e) => setData('final_package_recipient', e.target.value) }} errors={errors.final_package_recipient} />
@@ -218,6 +246,18 @@ export default function Create({ organizations, selectedOrganizationId }) {
                                 className="mt-1 block w-full rounded-md border-line text-sm shadow-sm focus:border-accent focus:ring-accent"
                             />
                             <InputError message={errors.gdpr_contract_text} className="mt-1" />
+                        </div>
+
+                        <div className="mt-4">
+                            <InputLabel value={c.gdprContractFileLabel} />
+                            <input
+                                type="file"
+                                accept="application/pdf"
+                                onChange={(e) => setData('gdpr_contract_file', e.target.files[0] ?? null)}
+                                className="mt-1 block w-full text-sm text-ink-soft file:mr-3 file:rounded-md file:border-0 file:bg-ink file:px-3 file:py-1.5 file:text-xs file:font-semibold file:uppercase file:text-white"
+                            />
+                            <p className="mt-1 text-xs text-ink-muted">{c.gdprContractFileHint}</p>
+                            <InputError message={errors.gdpr_contract_file} className="mt-1" />
                         </div>
                     </section>
                 )}

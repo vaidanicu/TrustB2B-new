@@ -3,12 +3,16 @@
 namespace Tests\Feature;
 
 use App\Actions\Tenancy\AssignRole;
+use App\Mail\StaffAccountCreated;
 use App\Models\Event;
 use App\Models\FranchisePartner;
 use App\Models\Organization;
 use App\Models\User;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 /**
@@ -59,6 +63,125 @@ class EventCreationTest extends TestCase
         $this->assertSame('draft', $event->status);
         $this->assertFalse($event->is_restaurant);
         $this->assertNotNull($event->gdpr_contract_text);
+    }
+
+    public function test_client_billing_details_are_stored_on_the_event(): void
+    {
+        $this->seed(RolesAndPermissionsSeeder::class);
+
+        $franchisePartner = FranchisePartner::factory()->create();
+        $organization = Organization::factory()->for($franchisePartner)->create();
+        $user = $this->franchisePartnerAdmin($franchisePartner);
+
+        $this->actingAs($user)->post(route('events.store'), [
+            'organization_id' => $organization->id,
+            'name' => 'Turneu de fotbal',
+            'country' => 'RO',
+            'language' => 'ro',
+            'starts_at' => '2026-12-01',
+            'ends_at' => '2026-12-01',
+            'retention_days' => 90,
+            'end_of_cycle_action' => 'delete',
+            'gdpr_contract_text' => 'Text.',
+            'client_contact_name' => 'Ion Pop',
+            'client_contact_email' => 'ion.pop@hotelaurora.ro',
+            'client_address' => 'Str. Exemplu 1, Cluj-Napoca',
+            'client_tax_number' => 'RO12345678',
+        ]);
+
+        $event = Event::sole();
+        $this->assertSame('Ion Pop', $event->client_contact_name);
+        $this->assertSame('ion.pop@hotelaurora.ro', $event->client_contact_email);
+        $this->assertSame('Str. Exemplu 1, Cluj-Napoca', $event->client_address);
+        $this->assertSame('RO12345678', $event->client_tax_number);
+    }
+
+    public function test_a_gdpr_contract_pdf_can_be_uploaded_alongside_the_text(): void
+    {
+        Storage::fake('public');
+        $this->seed(RolesAndPermissionsSeeder::class);
+
+        $franchisePartner = FranchisePartner::factory()->create();
+        $organization = Organization::factory()->for($franchisePartner)->create();
+        $user = $this->franchisePartnerAdmin($franchisePartner);
+
+        $this->actingAs($user)->post(route('events.store'), [
+            'organization_id' => $organization->id,
+            'name' => 'Turneu de fotbal',
+            'country' => 'RO',
+            'language' => 'ro',
+            'starts_at' => '2026-12-01',
+            'ends_at' => '2026-12-01',
+            'retention_days' => 90,
+            'end_of_cycle_action' => 'delete',
+            'gdpr_contract_text' => 'Text.',
+            'gdpr_contract_file' => UploadedFile::fake()->createWithContent('contract.pdf', '%PDF-1.4 fake pdf content for testing'),
+        ]);
+
+        $event = Event::sole();
+        $this->assertSame(1, $event->getMedia('gdpr-contract')->count());
+    }
+
+    public function test_a_photographer_email_creates_an_account_and_links_it_to_the_event(): void
+    {
+        Mail::fake();
+        $this->seed(RolesAndPermissionsSeeder::class);
+
+        $franchisePartner = FranchisePartner::factory()->create();
+        $organization = Organization::factory()->for($franchisePartner)->create();
+        $user = $this->franchisePartnerAdmin($franchisePartner);
+
+        $this->actingAs($user)->post(route('events.store'), [
+            'organization_id' => $organization->id,
+            'name' => 'Turneu de fotbal',
+            'country' => 'RO',
+            'language' => 'ro',
+            'starts_at' => '2026-12-01',
+            'ends_at' => '2026-12-01',
+            'retention_days' => 90,
+            'end_of_cycle_action' => 'delete',
+            'gdpr_contract_text' => 'Text.',
+            'photographer' => 'Grup Media Est',
+            'photographer_email' => 'fotograf@exemplu.ro',
+        ]);
+
+        $event = Event::sole();
+        $photographer = User::where('email', 'fotograf@exemplu.ro')->sole();
+
+        $this->assertSame($photographer->id, $event->photographer_user_id);
+        $this->assertTrue($photographer->hasRole('photographer'));
+        $this->assertNotNull($photographer->email_verified_at);
+
+        Mail::assertSent(StaffAccountCreated::class, fn (StaffAccountCreated $mail) => $mail->hasTo('fotograf@exemplu.ro')
+            && $mail->contextType === 'event-photographer');
+    }
+
+    public function test_an_existing_photographer_account_is_reused_not_recreated(): void
+    {
+        Mail::fake();
+        $this->seed(RolesAndPermissionsSeeder::class);
+
+        $franchisePartner = FranchisePartner::factory()->create();
+        $organization = Organization::factory()->for($franchisePartner)->create();
+        $user = $this->franchisePartnerAdmin($franchisePartner);
+        $existingPhotographer = User::factory()->create(['email' => 'fotograf@exemplu.ro']);
+
+        $this->actingAs($user)->post(route('events.store'), [
+            'organization_id' => $organization->id,
+            'name' => 'Turneu de fotbal',
+            'country' => 'RO',
+            'language' => 'ro',
+            'starts_at' => '2026-12-01',
+            'ends_at' => '2026-12-01',
+            'retention_days' => 90,
+            'end_of_cycle_action' => 'delete',
+            'gdpr_contract_text' => 'Text.',
+            'photographer_email' => 'fotograf@exemplu.ro',
+        ]);
+
+        $this->assertSame(1, User::where('email', 'fotograf@exemplu.ro')->count());
+        $this->assertSame($existingPhotographer->id, Event::sole()->photographer_user_id);
+        Mail::assertNotSent(StaffAccountCreated::class);
     }
 
     public function test_a_restaurant_event_does_not_require_gdpr_contract_text(): void

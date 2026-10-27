@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
@@ -81,7 +82,9 @@ class ParticipantController extends Controller
                 'photoConsent' => $participant->photo_consent,
                 'respondedAt' => $participant->responded_at?->format('d M.'),
                 'deletionRequested' => $participant->deletion_requested_at !== null,
+                'checkedIn' => $participant->checked_in_at !== null,
             ]),
+            'checkinUrl' => route('participants.checkin', $event),
         ]);
     }
 
@@ -93,6 +96,8 @@ class ParticipantController extends Controller
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'max:255', Rule::unique('participants')->where('event_id', $event->id)],
+            'address' => ['nullable', 'string', 'max:255'],
+            'company_name' => ['nullable', 'string', 'max:255'],
         ]);
 
         $participant = $event->participants()->create([
@@ -109,6 +114,10 @@ class ParticipantController extends Controller
             // Business expiry shown to the participant ("linkExpires"); also
             // what signs the URL below, so the two can never disagree.
             'link_expires_at' => $event->starts_at->copy()->subDay()->endOfDay(),
+            // Handed to event staff at the door (see checkin()/checkinStore()
+            // below) to mark attendance — generated now, not on response/
+            // acceptance, since it's sent out with the original invitation.
+            'checkin_code' => $this->generateCheckinCode($event),
         ]);
 
         activity()
@@ -175,6 +184,61 @@ class ParticipantController extends Controller
             ->log('deletion request declined');
 
         return back()->with('status', "Cerere de ștergere respinsă pentru {$participant->name}");
+    }
+
+    /**
+     * The door, on the day of the event: staff type/paste the code from the
+     * participant's invitation email (checkin_code, generated in store())
+     * and it marks them present in real time. Deliberately a single
+     * always-present form rather than requiring a camera/scanner —
+     * shared-host JS tooling constraints aside, typing a short code works
+     * on literally any device, including a borrowed one.
+     */
+    public function checkin(Request $request, Event $event): Response
+    {
+        $this->authorizeParticipantManagement($request);
+        abort_if($event->is_restaurant, 404);
+
+        return Inertia::render('Participants/Checkin', [
+            'event' => ['id' => $event->id, 'name' => $event->name],
+        ]);
+    }
+
+    public function checkinStore(Request $request, Event $event): RedirectResponse
+    {
+        $this->authorizeParticipantManagement($request);
+        abort_if($event->is_restaurant, 404);
+
+        $data = $request->validate([
+            'code' => ['required', 'string', 'max:12'],
+        ]);
+
+        $participant = $event->participants()
+            ->whereRaw('upper(checkin_code) = ?', [strtoupper($data['code'])])
+            ->first();
+
+        if ($participant === null) {
+            throw ValidationException::withMessages(['code' => 'Cod invalid pentru acest eveniment.']);
+        }
+
+        if ($participant->checked_in_at !== null) {
+            return back()->with('checkinStatus', 'already')->with('checkinParticipantName', $participant->name);
+        }
+
+        $participant->forceFill(['checked_in_at' => now()])->save();
+
+        activity()->causedBy($request->user())->performedOn($participant)->log('participant checked in');
+
+        return back()->with('checkinStatus', 'success')->with('checkinParticipantName', $participant->name);
+    }
+
+    private function generateCheckinCode(Event $event): string
+    {
+        do {
+            $code = strtoupper(Str::random(6));
+        } while ($event->participants()->where('checkin_code', $code)->exists());
+
+        return $code;
     }
 
     public function show(Request $request, int $participant): Response

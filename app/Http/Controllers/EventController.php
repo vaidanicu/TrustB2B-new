@@ -2,10 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Tenancy\AssignRole;
+use App\Actions\Tenancy\SendAccountCreatedEmail;
 use App\Models\Event;
 use App\Models\Organization;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -58,6 +63,12 @@ class EventController extends Controller
             'final_package_recipient' => ['nullable', 'string', 'max:255'],
             'is_restaurant' => ['nullable', 'boolean'],
             'gdpr_contract_text' => ['nullable', 'string', 'max:20000'],
+            'gdpr_contract_file' => ['nullable', 'file', 'mimes:pdf', 'max:10240'],
+            'client_contact_name' => ['nullable', 'string', 'max:255'],
+            'client_contact_email' => ['nullable', 'email', 'max:255'],
+            'client_address' => ['nullable', 'string', 'max:255'],
+            'client_tax_number' => ['nullable', 'string', 'max:255'],
+            'photographer_email' => ['nullable', 'email', 'max:255'],
         ]);
 
         $isRestaurant = $request->boolean('is_restaurant');
@@ -75,14 +86,32 @@ class EventController extends Controller
         // another partner's organization_id by hand.
         $organization = Organization::findOrFail($data['organization_id']);
 
+        $photographerEmailSent = null;
+        $photographerUser = null;
+
+        if (filled($data['photographer_email'] ?? null)) {
+            [$photographerUser, $photographerEmailSent] = $this->findOrCreatePhotographer(
+                $data['photographer_email'],
+                $data['photographer'] ?? $data['photographer_email'],
+                $organization,
+                $data['name'],
+                $request->user()->locale ?? 'ro',
+            );
+        }
+
         $event = Event::create([
             ...$data,
             'organization_id' => $organization->id,
             'is_restaurant' => $isRestaurant,
             'gdpr_contract_text' => $isRestaurant ? null : $data['gdpr_contract_text'],
+            'photographer_user_id' => $photographerUser?->id,
             'created_by' => $request->user()->id,
             'status' => 'draft',
         ]);
+
+        if ($request->hasFile('gdpr_contract_file')) {
+            $event->addMediaFromRequest('gdpr_contract_file')->toMediaCollection('gdpr-contract');
+        }
 
         activity()
             ->causedBy($request->user())
@@ -90,7 +119,44 @@ class EventController extends Controller
             ->log('event created');
 
         return redirect()->route('organizations.events', $organization)
-            ->with('status', "Eveniment creat: {$event->name}");
+            ->with('status', "Eveniment creat: {$event->name}")
+            ->with('photographerEmailSent', $photographerEmailSent);
+    }
+
+    /**
+     * Reuses an existing account by email (a photographer working multiple
+     * events shouldn't get a new password every time) or creates one —
+     * either way, grants 'photographer' additively (AssignRole never
+     * revokes what's already there) and links it as this event's one
+     * allowed uploader (GalleryController::authorizeUpload()). Only a
+     * freshly created account gets the "here's your password" email; an
+     * existing one already knows how to log in.
+     *
+     * @return array{0: User, 1: bool|null}
+     */
+    private function findOrCreatePhotographer(string $email, string $name, Organization $organization, string $eventName, string $lang): array
+    {
+        $user = User::withoutGlobalScopes()->where('email', $email)->first();
+        $emailSent = null;
+
+        if ($user === null) {
+            $password = Str::password(14);
+
+            $user = User::create([
+                'name' => $name,
+                'email' => $email,
+                'password' => Hash::make($password),
+                'organization_id' => $organization->id,
+                'franchise_partner_id' => $organization->franchise_partner_id,
+                'email_verified_at' => now(),
+            ]);
+
+            $emailSent = (new SendAccountCreatedEmail)->send($user, $password, 'event-photographer', $eventName, $lang);
+        }
+
+        (new AssignRole)->grant($user, 'photographer', 'designated event uploader');
+
+        return [$user, $emailSent];
     }
 
     public function destroy(Request $request, Event $event): RedirectResponse

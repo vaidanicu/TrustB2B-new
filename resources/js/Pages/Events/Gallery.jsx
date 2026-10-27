@@ -1,6 +1,14 @@
 import AppLayout from '@/Layouts/AppLayout';
 import { useAppTranslations } from '@/i18n/appTranslations';
 import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
+import { useState } from 'react';
+
+const VIDEO_EXTENSIONS = ['mp4', 'mov', 'webm'];
+
+function isVideo(fileName) {
+    const ext = (fileName ?? '').split('.').pop()?.toLowerCase();
+    return VIDEO_EXTENSIONS.includes(ext);
+}
 
 function UploadForm({ eventId, t }) {
     const { data, setData, post, processing, errors, reset } = useForm({ photos: [] });
@@ -19,7 +27,7 @@ function UploadForm({ eventId, t }) {
                 <label className="block text-xs font-medium text-ink-soft">{t.gallery.uploadLabel}</label>
                 <input
                     type="file"
-                    accept="image/jpeg,image/png,image/webp"
+                    accept="image/jpeg,image/png,image/webp,video/mp4,video/quicktime,video/webm"
                     multiple
                     onChange={(e) => setData('photos', Array.from(e.target.files))}
                     className="mt-1 block w-full text-sm text-ink-soft file:mr-3 file:rounded-md file:border-0 file:bg-ink file:px-3 file:py-1.5 file:text-xs file:font-semibold file:uppercase file:text-white"
@@ -37,7 +45,36 @@ function UploadForm({ eventId, t }) {
     );
 }
 
-function PhotoCard({ photo, eventId, canPublish, t }) {
+function PublicGalleryCard({ url, qrSvg, t }) {
+    const [copied, setCopied] = useState(false);
+
+    async function copy() {
+        try {
+            await navigator.clipboard.writeText(url);
+            setCopied(true);
+        } catch {
+            setCopied(false);
+        }
+    }
+
+    return (
+        <div className="mb-6 flex flex-wrap items-center gap-5 rounded-lg bg-white p-4 shadow-sm">
+            <div className="h-24 w-24 shrink-0" dangerouslySetInnerHTML={{ __html: qrSvg }} />
+            <div className="min-w-[220px] flex-1">
+                <p className="text-sm font-medium text-ink">{t.gallery.publicGalleryTitle}</p>
+                <p className="mt-0.5 text-xs text-ink-muted">{t.gallery.publicGalleryHint}</p>
+                <div className="mt-2 flex items-center gap-2">
+                    <span className="break-all text-xs text-ink-soft">{url}</span>
+                    <button type="button" onClick={copy} className="shrink-0 rounded-md border border-line px-2.5 py-1 text-xs font-semibold uppercase tracking-wide text-ink-soft">
+                        {copied ? t.common.copied : t.common.copy}
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+function PhotoCard({ photo, eventId, canPublish, canModerateRemovals, t }) {
     function publish() {
         router.patch(route('gallery.publish', [eventId, photo.id]), {}, { preserveScroll: true });
     }
@@ -48,10 +85,24 @@ function PhotoCard({ photo, eventId, canPublish, t }) {
         }
     }
 
+    function approveRemoval() {
+        if (confirm(t.gallery.confirmApproveRemoval)) {
+            router.patch(route('gallery.approve-removal', [eventId, photo.id]), {}, { preserveScroll: true });
+        }
+    }
+
+    function denyRemoval() {
+        router.patch(route('gallery.deny-removal', [eventId, photo.id]), {}, { preserveScroll: true });
+    }
+
     return (
         <div className="overflow-hidden rounded-lg bg-white shadow-sm">
             <div className="relative aspect-square">
-                <img src={photo.url} alt="" className="h-full w-full object-cover" />
+                {isVideo(photo.fileName) ? (
+                    <video src={photo.url} controls className="h-full w-full object-cover" />
+                ) : (
+                    <img src={photo.url} alt="" className="h-full w-full object-cover" />
+                )}
                 <span
                     className={
                         'absolute left-2 top-2 rounded-full px-2 py-0.5 text-xs font-semibold ' +
@@ -61,6 +112,24 @@ function PhotoCard({ photo, eventId, canPublish, t }) {
                     {photo.published ? t.gallery.published : t.gallery.draft}
                 </span>
             </div>
+
+            {photo.removalRequested && (
+                <div className="border-t border-danger-soft bg-danger-soft/40 px-2.5 py-2">
+                    <p className="text-xs font-semibold text-danger-ink">{t.gallery.removalRequestedBadge}</p>
+                    {photo.removalReason && <p className="mt-0.5 text-xs text-ink-soft">{photo.removalReason}</p>}
+                    {canModerateRemovals && (
+                        <div className="mt-1.5 flex items-center gap-3">
+                            <button type="button" onClick={approveRemoval} className="text-xs font-semibold text-danger-ink underline">
+                                {t.gallery.approveRemoval}
+                            </button>
+                            <button type="button" onClick={denyRemoval} className="text-xs text-ink-muted underline hover:text-ink-soft">
+                                {t.gallery.denyRemoval}
+                            </button>
+                        </div>
+                    )}
+                </div>
+            )}
+
             <div className="flex items-center justify-between gap-2 p-2.5">
                 {canPublish && !photo.published ? (
                     <button type="button" onClick={publish} className="text-xs font-semibold uppercase tracking-wide text-accent">
@@ -80,7 +149,7 @@ function PhotoCard({ photo, eventId, canPublish, t }) {
     );
 }
 
-export default function Gallery({ event, photos, canPublish }) {
+export default function Gallery({ event, photos, canPublish, canModerateRemovals, publicGalleryUrl, publicGalleryQrSvg }) {
     const { flash } = usePage().props;
     const { t } = useAppTranslations();
 
@@ -101,6 +170,8 @@ export default function Gallery({ event, photos, canPublish }) {
                     </div>
                 )}
 
+                <PublicGalleryCard url={publicGalleryUrl} qrSvg={publicGalleryQrSvg} t={t} />
+
                 <UploadForm eventId={event.id} t={t} />
 
                 {photos.length === 0 ? (
@@ -110,7 +181,14 @@ export default function Gallery({ event, photos, canPublish }) {
                 ) : (
                     <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
                         {photos.map((photo) => (
-                            <PhotoCard key={photo.id} photo={photo} eventId={event.id} canPublish={canPublish} t={t} />
+                            <PhotoCard
+                                key={photo.id}
+                                photo={photo}
+                                eventId={event.id}
+                                canPublish={canPublish}
+                                canModerateRemovals={canModerateRemovals}
+                                t={t}
+                            />
                         ))}
                     </div>
                 )}

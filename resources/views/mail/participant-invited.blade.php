@@ -31,6 +31,12 @@
                         </td>
                     </tr>
                     <tr>
+                        <td style="padding:0 28px 16px 28px; font-size:13px; color:#374151;">
+                            <p style="margin:0 0 4px 0; color:#8a8577;">{{ $codeLabel }}</p>
+                            <p style="margin:0; font-size:20px; font-weight:bold; letter-spacing:0.15em; font-family:'IBM Plex Mono', monospace;">{{ $checkinCode }}</p>
+                        </td>
+                    </tr>
+                    <tr>
                         <td style="padding:0 28px 28px 28px; font-size:12px; color:#8a8577; line-height:1.5;">
                             <p>{{ $linkNotice }}</p>
                             <p style="margin-top:16px;">{{ $regards }}<br>{{ config('app.name') }}</p>

@@ -20,7 +20,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * why that's an Eloquent-only guard on this table, not also an RLS one, for
  * now.
  */
-#[Fillable(['name', 'email', 'status', 'photo_consent', 'responded_at', 'link_expires_at', 'deletion_requested_at', 'gdpr_accepted_at', 'gdpr_accepted_ip', 'organization_id', 'franchise_partner_id'])]
+#[Fillable([
+    'name', 'email', 'address', 'company_name', 'status', 'photo_consent',
+    'responded_at', 'link_expires_at', 'deletion_requested_at',
+    'gdpr_accepted_at', 'gdpr_accepted_ip', 'checkin_code', 'checked_in_at',
+    'organization_id', 'franchise_partner_id',
+])]
 class Participant extends Model
 {
     /** @use HasFactory<ParticipantFactory> */
@@ -34,6 +39,7 @@ class Participant extends Model
             'link_expires_at' => 'datetime',
             'deletion_requested_at' => 'datetime',
             'gdpr_accepted_at' => 'datetime',
+            'checked_in_at' => 'datetime',
         ];
     }
 

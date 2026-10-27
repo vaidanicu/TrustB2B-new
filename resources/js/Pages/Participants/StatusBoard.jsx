@@ -23,7 +23,7 @@ const ROW_TONES = {
 };
 
 function InviteForm({ eventId, t }) {
-    const { data, setData, post, processing, errors, reset } = useForm({ name: '', email: '' });
+    const { data, setData, post, processing, errors, reset } = useForm({ name: '', email: '', address: '', company_name: '' });
 
     function submit(e) {
         e.preventDefault();
@@ -53,6 +53,28 @@ function InviteForm({ eventId, t }) {
                     className="mt-1 block w-full rounded-md border-line text-sm shadow-sm focus:border-accent focus:ring-accent"
                 />
                 <InputError message={errors.email} className="mt-1" />
+            </div>
+            <div className="min-w-[200px] flex-1">
+                <label className="block text-xs font-medium text-ink-soft">{t.statusBoard.inviteAddressLabel}</label>
+                <input
+                    type="text"
+                    value={data.address}
+                    onChange={(e) => setData('address', e.target.value)}
+                    placeholder={t.statusBoard.optional}
+                    className="mt-1 block w-full rounded-md border-line text-sm shadow-sm focus:border-accent focus:ring-accent"
+                />
+                <InputError message={errors.address} className="mt-1" />
+            </div>
+            <div className="min-w-[180px] flex-1">
+                <label className="block text-xs font-medium text-ink-soft">{t.statusBoard.inviteCompanyLabel}</label>
+                <input
+                    type="text"
+                    value={data.company_name}
+                    onChange={(e) => setData('company_name', e.target.value)}
+                    placeholder={t.statusBoard.optional}
+                    className="mt-1 block w-full rounded-md border-line text-sm shadow-sm focus:border-accent focus:ring-accent"
+                />
+                <InputError message={errors.company_name} className="mt-1" />
             </div>
             <button
                 type="submit"
@@ -90,7 +112,7 @@ function InvitationLinkBanner({ url, emailSent, t, common }) {
     );
 }
 
-export default function StatusBoard({ event, participants }) {
+export default function StatusBoard({ event, participants, checkinUrl }) {
     const { flash } = usePage().props;
     const { t: all } = useAppTranslations();
     const t = all.participants;
@@ -111,9 +133,14 @@ export default function StatusBoard({ event, participants }) {
                     <Link href={route('dashboard')} className="text-sm text-ink-muted hover:text-ink">
                         {t.statusBoard.back}
                     </Link>
-                    <p className="text-sm text-ink-muted">
-                        {event.date} · {event.location}
-                    </p>
+                    <div className="flex items-center gap-4">
+                        <p className="text-sm text-ink-muted">
+                            {event.date} · {event.location}
+                        </p>
+                        <Link href={checkinUrl} className="text-sm text-accent underline">
+                            {t.statusBoard.checkinLink}
+                        </Link>
+                    </div>
                 </div>
 
                 {flash?.status && (
@@ -183,6 +210,11 @@ export default function StatusBoard({ event, participants }) {
                                 >
                                     <span className="font-medium text-ink">
                                         {participant.name}
+                                        {participant.checkedIn && (
+                                            <span className="ml-2 inline-flex items-center rounded-full bg-teal-soft px-2 py-0.5 text-[10px] font-semibold uppercase text-teal-ink">
+                                                {t.statusBoard.checkedInBadge}
+                                            </span>
+                                        )}
                                         {participant.deletionRequested && (
                                             <span className="ml-2 inline-flex items-center rounded-full bg-danger-soft px-2 py-0.5 text-[10px] font-semibold uppercase text-danger-ink">
                                                 {t.statusBoard.deletionRequestedBadge}

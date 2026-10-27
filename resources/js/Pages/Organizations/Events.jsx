@@ -91,9 +91,14 @@ export default function Events({ organization, events }) {
                                     </span>
                                     <span className="flex items-center justify-end gap-3">
                                         {!event.isRestaurant && (
-                                            <Link href={route('participants.status', event.id)} className="text-xs text-accent underline">
-                                                {oe.participants}
-                                            </Link>
+                                            <>
+                                                <Link href={route('participants.status', event.id)} className="text-xs text-accent underline">
+                                                    {oe.participants}
+                                                </Link>
+                                                <Link href={route('participants.checkin', event.id)} className="text-xs text-accent underline">
+                                                    {oe.checkin}
+                                                </Link>
+                                            </>
                                         )}
                                         <button type="button" onClick={destroy} className="text-xs text-ink-muted underline hover:text-danger-ink">
                                             {oe.delete}
