@@ -61,7 +61,7 @@ class ParticipantController extends Controller
 
     public function statusBoard(Request $request, Event $event): Response
     {
-        abort_unless($request->user()->organization_id !== null, 403);
+        $this->authorizeParticipantManagement($request);
         abort_if($event->is_restaurant, 404);
 
         $participants = $event->participants()->orderByDesc('created_at')->get();
@@ -87,7 +87,7 @@ class ParticipantController extends Controller
 
     public function store(Request $request, Event $event): RedirectResponse
     {
-        abort_unless($request->user()->organization_id !== null, 403);
+        $this->authorizeParticipantManagement($request);
         abort_if($event->is_restaurant, 404);
 
         $data = $request->validate([
@@ -97,6 +97,14 @@ class ParticipantController extends Controller
 
         $participant = $event->participants()->create([
             ...$data,
+            // Explicit, not auto-stamped from the acting user's own tenant
+            // context (BelongsToOrganization's default): a franchise/
+            // platform actor managing participants here (see
+            // authorizeParticipantManagement()) has no organization_id of
+            // their own to stamp — the event's is always the right one,
+            // regardless of who's inviting.
+            'organization_id' => $event->organization_id,
+            'franchise_partner_id' => $event->franchise_partner_id,
             'status' => 'invited',
             // Business expiry shown to the participant ("linkExpires"); also
             // what signs the URL below, so the two can never disagree.
@@ -138,7 +146,7 @@ class ParticipantController extends Controller
 
     public function destroy(Request $request, Event $event, Participant $participant): RedirectResponse
     {
-        abort_unless($request->user()->organization_id !== null, 403);
+        $this->authorizeParticipantManagement($request);
         abort_unless($participant->event_id === $event->id, 404);
 
         $name = $participant->name;
@@ -156,7 +164,7 @@ class ParticipantController extends Controller
 
     public function denyDeletionRequest(Request $request, Event $event, Participant $participant): RedirectResponse
     {
-        abort_unless($request->user()->organization_id !== null, 403);
+        $this->authorizeParticipantManagement($request);
         abort_unless($participant->event_id === $event->id, 404);
 
         $participant->forceFill(['deletion_requested_at' => null])->save();
@@ -298,6 +306,19 @@ class ParticipantController extends Controller
                     ->values()
                 : [],
         ]);
+    }
+
+    /**
+     * Participant management (invite/view/remove) is organization-scoped
+     * staff's day-to-day job, but the agency (franchise/platform —
+     * 'events.manage', same permission EventController gates on) can do it
+     * too: they're the ones who set the event and its GDPR contract up in
+     * the first place, and shouldn't have to depend on the client's own
+     * account existing or being available to actually send invitations.
+     */
+    private function authorizeParticipantManagement(Request $request): void
+    {
+        abort_unless($request->user()->organization_id !== null || $request->user()->can('events.manage'), 403);
     }
 
     private function eventPayload(Participant $participant): array

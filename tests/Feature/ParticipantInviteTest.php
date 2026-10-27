@@ -2,11 +2,14 @@
 
 namespace Tests\Feature;
 
+use App\Actions\Tenancy\AssignRole;
 use App\Mail\ParticipantInvited;
 use App\Models\Event;
+use App\Models\FranchisePartner;
 use App\Models\Organization;
 use App\Models\Participant;
 use App\Models\User;
+use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
@@ -173,6 +176,50 @@ class ParticipantInviteTest extends TestCase
         // — withoutGlobalScopes() is what actually proves the other org's
         // row survived.
         $this->assertSame(1, Participant::withoutGlobalScopes()->count());
+    }
+
+    public function test_a_franchise_partner_admin_can_invite_a_participant_to_a_client_event_they_created(): void
+    {
+        Mail::fake();
+        $this->seed(RolesAndPermissionsSeeder::class);
+
+        $franchisePartner = FranchisePartner::factory()->create();
+        $organization = Organization::factory()->for($franchisePartner)->create();
+        $user = User::factory()->forFranchisePartner($franchisePartner)->create();
+        (new AssignRole)->grant($user, 'franchise-partner-admin', 'test');
+        $event = Event::factory()->for($organization)->create(['franchise_partner_id' => $franchisePartner->id]);
+
+        $response = $this->actingAs($user)->post(route('participants.store', $event), [
+            'name' => 'Andrei Popescu',
+            'email' => 'andrei.popescu@exemplu.ro',
+        ]);
+
+        $response->assertRedirect();
+        $this->assertSame(1, Participant::count());
+
+        $this->actingAs($user)
+            ->get(route('participants.status', $event))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page->component('Participants/StatusBoard'));
+    }
+
+    public function test_a_franchise_partner_admin_cannot_invite_a_participant_to_another_franchises_event(): void
+    {
+        $this->seed(RolesAndPermissionsSeeder::class);
+
+        $ownFranchise = FranchisePartner::factory()->create();
+        $otherFranchise = FranchisePartner::factory()->create();
+        $otherOrganization = Organization::factory()->for($otherFranchise)->create();
+        $otherEvent = Event::factory()->for($otherOrganization)->create(['franchise_partner_id' => $otherFranchise->id]);
+
+        $user = User::factory()->forFranchisePartner($ownFranchise)->create();
+        (new AssignRole)->grant($user, 'franchise-partner-admin', 'test');
+
+        $this->actingAs($user)
+            ->post(route('participants.store', $otherEvent), ['name' => 'x', 'email' => 'x@example.test'])
+            ->assertNotFound();
+
+        $this->assertSame(0, Participant::count());
     }
 
     public function test_a_restaurant_event_cannot_have_participants_invited(): void
