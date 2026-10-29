@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Event;
+use App\Support\FlashMessage;
 use App\Support\QrCode;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -34,12 +35,33 @@ class GalleryController extends Controller
 {
     public function index(Request $request, Event $event): Response
     {
-        abort_unless($request->user()->can('media.upload') || $request->user()->can('media.publish'), 403);
+        // events.manage holders (franchise/platform — the only ones who can
+        // create an event at all, see EventController) couldn't reach this
+        // page before: a restaurant-type event has nothing else to click
+        // into (no participants/check-in), leaving no way to even see the
+        // public gallery link/QR they need to hand the client. They still
+        // can't upload/publish themselves (canUpload/canPublish below stay
+        // false for them) — only that they can see the page.
+        abort_unless(
+            $request->user()->can('media.upload') || $request->user()->can('media.publish') || $request->user()->can('events.manage'),
+            403
+        );
 
         $publicGalleryUrl = $this->publicGalleryUrl($event);
 
+        // Restaurant events have no participants.status page (404s, by
+        // design — see ParticipantController::statusBoard()) to come back
+        // to, and a franchise/platform viewer with no organization_id of
+        // their own never reaches that page at all regardless of event
+        // type — route both cases back to the client's event list instead.
+        $backUrl = $event->is_restaurant || $request->user()->organization_id === null
+            ? route('organizations.events', $event->organization)
+            : route('participants.status', $event);
+
         return Inertia::render('Events/Gallery', [
             'event' => ['id' => $event->id, 'name' => $event->name],
+            'backUrl' => $backUrl,
+            'canUpload' => $request->user()->can('media.upload'),
             'canPublish' => $request->user()->can('media.publish'),
             'canModerateRemovals' => $request->user()->can('media.moderate-deletion-requests'),
             'photos' => $event->getMedia('gallery')->map(fn (Media $media) => $this->photoPayload($media))->values(),
@@ -65,7 +87,7 @@ class GalleryController extends Controller
 
         activity()->causedBy($request->user())->performedOn($event)->log('photos uploaded');
 
-        return back()->with('status', 'Fotografii/video-uri încărcate.');
+        return back()->with('status', FlashMessage::t($request->user()->locale ?? 'ro', 'gallery.uploaded'));
     }
 
     public function publish(Request $request, Event $event, Media $media): RedirectResponse
@@ -104,7 +126,7 @@ class GalleryController extends Controller
 
         $media->delete();
 
-        return back()->with('status', 'Fotografie ștearsă.');
+        return back()->with('status', FlashMessage::t($request->user()->locale ?? 'ro', 'gallery.photo_deleted'));
     }
 
     public function denyRemoval(Request $request, Event $event, Media $media): RedirectResponse
@@ -120,7 +142,7 @@ class GalleryController extends Controller
 
         activity()->causedBy($request->user())->performedOn($event)->log('photo removal request declined');
 
-        return back()->with('status', 'Cerere de eliminare respinsă.');
+        return back()->with('status', FlashMessage::t($request->user()->locale ?? 'ro', 'gallery.removal_denied'));
     }
 
     /**

@@ -8,6 +8,7 @@ use App\Models\Event;
 use App\Models\FranchisePartner;
 use App\Models\Organization;
 use App\Models\User;
+use App\Support\FlashMessage;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -49,6 +50,33 @@ class OrganizationController extends Controller
                 'status' => $organization->contract_status,
             ]),
         ]);
+    }
+
+    /**
+     * Every organization is created with contract_status = 'onboarding'
+     * (the column's own DB default) and nothing ever moved it — there was
+     * simply no control to do it with. A franchise/platform actor can now
+     * set it directly from the client list, same authorization as
+     * index()/create() since it's the same "franchise/system-level staff
+     * manage clients" screen.
+     */
+    public function updateStatus(Request $request, Organization $organization): RedirectResponse
+    {
+        abort_if($request->user()->organization_id !== null, 403);
+
+        $data = $request->validate([
+            'contract_status' => ['required', Rule::in(['onboarding', 'active', 'suspended'])],
+        ]);
+
+        $organization->forceFill($data)->save();
+
+        activity()
+            ->causedBy($request->user())
+            ->performedOn($organization)
+            ->withProperties(['status' => $data['contract_status']])
+            ->log('organization status changed');
+
+        return back();
     }
 
     /**
@@ -140,7 +168,7 @@ class OrganizationController extends Controller
         );
 
         return redirect()->route('organizations.index')
-            ->with('status', "Organizație creată: {$organization->name}")
+            ->with('status', FlashMessage::t($request->user()->locale ?? 'ro', 'organization.created', ['name' => $organization->name]))
             ->with('newAdminEmail', $admin->email)
             ->with('newAdminPassword', $password)
             ->with('newAdminEmailSent', $emailSent);

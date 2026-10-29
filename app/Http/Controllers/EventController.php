@@ -7,6 +7,7 @@ use App\Actions\Tenancy\SendAccountCreatedEmail;
 use App\Models\Event;
 use App\Models\Organization;
 use App\Models\User;
+use App\Support\FlashMessage;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -119,7 +120,7 @@ class EventController extends Controller
             ->log('event created');
 
         return redirect()->route('organizations.events', $organization)
-            ->with('status', "Eveniment creat: {$event->name}")
+            ->with('status', FlashMessage::t($request->user()->locale ?? 'ro', 'event.created', ['name' => $event->name]))
             ->with('photographerEmailSent', $photographerEmailSent);
     }
 
@@ -178,6 +179,6 @@ class EventController extends Controller
         $event->delete();
 
         return redirect()->route('organizations.events', $organization)
-            ->with('status', "Eveniment șters: {$name}");
+            ->with('status', FlashMessage::t($request->user()->locale ?? 'ro', 'event.deleted', ['name' => $name]));
     }
 }

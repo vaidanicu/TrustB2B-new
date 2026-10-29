@@ -123,4 +123,42 @@ class OrganizationCreationTest extends TestCase
         $response->assertSessionHasErrors('admin_email');
         $this->assertSame(0, Organization::count());
     }
+
+    public function test_a_franchise_partner_admin_can_change_a_clients_contract_status(): void
+    {
+        $franchisePartner = FranchisePartner::factory()->create();
+        $organization = Organization::factory()->for($franchisePartner)->create(['contract_status' => 'onboarding']);
+        $user = User::factory()->forFranchisePartner($franchisePartner)->create();
+
+        $this->actingAs($user)
+            ->patch(route('organizations.update-status', $organization), ['contract_status' => 'active'])
+            ->assertRedirect();
+
+        $this->assertSame('active', $organization->fresh()->contract_status);
+    }
+
+    public function test_an_invalid_status_value_is_rejected(): void
+    {
+        $franchisePartner = FranchisePartner::factory()->create();
+        $organization = Organization::factory()->for($franchisePartner)->create(['contract_status' => 'onboarding']);
+        $user = User::factory()->forFranchisePartner($franchisePartner)->create();
+
+        $this->actingAs($user)
+            ->patch(route('organizations.update-status', $organization), ['contract_status' => 'not-a-real-status'])
+            ->assertSessionHasErrors('contract_status');
+
+        $this->assertSame('onboarding', $organization->fresh()->contract_status);
+    }
+
+    public function test_an_organization_scoped_user_cannot_change_their_own_contract_status(): void
+    {
+        $organization = Organization::factory()->create(['contract_status' => 'onboarding']);
+        $user = User::factory()->forOrganization($organization)->create();
+
+        $this->actingAs($user)
+            ->patch(route('organizations.update-status', $organization), ['contract_status' => 'active'])
+            ->assertForbidden();
+
+        $this->assertSame('onboarding', $organization->fresh()->contract_status);
+    }
 }

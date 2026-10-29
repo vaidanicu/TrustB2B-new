@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Actions\Tenancy\AssignRole;
 use App\Models\Event;
+use App\Models\FranchisePartner;
 use App\Models\Organization;
 use App\Models\Participant;
 use App\Models\User;
@@ -89,13 +90,21 @@ class GalleryTest extends TestCase
         $this->assertTrue((bool) $photo->fresh()->getCustomProperty('published'));
     }
 
-    public function test_a_platform_admin_cannot_upload_or_view_the_gallery(): void
+    public function test_a_platform_admin_can_view_but_not_upload_to_the_gallery(): void
     {
+        // events.manage (granted to platform-admin, see RolesAndPermissionsSeeder)
+        // is enough to view — they're the one who set the event up and needs
+        // the public gallery link/QR to hand to the client — but not to
+        // upload: that stays with the org's own staff/designated photographer.
         $event = Event::factory()->create();
         $platformAdmin = User::factory()->create();
         $platformAdmin->assignRole('platform-admin');
 
-        $this->actingAs($platformAdmin)->get(route('gallery.index', $event))->assertForbidden();
+        $this->actingAs($platformAdmin)
+            ->get(route('gallery.index', $event))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page->component('Events/Gallery')->where('canUpload', false));
+
         $this->actingAs($platformAdmin)
             ->post(route('gallery.store', $event), ['photos' => [UploadedFile::fake()->image('photo.jpg')]])
             ->assertForbidden();
@@ -283,6 +292,29 @@ class GalleryTest extends TestCase
         $photo->refresh();
         $this->assertSame(1, $event->fresh()->getMedia('gallery')->count());
         $this->assertFalse((bool) $photo->getCustomProperty('deletion_requested'));
+    }
+
+    public function test_a_franchise_partner_admin_can_open_the_gallery_of_a_restaurant_event_they_created(): void
+    {
+        // The actual reported bug: a restaurant event has no participants
+        // page (404s on purpose) and previously no gallery access for its
+        // own creator either, leaving nothing at all to click into from
+        // Organizations/Events.jsx except "Șterge".
+        $franchisePartner = FranchisePartner::factory()->create();
+        $organization = Organization::factory()->for($franchisePartner)->create();
+        $event = Event::factory()->for($organization)->create([
+            'franchise_partner_id' => $franchisePartner->id,
+            'is_restaurant' => true,
+        ]);
+
+        $user = User::factory()->forFranchisePartner($franchisePartner)->create();
+        (new AssignRole)->grant($user, 'franchise-partner-admin', 'test');
+
+        $this->actingAs($user)
+            ->get(route('gallery.index', $event))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page->component('Events/Gallery')
+                ->where('backUrl', route('organizations.events', $organization)));
     }
 
     public function test_a_photographer_cannot_moderate_removal_requests(): void

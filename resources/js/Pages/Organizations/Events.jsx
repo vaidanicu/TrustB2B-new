@@ -100,6 +100,9 @@ export default function Events({ organization, events }) {
                                                 </Link>
                                             </>
                                         )}
+                                        <Link href={route('gallery.index', event.id)} className="text-xs text-accent underline">
+                                            {oe.gallery}
+                                        </Link>
                                         <button type="button" onClick={destroy} className="text-xs text-ink-muted underline hover:text-danger-ink">
                                             {oe.delete}
                                         </button>

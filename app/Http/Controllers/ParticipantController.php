@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Mail\ParticipantInvited;
 use App\Models\Event;
 use App\Models\Participant;
+use App\Support\FlashMessage;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -148,7 +149,7 @@ class ParticipantController extends Controller
             ]);
         }
 
-        return back()->with('status', "Invitație creată pentru {$participant->name}")
+        return back()->with('status', FlashMessage::t($request->user()->locale ?? 'ro', 'participant.invited', ['name' => $participant->name]))
             ->with('invitationUrl', $invitationUrl)
             ->with('invitationEmailSent', $emailSent);
     }
@@ -168,7 +169,7 @@ class ParticipantController extends Controller
 
         $participant->delete();
 
-        return back()->with('status', "Participant șters: {$name}");
+        return back()->with('status', FlashMessage::t($request->user()->locale ?? 'ro', 'participant.deleted', ['name' => $name]));
     }
 
     public function denyDeletionRequest(Request $request, Event $event, Participant $participant): RedirectResponse
@@ -183,7 +184,7 @@ class ParticipantController extends Controller
             ->performedOn($participant)
             ->log('deletion request declined');
 
-        return back()->with('status', "Cerere de ștergere respinsă pentru {$participant->name}");
+        return back()->with('status', FlashMessage::t($request->user()->locale ?? 'ro', 'participant.deletion_denied', ['name' => $participant->name]));
     }
 
     /**

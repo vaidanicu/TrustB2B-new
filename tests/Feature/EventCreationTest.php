@@ -65,6 +65,30 @@ class EventCreationTest extends TestCase
         $this->assertNotNull($event->gdpr_contract_text);
     }
 
+    public function test_the_created_flash_message_matches_the_actors_locale(): void
+    {
+        $this->seed(RolesAndPermissionsSeeder::class);
+
+        $franchisePartner = FranchisePartner::factory()->create();
+        $organization = Organization::factory()->for($franchisePartner)->create();
+        $user = $this->franchisePartnerAdmin($franchisePartner);
+        $user->forceFill(['locale' => 'de'])->save();
+
+        $response = $this->actingAs($user)->post(route('events.store'), [
+            'organization_id' => $organization->id,
+            'name' => 'Firmenevent',
+            'country' => 'RO',
+            'language' => 'ro',
+            'starts_at' => '2026-12-01',
+            'ends_at' => '2026-12-01',
+            'retention_days' => 90,
+            'end_of_cycle_action' => 'delete',
+            'gdpr_contract_text' => 'Text.',
+        ]);
+
+        $response->assertSessionHas('status', 'Event erstellt: Firmenevent');
+    }
+
     public function test_client_billing_details_are_stored_on_the_event(): void
     {
         $this->seed(RolesAndPermissionsSeeder::class);

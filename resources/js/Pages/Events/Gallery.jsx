@@ -74,7 +74,7 @@ function PublicGalleryCard({ url, qrSvg, t }) {
     );
 }
 
-function PhotoCard({ photo, eventId, canPublish, canModerateRemovals, t }) {
+function PhotoCard({ photo, eventId, canUpload, canPublish, canModerateRemovals, t }) {
     function publish() {
         router.patch(route('gallery.publish', [eventId, photo.id]), {}, { preserveScroll: true });
     }
@@ -140,16 +140,18 @@ function PhotoCard({ photo, eventId, canPublish, canModerateRemovals, t }) {
                     <a href={photo.url} download={photo.fileName} className="text-xs text-ink-muted underline hover:text-ink">
                         {t.gallery.download}
                     </a>
-                    <button type="button" onClick={destroy} className="text-xs text-ink-muted underline hover:text-danger-ink">
-                        {t.gallery.delete}
-                    </button>
+                    {canUpload && (
+                        <button type="button" onClick={destroy} className="text-xs text-ink-muted underline hover:text-danger-ink">
+                            {t.gallery.delete}
+                        </button>
+                    )}
                 </div>
             </div>
         </div>
     );
 }
 
-export default function Gallery({ event, photos, canPublish, canModerateRemovals, publicGalleryUrl, publicGalleryQrSvg }) {
+export default function Gallery({ event, backUrl, photos, canUpload, canPublish, canModerateRemovals, publicGalleryUrl, publicGalleryQrSvg }) {
     const { flash } = usePage().props;
     const { t } = useAppTranslations();
 
@@ -159,7 +161,7 @@ export default function Gallery({ event, photos, canPublish, canModerateRemovals
 
             <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
                 <div className="-mt-2 mb-6 flex items-center justify-between">
-                    <Link href={route('participants.status', event.id)} className="text-sm text-ink-muted hover:text-ink">
+                    <Link href={backUrl} className="text-sm text-ink-muted hover:text-ink">
                         {t.gallery.back}
                     </Link>
                 </div>
@@ -172,7 +174,7 @@ export default function Gallery({ event, photos, canPublish, canModerateRemovals
 
                 <PublicGalleryCard url={publicGalleryUrl} qrSvg={publicGalleryQrSvg} t={t} />
 
-                <UploadForm eventId={event.id} t={t} />
+                {canUpload && <UploadForm eventId={event.id} t={t} />}
 
                 {photos.length === 0 ? (
                     <p className="rounded-lg bg-white px-5 py-10 text-center text-sm text-ink-muted shadow-sm">
@@ -185,6 +187,7 @@ export default function Gallery({ event, photos, canPublish, canModerateRemovals
                                 key={photo.id}
                                 photo={photo}
                                 eventId={event.id}
+                                canUpload={canUpload}
                                 canPublish={canPublish}
                                 canModerateRemovals={canModerateRemovals}
                                 t={t}

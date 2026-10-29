@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Actions\Tenancy\AssignRole;
 use App\Actions\Tenancy\SendAccountCreatedEmail;
 use App\Models\User;
+use App\Support\FlashMessage;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -87,7 +88,7 @@ class UserController extends Controller
         );
 
         return redirect()->route('users.index')
-            ->with('status', "Coleg adăugat: {$staff->name}")
+            ->with('status', FlashMessage::t($actor->locale ?? 'ro', 'user.added', ['name' => $staff->name]))
             ->with('newStaffEmail', $staff->email)
             ->with('newStaffPassword', $password)
             ->with('newStaffEmailSent', $emailSent);
@@ -103,7 +104,7 @@ class UserController extends Controller
         $name = $user->name;
         $user->delete();
 
-        return back()->with('status', "Coleg șters: {$name}");
+        return back()->with('status', FlashMessage::t($request->user()->locale ?? 'ro', 'user.deleted', ['name' => $name]));
     }
 
     private function authorizeTeamManagement(Request $request): void

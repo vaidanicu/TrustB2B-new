@@ -1,6 +1,6 @@
 import AppLayout from '@/Layouts/AppLayout';
 import { useAppTranslations } from '@/i18n/appTranslations';
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 
 function NewOrganizationButton({ label }) {
@@ -11,6 +11,24 @@ function NewOrganizationButton({ label }) {
         >
             {label}
         </Link>
+    );
+}
+
+function StatusSelect({ organization, style, t }) {
+    function change(e) {
+        router.patch(route('organizations.update-status', organization.id), { contract_status: e.target.value }, { preserveScroll: true });
+    }
+
+    return (
+        <select
+            value={organization.status}
+            onChange={change}
+            className={`w-fit rounded-full border-0 py-0.5 pl-2.5 pr-7 text-xs font-semibold focus:ring-2 focus:ring-accent ${style.bg} ${style.text}`}
+        >
+            <option value="onboarding">{t.statusOrganization.onboarding}</option>
+            <option value="active">{t.statusOrganization.active}</option>
+            <option value="suspended">{t.statusOrganization.suspended}</option>
+        </select>
     );
 }
 
@@ -90,10 +108,7 @@ export default function Index({ organizations }) {
                             >
                                 <span className="font-medium text-ink">{organization.name}</span>
                                 <span className="text-ink-soft">{organization.country}</span>
-                                <span className={`inline-flex w-fit items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold ${style.bg} ${style.text}`}>
-                                    <span className={`h-1.5 w-1.5 rounded-full ${style.dot}`} />
-                                    {style.label}
-                                </span>
+                                <StatusSelect organization={organization} style={style} t={t} />
                                 <span className="flex items-center justify-end">
                                     <Link href={route('organizations.events', organization.id)} className="text-xs text-accent underline">
                                         {t.organizations.events.title}
