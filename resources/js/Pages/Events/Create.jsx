@@ -30,11 +30,12 @@ function RadioCard({ name, value, checked, onChange, title, hint }) {
     );
 }
 
-function Field({ label, field, errors, ...props }) {
+function Field({ label, field, errors, hint, ...props }) {
     return (
         <div>
             <InputLabel value={label} />
             <TextInput className="mt-1 block w-full" {...field} {...props} />
+            {hint && <p className="mt-1 text-xs text-ink-muted">{hint}</p>}
             <InputError message={errors} className="mt-1" />
         </div>
     );
@@ -98,6 +99,7 @@ export default function Create({ organizations, selectedOrganizationId }) {
                                     <option key={organization.id} value={organization.id}>{organization.name}</option>
                                 ))}
                             </select>
+                            <p className="mt-1 text-xs text-ink-muted">{c.organizationHint}</p>
                             <InputError message={errors.organization_id} className="mt-1" />
                         </div>
 
@@ -118,12 +120,14 @@ export default function Create({ organizations, selectedOrganizationId }) {
                             placeholder={c.namePlaceholder}
                             field={{ value: data.name, onChange: (e) => setData('name', e.target.value) }}
                             errors={errors.name}
+                            hint={c.nameHint}
                         />
                         <Field
                             label={c.purposeLabel}
                             placeholder={c.purposePlaceholder}
                             field={{ value: data.purpose, onChange: (e) => setData('purpose', e.target.value) }}
                             errors={errors.purpose}
+                            hint={c.purposeHint}
                         />
                         <div className="grid grid-cols-2 gap-4">
                             <Field
@@ -131,12 +135,14 @@ export default function Create({ organizations, selectedOrganizationId }) {
                                 type="date"
                                 field={{ value: data.starts_at, onChange: (e) => setData('starts_at', e.target.value) }}
                                 errors={errors.starts_at}
+                                hint={c.startHint}
                             />
                             <Field
                                 label={c.endLabel}
                                 type="date"
                                 field={{ value: data.ends_at, onChange: (e) => setData('ends_at', e.target.value) }}
                                 errors={errors.ends_at}
+                                hint={c.endHint}
                             />
                         </div>
                     </div>
@@ -147,10 +153,10 @@ export default function Create({ organizations, selectedOrganizationId }) {
                     <p className="mt-0.5 text-sm text-ink-muted">{c.sectionClientBody}</p>
 
                     <div className="mt-5 grid grid-cols-2 gap-x-4 gap-y-4">
-                        <Field label={c.clientContactNameLabel} placeholder={c.optional} field={{ value: data.client_contact_name, onChange: (e) => setData('client_contact_name', e.target.value) }} errors={errors.client_contact_name} />
-                        <Field label={c.clientContactEmailLabel} type="email" placeholder={c.optional} field={{ value: data.client_contact_email, onChange: (e) => setData('client_contact_email', e.target.value) }} errors={errors.client_contact_email} />
-                        <Field label={c.clientAddressLabel} placeholder={c.optional} field={{ value: data.client_address, onChange: (e) => setData('client_address', e.target.value) }} errors={errors.client_address} />
-                        <Field label={c.clientTaxNumberLabel} placeholder={c.optional} field={{ value: data.client_tax_number, onChange: (e) => setData('client_tax_number', e.target.value) }} errors={errors.client_tax_number} />
+                        <Field label={c.clientContactNameLabel} placeholder={c.optional} field={{ value: data.client_contact_name, onChange: (e) => setData('client_contact_name', e.target.value) }} errors={errors.client_contact_name} hint={c.clientContactNameHint} />
+                        <Field label={c.clientContactEmailLabel} type="email" placeholder={c.optional} field={{ value: data.client_contact_email, onChange: (e) => setData('client_contact_email', e.target.value) }} errors={errors.client_contact_email} hint={c.clientContactEmailHint} />
+                        <Field label={c.clientAddressLabel} placeholder={c.optional} field={{ value: data.client_address, onChange: (e) => setData('client_address', e.target.value) }} errors={errors.client_address} hint={c.clientAddressHint} />
+                        <Field label={c.clientTaxNumberLabel} placeholder={c.optional} field={{ value: data.client_tax_number, onChange: (e) => setData('client_tax_number', e.target.value) }} errors={errors.client_tax_number} hint={c.clientTaxNumberHint} />
                     </div>
                 </section>
 
@@ -209,28 +215,22 @@ export default function Create({ organizations, selectedOrganizationId }) {
                     <p className="mt-0.5 text-sm text-ink-muted">{c.sectionRolesBody}</p>
 
                     <div className="mt-5 grid grid-cols-2 gap-x-4 gap-y-4">
-                        <Field label={c.organizerLabel} field={{ value: data.organizer, onChange: (e) => setData('organizer', e.target.value) }} errors={errors.organizer} />
-                        <Field label={c.coOrganizerLabel} placeholder={c.optional} field={{ value: data.co_organizer, onChange: (e) => setData('co_organizer', e.target.value) }} errors={errors.co_organizer} />
-                        <Field label={c.locationLabel} field={{ value: data.location, onChange: (e) => setData('location', e.target.value) }} errors={errors.location} />
-                        <Field label={c.agencyLabel} placeholder={c.optional} field={{ value: data.agency, onChange: (e) => setData('agency', e.target.value) }} errors={errors.agency} />
-                        <Field label={c.photographerLabel} placeholder={c.optional} field={{ value: data.photographer, onChange: (e) => setData('photographer', e.target.value) }} errors={errors.photographer} />
-                        <div>
-                            <Field
-                                label={c.photographerEmailLabel}
-                                type="email"
-                                placeholder={c.optional}
-                                field={{ value: data.photographer_email, onChange: (e) => setData('photographer_email', e.target.value) }}
-                                errors={errors.photographer_email}
-                            />
-                            <p className="mt-1 text-xs text-ink-muted">{c.photographerEmailHint}</p>
-                        </div>
-                        <div>
-                            <Field label={c.dpoContactLabel} type="email" field={{ value: data.data_protection_contact, onChange: (e) => setData('data_protection_contact', e.target.value) }} errors={errors.data_protection_contact} />
-                            <p className="mt-1 text-xs text-ink-muted">{c.dpoContactHint}</p>
-                        </div>
+                        <Field label={c.organizerLabel} field={{ value: data.organizer, onChange: (e) => setData('organizer', e.target.value) }} errors={errors.organizer} hint={c.organizerHint} />
+                        <Field label={c.coOrganizerLabel} placeholder={c.optional} field={{ value: data.co_organizer, onChange: (e) => setData('co_organizer', e.target.value) }} errors={errors.co_organizer} hint={c.coOrganizerHint} />
+                        <Field label={c.locationLabel} field={{ value: data.location, onChange: (e) => setData('location', e.target.value) }} errors={errors.location} hint={c.locationHint} />
+                        <Field label={c.agencyLabel} placeholder={c.optional} field={{ value: data.agency, onChange: (e) => setData('agency', e.target.value) }} errors={errors.agency} hint={c.agencyHint} />
+                        <Field label={c.photographerLabel} placeholder={c.optional} field={{ value: data.photographer, onChange: (e) => setData('photographer', e.target.value) }} errors={errors.photographer} hint={c.photographerHint} />
+                        <Field
+                            label={c.photographerEmailLabel}
+                            type="email"
+                            placeholder={c.optional}
+                            field={{ value: data.photographer_email, onChange: (e) => setData('photographer_email', e.target.value) }}
+                            errors={errors.photographer_email}
+                            hint={c.photographerEmailHint}
+                        />
+                        <Field label={c.dpoContactLabel} type="email" field={{ value: data.data_protection_contact, onChange: (e) => setData('data_protection_contact', e.target.value) }} errors={errors.data_protection_contact} hint={c.dpoContactHint} />
                         <div className="col-span-2">
-                            <Field label={c.finalRecipientLabel} field={{ value: data.final_package_recipient, onChange: (e) => setData('final_package_recipient', e.target.value) }} errors={errors.final_package_recipient} />
-                            <p className="mt-1 text-xs text-ink-muted">{c.finalRecipientHint}</p>
+                            <Field label={c.finalRecipientLabel} field={{ value: data.final_package_recipient, onChange: (e) => setData('final_package_recipient', e.target.value) }} errors={errors.final_package_recipient} hint={c.finalRecipientHint} />
                         </div>
                     </div>
                 </section>
