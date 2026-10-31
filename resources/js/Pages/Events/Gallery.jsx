@@ -59,7 +59,7 @@ function PublicGalleryCard({ url, qrSvg, t }) {
 
     return (
         <div className="mb-6 flex flex-wrap items-center gap-5 rounded-lg bg-white p-4 shadow-sm">
-            <div className="h-24 w-24 shrink-0" dangerouslySetInnerHTML={{ __html: qrSvg }} />
+            <div className="h-24 w-24 shrink-0 [&>svg]:h-full [&>svg]:w-full" dangerouslySetInnerHTML={{ __html: qrSvg }} />
             <div className="min-w-[220px] flex-1">
                 <p className="text-sm font-medium text-ink">{t.gallery.publicGalleryTitle}</p>
                 <p className="mt-0.5 text-xs text-ink-muted">{t.gallery.publicGalleryHint}</p>
