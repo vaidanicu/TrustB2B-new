@@ -30,13 +30,32 @@ function RadioCard({ name, value, checked, onChange, title, hint }) {
     );
 }
 
-function Field({ label, field, errors, hint, ...props }) {
+function Field({ label, field, errors, hint, required, ...props }) {
     return (
         <div>
-            <InputLabel value={label} />
+            <InputLabel value={label} required={required} />
             <TextInput className="mt-1 block w-full" {...field} {...props} />
             {hint && <p className="mt-1 text-xs text-ink-muted">{hint}</p>}
             <InputError message={errors} className="mt-1" />
+        </div>
+    );
+}
+
+function ErrorSummary({ errors, title }) {
+    const messages = Object.values(errors).filter(Boolean);
+
+    if (messages.length === 0) {
+        return null;
+    }
+
+    return (
+        <div className="rounded-lg border border-danger bg-danger-soft px-5 py-4">
+            <p className="text-sm font-semibold text-danger-ink">{title}</p>
+            <ul className="mt-2 list-disc pl-5 text-sm text-danger-ink">
+                {messages.map((message, index) => (
+                    <li key={index}>{message}</li>
+                ))}
+            </ul>
         </div>
     );
 }
@@ -82,13 +101,15 @@ export default function Create({ organizations, selectedOrganizationId }) {
             <Head title={c.title} />
 
             <form onSubmit={submit} className="mx-auto flex max-w-3xl flex-col gap-6 px-4 py-8 sm:px-6 lg:px-8">
+                <ErrorSummary errors={errors} title={c.errorSummaryTitle} />
+
                 <section className="rounded-lg bg-white p-7 shadow-sm">
                     <h2 className="text-base font-semibold text-ink">{c.sectionDetailsTitle}</h2>
                     <p className="mt-0.5 text-sm text-ink-muted">{c.sectionDetailsBody}</p>
 
                     <div className="mt-5 flex flex-col gap-4">
                         <div>
-                            <InputLabel value={c.organizationLabel} />
+                            <InputLabel value={c.organizationLabel} required />
                             <select
                                 value={data.organization_id}
                                 onChange={(e) => setData('organization_id', e.target.value)}
@@ -121,6 +142,7 @@ export default function Create({ organizations, selectedOrganizationId }) {
                             field={{ value: data.name, onChange: (e) => setData('name', e.target.value) }}
                             errors={errors.name}
                             hint={c.nameHint}
+                            required
                         />
                         <Field
                             label={c.purposeLabel}
@@ -136,6 +158,7 @@ export default function Create({ organizations, selectedOrganizationId }) {
                                 field={{ value: data.starts_at, onChange: (e) => setData('starts_at', e.target.value) }}
                                 errors={errors.starts_at}
                                 hint={c.startHint}
+                                required
                             />
                             <Field
                                 label={c.endLabel}
@@ -143,6 +166,7 @@ export default function Create({ organizations, selectedOrganizationId }) {
                                 field={{ value: data.ends_at, onChange: (e) => setData('ends_at', e.target.value) }}
                                 errors={errors.ends_at}
                                 hint={c.endHint}
+                                required
                             />
                         </div>
                     </div>
@@ -241,7 +265,7 @@ export default function Create({ organizations, selectedOrganizationId }) {
                         <p className="mt-0.5 text-sm text-ink-muted">{c.sectionGdprBody}</p>
 
                         <div className="mt-5">
-                            <InputLabel value={c.gdprContractLabel} />
+                            <InputLabel value={c.gdprContractLabel} required />
                             <textarea
                                 value={data.gdpr_contract_text}
                                 onChange={(e) => setData('gdpr_contract_text', e.target.value)}
