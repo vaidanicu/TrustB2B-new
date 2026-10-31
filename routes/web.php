@@ -4,6 +4,7 @@ use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\Auth\TwoFactorChallengeController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\EventExportController;
 use App\Http\Controllers\GalleryController;
 use App\Http\Controllers\GuideController;
 use App\Http\Controllers\LocaleController;
@@ -54,6 +55,14 @@ Route::middleware('signed')->group(function () {
     // verbs share the same signed address, same reasoning as above.
     Route::get('/evenimente/{event}/galerie', [GalleryController::class, 'publicGallery'])->name('gallery.public');
     Route::post('/evenimente/{event}/galerie', [GalleryController::class, 'requestRemoval'])->name('gallery.public.request-removal');
+
+    // The "export" end-of-cycle package (ProcessEventRetentionCommand) —
+    // one emailed link shared by show()/confirm(), same GET/POST-same-URL
+    // pattern as above; download() mints its own short-lived signature
+    // fresh each time show() renders, see EventExportController.
+    Route::get('/evenimente/{event}/pachet', [EventExportController::class, 'show'])->name('events.export.show');
+    Route::get('/evenimente/{event}/pachet/descarca', [EventExportController::class, 'download'])->name('events.export.download');
+    Route::post('/evenimente/{event}/pachet', [EventExportController::class, 'confirm'])->name('events.export.confirm');
 });
 
 Route::middleware(['app-domain', 'auth', 'verified'])->group(function () {

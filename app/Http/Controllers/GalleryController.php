@@ -216,7 +216,7 @@ class GalleryController extends Controller
     {
         return URL::temporarySignedRoute(
             'gallery.public',
-            $event->ends_at->copy()->addDays($event->retention_days),
+            $event->retentionDeadline(),
             ['event' => $event->id],
         );
     }

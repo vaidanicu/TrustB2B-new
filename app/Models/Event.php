@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\BelongsToOrganization;
+use Carbon\CarbonInterface;
 use Database\Factories\EventFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -34,6 +35,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
     'organization_id', 'is_restaurant', 'gdpr_contract_text',
     'client_contact_name', 'client_contact_email', 'client_address', 'client_tax_number',
     'photographer_user_id',
+    'retention_processed_at', 'export_path', 'export_password', 'export_confirmed_at',
 ])]
 class Event extends Model implements HasMedia
 {
@@ -63,6 +65,8 @@ class Event extends Model implements HasMedia
             'ends_at' => 'date',
             'retention_days' => 'integer',
             'is_restaurant' => 'boolean',
+            'retention_processed_at' => 'datetime',
+            'export_confirmed_at' => 'datetime',
         ];
     }
 
@@ -93,5 +97,17 @@ class Event extends Model implements HasMedia
     public function participants(): HasMany
     {
         return $this->hasMany(Participant::class);
+    }
+
+    /**
+     * The one formula "has this event's gallery retention expired" is
+     * computed from, everywhere it's needed: the public gallery link's own
+     * expiry (GalleryController), and ProcessEventRetentionCommand's
+     * decision to delete/export. Keeping it in one place means the two can
+     * never silently drift apart.
+     */
+    public function retentionDeadline(): CarbonInterface
+    {
+        return $this->ends_at->copy()->addDays($this->retention_days);
     }
 }
