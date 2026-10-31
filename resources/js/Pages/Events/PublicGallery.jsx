@@ -10,7 +10,7 @@ function isVideo(url) {
 }
 
 function RemovalRequestForm({ photo, signedUrl, onDone }) {
-    const { data, setData, post, processing, errors } = useForm({ media_id: photo.id, reason: '' });
+    const { data, setData, post, processing, errors } = useForm({ media_id: photo.id, reason: '', requester_name: '' });
 
     function submit(e) {
         e.preventDefault();
@@ -19,6 +19,13 @@ function RemovalRequestForm({ photo, signedUrl, onDone }) {
 
     return (
         <form onSubmit={submit} className="mt-2 flex flex-col gap-2">
+            <input
+                type="text"
+                value={data.requester_name}
+                onChange={(e) => setData('requester_name', e.target.value)}
+                placeholder="Numele tău (opțional, ca să știe organizatorul cine a cerut)"
+                className="block w-full rounded-md border-line text-xs shadow-sm focus:border-accent focus:ring-accent"
+            />
             <textarea
                 value={data.reason}
                 onChange={(e) => setData('reason', e.target.value)}

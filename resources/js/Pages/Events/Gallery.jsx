@@ -79,6 +79,10 @@ function PhotoCard({ photo, eventId, canUpload, canPublish, canModerateRemovals,
         router.patch(route('gallery.publish', [eventId, photo.id]), {}, { preserveScroll: true });
     }
 
+    function unpublish() {
+        router.patch(route('gallery.unpublish', [eventId, photo.id]), {}, { preserveScroll: true });
+    }
+
     function destroy() {
         if (confirm(t.gallery.confirmDelete)) {
             router.delete(route('gallery.destroy', [eventId, photo.id]), { preserveScroll: true });
@@ -116,6 +120,7 @@ function PhotoCard({ photo, eventId, canUpload, canPublish, canModerateRemovals,
             {photo.removalRequested && (
                 <div className="border-t border-danger-soft bg-danger-soft/40 px-2.5 py-2">
                     <p className="text-xs font-semibold text-danger-ink">{t.gallery.removalRequestedBadge}</p>
+                    {photo.removalRequestedBy && <p className="mt-0.5 text-xs font-medium text-ink">{photo.removalRequestedBy}</p>}
                     {photo.removalReason && <p className="mt-0.5 text-xs text-ink-soft">{photo.removalReason}</p>}
                     {canModerateRemovals && (
                         <div className="mt-1.5 flex items-center gap-3">
@@ -131,10 +136,16 @@ function PhotoCard({ photo, eventId, canUpload, canPublish, canModerateRemovals,
             )}
 
             <div className="flex items-center justify-between gap-2 p-2.5">
-                {canPublish && !photo.published ? (
-                    <button type="button" onClick={publish} className="text-xs font-semibold uppercase tracking-wide text-accent">
-                        {t.gallery.publish}
-                    </button>
+                {canPublish ? (
+                    photo.published ? (
+                        <button type="button" onClick={unpublish} className="text-xs font-semibold uppercase tracking-wide text-ink-muted">
+                            {t.gallery.unpublish}
+                        </button>
+                    ) : (
+                        <button type="button" onClick={publish} className="text-xs font-semibold uppercase tracking-wide text-accent">
+                            {t.gallery.publish}
+                        </button>
+                    )
                 ) : <span />}
                 <div className="flex items-center gap-2">
                     <a href={photo.url} download={photo.fileName} className="text-xs text-ink-muted underline hover:text-ink">

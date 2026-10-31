@@ -85,6 +85,7 @@ Route::middleware(['app-domain', 'auth', 'verified'])->group(function () {
     Route::get('/events/{event}/gallery', [GalleryController::class, 'index'])->name('gallery.index');
     Route::post('/events/{event}/gallery', [GalleryController::class, 'store'])->name('gallery.store');
     Route::patch('/events/{event}/gallery/{media}/publish', [GalleryController::class, 'publish'])->name('gallery.publish');
+    Route::patch('/events/{event}/gallery/{media}/ascunde', [GalleryController::class, 'unpublish'])->name('gallery.unpublish');
     Route::delete('/events/{event}/gallery/{media}', [GalleryController::class, 'destroy'])->name('gallery.destroy');
     Route::patch('/events/{event}/gallery/{media}/aproba-eliminare', [GalleryController::class, 'approveRemoval'])->name('gallery.approve-removal');
     Route::patch('/events/{event}/gallery/{media}/refuza-eliminare', [GalleryController::class, 'denyRemoval'])->name('gallery.deny-removal');

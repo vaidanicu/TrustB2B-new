@@ -16,10 +16,10 @@ use Illuminate\Support\Facades\URL;
 use Tests\TestCase;
 
 /**
- * The private event gallery: upload (media.upload) and publish
- * (media.publish) are separate permissions on purpose — see
- * GalleryController's docblock for why a photographer must never be able
- * to decide what participants see.
+ * The private event gallery: every upload publishes immediately (owner
+ * decision — trust the designated uploader), but hiding/moderating a
+ * photo afterward (media.publish) stays a separate permission from
+ * uploading it (media.upload) — see GalleryController's docblock.
  */
 class GalleryTest extends TestCase
 {
@@ -41,7 +41,7 @@ class GalleryTest extends TestCase
         return $user;
     }
 
-    public function test_a_customer_admin_can_upload_a_photo_as_a_draft(): void
+    public function test_a_customer_admin_can_upload_a_photo_and_it_is_published_immediately(): void
     {
         $organization = Organization::factory()->create();
         $event = Event::factory()->for($organization)->create(['franchise_partner_id' => $organization->franchise_partner_id]);
@@ -52,10 +52,10 @@ class GalleryTest extends TestCase
             ->assertRedirect();
 
         $photo = $event->fresh()->getMedia('gallery')->sole();
-        $this->assertFalse((bool) $photo->getCustomProperty('published'));
+        $this->assertTrue((bool) $photo->getCustomProperty('published'));
     }
 
-    public function test_a_photographer_can_upload_but_not_publish(): void
+    public function test_a_photographer_can_upload_but_cannot_hide_a_photo(): void
     {
         $organization = Organization::factory()->create();
         $event = Event::factory()->for($organization)->create(['franchise_partner_id' => $organization->franchise_partner_id]);
@@ -66,13 +66,14 @@ class GalleryTest extends TestCase
             ->assertRedirect();
 
         $photo = $event->fresh()->getMedia('gallery')->sole();
+        $this->assertTrue((bool) $photo->getCustomProperty('published'));
 
         $this->actingAs($photographer)
-            ->patch(route('gallery.publish', [$event, $photo]))
+            ->patch(route('gallery.unpublish', [$event, $photo]))
             ->assertForbidden();
     }
 
-    public function test_a_customer_admin_can_publish_an_uploaded_photo(): void
+    public function test_a_customer_admin_can_publish_a_draft_photo(): void
     {
         $organization = Organization::factory()->create();
         $event = Event::factory()->for($organization)->create(['franchise_partner_id' => $organization->franchise_partner_id]);
@@ -88,6 +89,24 @@ class GalleryTest extends TestCase
             ->assertRedirect();
 
         $this->assertTrue((bool) $photo->fresh()->getCustomProperty('published'));
+    }
+
+    public function test_a_customer_admin_can_hide_a_published_photo(): void
+    {
+        $organization = Organization::factory()->create();
+        $event = Event::factory()->for($organization)->create(['franchise_partner_id' => $organization->franchise_partner_id]);
+        $admin = $this->userWithRole($organization, 'customer-admin');
+
+        $event->addMedia(UploadedFile::fake()->image('photo.jpg'))
+            ->withCustomProperties(['published' => true])
+            ->toMediaCollection('gallery');
+        $photo = $event->getMedia('gallery')->sole();
+
+        $this->actingAs($admin)
+            ->patch(route('gallery.unpublish', [$event, $photo]))
+            ->assertRedirect();
+
+        $this->assertFalse((bool) $photo->fresh()->getCustomProperty('published'));
     }
 
     public function test_a_platform_admin_can_view_but_not_upload_to_the_gallery(): void
@@ -254,6 +273,27 @@ class GalleryTest extends TestCase
         $photo->refresh();
         $this->assertTrue((bool) $photo->getCustomProperty('deletion_requested'));
         $this->assertSame('Nu vreau să apar în poze.', $photo->getCustomProperty('deletion_reason'));
+    }
+
+    public function test_the_removal_request_can_include_an_optional_name_visible_to_the_organizer(): void
+    {
+        $organization = Organization::factory()->create();
+        $event = Event::factory()->for($organization)->create(['franchise_partner_id' => $organization->franchise_partner_id]);
+        $admin = $this->userWithRole($organization, 'customer-admin');
+
+        $event->addMedia(UploadedFile::fake()->image('published.jpg'))
+            ->withCustomProperties(['published' => true])
+            ->toMediaCollection('gallery');
+        $photo = $event->getMedia('gallery')->sole();
+
+        $signedUrl = URL::temporarySignedRoute('gallery.public', now()->addDay(), ['event' => $event->id]);
+
+        $this->post($signedUrl, ['media_id' => $photo->id, 'reason' => 'motiv', 'requester_name' => 'Maria Pop'])
+            ->assertRedirect();
+
+        $this->actingAs($admin)
+            ->get(route('gallery.index', $event))
+            ->assertInertia(fn ($page) => $page->where('photos.0.removalRequestedBy', 'Maria Pop'));
     }
 
     public function test_a_customer_admin_can_approve_a_removal_request_and_delete_the_photo(): void

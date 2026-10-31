@@ -15,14 +15,17 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 /**
  * The event gallery, two sides:
  *
- * - Organizer side (index/store/publish/destroy/approveRemoval/denyRemoval):
- *   upload (media.upload: the event's one designated photographer — see
- *   authorizeUpload() — or customer-admin/event-manager) and publish
- *   (media.publish) are deliberately separate permissions, seeded from day
- *   one in RolesAndPermissionsSeeder specifically so "Fotograf: nur
- *   Upload... kein Teilnehmerdatenexport" (roadmap §2) means something real
- *   here — a photographer can add photos but never decide what participants
- *   end up seeing.
+ * - Organizer side (index/store/publish/unpublish/destroy/approveRemoval/
+ *   denyRemoval): upload (media.upload: the event's one designated
+ *   photographer — see authorizeUpload() — or customer-admin/event-manager)
+ *   and moderate visibility (media.publish) are still separate permissions,
+ *   seeded from day one in RolesAndPermissionsSeeder for "Fotograf: nur
+ *   Upload... kein Teilnehmerdatenexport" (roadmap §2) — a photographer can
+ *   add photos but never moderate the gallery. Unlike the original design,
+ *   every upload is published the moment it lands (owner request: trust the
+ *   designated uploader, don't gate on a manual review step) — publish()/
+ *   unpublish() are now an after-the-fact hide/show toggle for
+ *   media.publish holders, not a pre-publication gate.
  * - Public side (publicGallery/requestRemoval): reached via one signed,
  *   per-EVENT (not per-participant) link/QR code — anyone who has it, not
  *   just someone who went through the invitation flow, can view published
@@ -81,7 +84,7 @@ class GalleryController extends Controller
 
         foreach ($request->file('photos') as $file) {
             $event->addMedia($file)
-                ->withCustomProperties(['published' => false, 'uploaded_by' => $request->user()->id])
+                ->withCustomProperties(['published' => true, 'uploaded_by' => $request->user()->id])
                 ->toMediaCollection('gallery');
         }
 
@@ -99,6 +102,24 @@ class GalleryController extends Controller
         $media->save();
 
         activity()->causedBy($request->user())->performedOn($event)->log('photo published');
+
+        return back();
+    }
+
+    /**
+     * The other half of publish() now that every upload goes live
+     * immediately — lets media.publish holders hide a photo (e.g. one that
+     * shouldn't have gone up) without deleting it outright.
+     */
+    public function unpublish(Request $request, Event $event, Media $media): RedirectResponse
+    {
+        abort_unless($request->user()->can('media.publish'), 403);
+        abort_unless($media->model_type === Event::class && $media->model_id === $event->id, 404);
+
+        $media->setCustomProperty('published', false);
+        $media->save();
+
+        activity()->causedBy($request->user())->performedOn($event)->log('photo hidden');
 
         return back();
     }
@@ -136,7 +157,7 @@ class GalleryController extends Controller
 
         $media->forceFill([
             'custom_properties' => collect($media->custom_properties)
-                ->except(['deletion_requested', 'deletion_reason', 'deletion_requested_at'])
+                ->except(['deletion_requested', 'deletion_reason', 'deletion_requested_at', 'deletion_requested_by'])
                 ->all(),
         ])->save();
 
@@ -177,6 +198,7 @@ class GalleryController extends Controller
         $data = $request->validate([
             'media_id' => ['required', 'integer'],
             'reason' => ['required', 'string', 'max:1000'],
+            'requester_name' => ['nullable', 'string', 'max:255'],
         ]);
 
         $media = $event->getMedia('gallery')->firstWhere('id', $data['media_id']);
@@ -185,6 +207,7 @@ class GalleryController extends Controller
         if (! $media->getCustomProperty('deletion_requested', false)) {
             $media->setCustomProperty('deletion_requested', true);
             $media->setCustomProperty('deletion_reason', $data['reason']);
+            $media->setCustomProperty('deletion_requested_by', $data['requester_name'] ?? null);
             $media->setCustomProperty('deletion_requested_at', now()->toIso8601String());
             $media->save();
 
@@ -204,6 +227,7 @@ class GalleryController extends Controller
             'published' => (bool) $media->getCustomProperty('published', false),
             'removalRequested' => (bool) $media->getCustomProperty('deletion_requested', false),
             'removalReason' => $media->getCustomProperty('deletion_reason'),
+            'removalRequestedBy' => $media->getCustomProperty('deletion_requested_by'),
         ];
     }
 
