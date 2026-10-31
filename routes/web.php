@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\Auth\TwoFactorChallengeController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ErrorLogController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\EventExportController;
 use App\Http\Controllers\GalleryController;
@@ -90,6 +91,7 @@ Route::middleware(['app-domain', 'auth', 'verified'])->group(function () {
     Route::patch('/events/{event}/gallery/{media}/aproba-eliminare', [GalleryController::class, 'approveRemoval'])->name('gallery.approve-removal');
     Route::patch('/events/{event}/gallery/{media}/refuza-eliminare', [GalleryController::class, 'denyRemoval'])->name('gallery.deny-removal');
     Route::get('/audit-log', [AuditLogController::class, 'index'])->name('audit-log.index');
+    Route::get('/erori', [ErrorLogController::class, 'index'])->name('error-log.index');
     Route::get('/echipa', [UserController::class, 'index'])->name('users.index');
     Route::get('/echipa/adauga', [UserController::class, 'create'])->name('users.create');
     Route::post('/echipa', [UserController::class, 'store'])->name('users.store');

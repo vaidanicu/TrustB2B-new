@@ -23,9 +23,11 @@ class RolesAndPermissionsSeeder extends Seeder
     private const ROLE_PERMISSIONS = [
         'platform-admin' => [
             'franchise-partners.manage', 'organizations.manage', 'users.manage', 'events.manage', 'audit-log.view',
+            'system.view-logs',
         ],
         'franchisor-admin' => [
             'franchise-partners.manage', 'organizations.manage', 'users.manage', 'events.manage', 'audit-log.view',
+            'system.view-logs',
         ],
         'franchise-partner-admin' => [
             'organizations.manage', 'users.manage', 'events.manage', 'audit-log.view',

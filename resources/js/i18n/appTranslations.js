@@ -6,7 +6,7 @@ export const APP_INTL_LOCALES = { ro: 'ro-RO', en: 'en-GB', de: 'de-DE' };
 
 export const APP_TRANSLATIONS = {
     ro: {
-        nav: { dashboard: 'Dashboard', organizations: 'Clienți', team: 'Echipă', auditLog: 'Jurnal audit', guide: 'Ghid', profile: 'Profil', logout: 'Ieșire' },
+        nav: { dashboard: 'Dashboard', organizations: 'Clienți', team: 'Echipă', auditLog: 'Jurnal audit', errorLog: 'Erori', guide: 'Ghid', profile: 'Profil', logout: 'Ieșire' },
         common: { cancel: 'Anulează', copy: 'Copiază', copied: 'Copiat ✓' },
         statusEvent: { active: 'Activ', draft: 'Ciornă', locked: 'Blocat', archived: 'Arhivat' },
         statusOrganization: { active: 'Activ', onboarding: 'În activare', suspended: 'Suspendat' },
@@ -224,6 +224,11 @@ export const APP_TRANSLATIONS = {
             colDateTime: 'Data / Ora', colActor: 'Actor', colAction: 'Acțiune', colObject: 'Obiect',
             empty: 'Niciun eveniment înregistrat încă.', role: 'rol',
         },
+        errorLog: {
+            title: 'Erori tehnice', subtitlePrefix: 'Ultimele', subtitleSuffix: 'erori înregistrate de aplicație.',
+            empty: 'Nicio eroare înregistrată încă.',
+            showDetails: 'Arată detalii', hideDetails: 'Ascunde detalii',
+        },
         gallery: {
             title: 'Galerie foto', back: '← Înapoi',
             uploadLabel: 'Adaugă fotografii sau video (JPEG, PNG, WebP, MP4, MOV, WebM)', uploadButton: 'Încarcă', uploading: 'Se încarcă…',
@@ -237,7 +242,7 @@ export const APP_TRANSLATIONS = {
         },
     },
     en: {
-        nav: { dashboard: 'Dashboard', organizations: 'Clients', team: 'Team', auditLog: 'Audit log', guide: 'Guide', profile: 'Profile', logout: 'Sign out' },
+        nav: { dashboard: 'Dashboard', organizations: 'Clients', team: 'Team', auditLog: 'Audit log', errorLog: 'Errors', guide: 'Guide', profile: 'Profile', logout: 'Sign out' },
         common: { cancel: 'Cancel', copy: 'Copy', copied: 'Copied ✓' },
         statusEvent: { active: 'Active', draft: 'Draft', locked: 'Locked', archived: 'Archived' },
         statusOrganization: { active: 'Active', onboarding: 'Onboarding', suspended: 'Suspended' },
@@ -455,6 +460,11 @@ export const APP_TRANSLATIONS = {
             colDateTime: 'Date / time', colActor: 'Actor', colAction: 'Action', colObject: 'Object',
             empty: 'No events recorded yet.', role: 'role',
         },
+        errorLog: {
+            title: 'Technical errors', subtitlePrefix: 'The last', subtitleSuffix: 'errors recorded by the application.',
+            empty: 'No errors recorded yet.',
+            showDetails: 'Show details', hideDetails: 'Hide details',
+        },
         gallery: {
             title: 'Photo gallery', back: '← Back',
             uploadLabel: 'Add photos or video (JPEG, PNG, WebP, MP4, MOV, WebM)', uploadButton: 'Upload', uploading: 'Uploading…',
@@ -468,7 +478,7 @@ export const APP_TRANSLATIONS = {
         },
     },
     de: {
-        nav: { dashboard: 'Dashboard', organizations: 'Kunden', team: 'Team', auditLog: 'Auditprotokoll', guide: 'Anleitung', profile: 'Profil', logout: 'Abmelden' },
+        nav: { dashboard: 'Dashboard', organizations: 'Kunden', team: 'Team', auditLog: 'Auditprotokoll', errorLog: 'Fehler', guide: 'Anleitung', profile: 'Profil', logout: 'Abmelden' },
         common: { cancel: 'Abbrechen', copy: 'Kopieren', copied: 'Kopiert ✓' },
         statusEvent: { active: 'Aktiv', draft: 'Entwurf', locked: 'Gesperrt', archived: 'Archiviert' },
         statusOrganization: { active: 'Aktiv', onboarding: 'In Einrichtung', suspended: 'Gesperrt' },
@@ -685,6 +695,11 @@ export const APP_TRANSLATIONS = {
             title: 'Auditprotokoll', subtitlePrefix: 'Die letzten', subtitleSuffix: 'Ereignisse, die für Ihre Organisation sichtbar sind.',
             colDateTime: 'Datum / Uhrzeit', colActor: 'Akteur', colAction: 'Aktion', colObject: 'Objekt',
             empty: 'Noch keine Ereignisse erfasst.', role: 'Rolle',
+        },
+        errorLog: {
+            title: 'Technische Fehler', subtitlePrefix: 'Die letzten', subtitleSuffix: 'von der Anwendung erfassten Fehler.',
+            empty: 'Noch keine Fehler erfasst.',
+            showDetails: 'Details anzeigen', hideDetails: 'Details ausblenden',
         },
         gallery: {
             title: 'Fotogalerie', back: '← Zurück',

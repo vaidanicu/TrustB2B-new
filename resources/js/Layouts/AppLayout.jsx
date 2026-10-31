@@ -36,7 +36,7 @@ function LocaleSwitcher({ current }) {
  * mockups' sample names. Deliberately separate from Breeze's own
  * AuthenticatedLayout, which Profile still uses unchanged.
  *
- * @param {'dashboard'|'organizations'|'audit-log'|'guide'|null} active
+ * @param {'dashboard'|'organizations'|'audit-log'|'error-log'|'guide'|null} active
  */
 export default function AppLayout({ title, active = null, actions = null, children }) {
     const { auth } = usePage().props;
@@ -57,6 +57,11 @@ export default function AppLayout({ title, active = null, actions = null, childr
     // for this one nav item, and matches exactly what UserController's
     // own authorizeTeamManagement() enforces server-side regardless.
     const canManageTeam = (user?.roles ?? []).includes('customer-admin');
+    // system.view-logs (RolesAndPermissionsSeeder) is only ever granted to
+    // these two roles — checking role names client-side avoids sharing a
+    // raw permissions array just for this one nav item, same reasoning as
+    // canManageTeam above.
+    const canViewErrorLog = (user?.roles ?? []).some((role) => ['platform-admin', 'franchisor-admin'].includes(role));
 
     const navItems = isOrganizationScope
         ? [
@@ -68,6 +73,7 @@ export default function AppLayout({ title, active = null, actions = null, childr
         : [
               { key: 'organizations', label: t.nav.organizations, href: route('organizations.index') },
               { key: 'audit-log', label: t.nav.auditLog, href: route('audit-log.index') },
+              ...(canViewErrorLog ? [{ key: 'error-log', label: t.nav.errorLog, href: route('error-log.index') }] : []),
               { key: 'guide', label: t.nav.guide, href: route('guide.index') },
           ];
 
