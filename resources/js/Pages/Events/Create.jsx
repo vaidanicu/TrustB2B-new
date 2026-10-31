@@ -224,9 +224,13 @@ export default function Create({ organizations, selectedOrganizationId }) {
                             />
                             <p className="mt-1 text-xs text-ink-muted">{c.photographerEmailHint}</p>
                         </div>
-                        <Field label={c.dpoContactLabel} type="email" field={{ value: data.data_protection_contact, onChange: (e) => setData('data_protection_contact', e.target.value) }} errors={errors.data_protection_contact} />
+                        <div>
+                            <Field label={c.dpoContactLabel} type="email" field={{ value: data.data_protection_contact, onChange: (e) => setData('data_protection_contact', e.target.value) }} errors={errors.data_protection_contact} />
+                            <p className="mt-1 text-xs text-ink-muted">{c.dpoContactHint}</p>
+                        </div>
                         <div className="col-span-2">
                             <Field label={c.finalRecipientLabel} field={{ value: data.final_package_recipient, onChange: (e) => setData('final_package_recipient', e.target.value) }} errors={errors.final_package_recipient} />
+                            <p className="mt-1 text-xs text-ink-muted">{c.finalRecipientHint}</p>
                         </div>
                     </div>
                 </section>
