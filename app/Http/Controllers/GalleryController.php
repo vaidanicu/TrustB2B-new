@@ -2,11 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\PhotoRemovalRequested;
 use App\Models\Event;
+use App\Models\User;
 use App\Support\FlashMessage;
 use App\Support\QrCode;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\URL;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -212,9 +216,45 @@ class GalleryController extends Controller
             $media->save();
 
             activity()->performedOn($event)->withProperties(['reason' => $data['reason']])->log('photo removal requested');
+
+            $this->notifyModerators($event, $data['requester_name'] ?? null, $data['reason']);
         }
 
         return redirect($request->fullUrl())->with('status', 'Cererea ta a fost trimisă — organizatorul o va analiza.');
+    }
+
+    /**
+     * One email per media.moderate-deletion-requests holder in the event's
+     * organization, each in their own locale — there is no single "acting
+     * user" locale to borrow here, the submitter is an anonymous public
+     * visitor. Never blocks the request itself: same non-blocking try/catch
+     * pattern as every other mail send in this app.
+     */
+    private function notifyModerators(Event $event, ?string $requesterName, string $reason): void
+    {
+        $galleryUrl = route('gallery.index', $event);
+
+        $moderators = User::where('organization_id', $event->organization_id)
+            ->permission('media.moderate-deletion-requests')
+            ->get();
+
+        foreach ($moderators as $moderator) {
+            try {
+                Mail::to($moderator->email)->send(new PhotoRemovalRequested(
+                    $event,
+                    $galleryUrl,
+                    $requesterName,
+                    $reason,
+                    $moderator->locale ?? 'ro',
+                ));
+            } catch (\Throwable $e) {
+                Log::warning('Photo removal request notification failed to send', [
+                    'event_id' => $event->id,
+                    'moderator_id' => $moderator->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
     }
 
     private function photoPayload(Media $media): array

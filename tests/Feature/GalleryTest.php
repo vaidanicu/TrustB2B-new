@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Actions\Tenancy\AssignRole;
+use App\Mail\PhotoRemovalRequested;
 use App\Models\Event;
 use App\Models\FranchisePartner;
 use App\Models\Organization;
@@ -11,6 +12,7 @@ use App\Models\User;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
 use Tests\TestCase;
@@ -273,6 +275,34 @@ class GalleryTest extends TestCase
         $photo->refresh();
         $this->assertTrue((bool) $photo->getCustomProperty('deletion_requested'));
         $this->assertSame('Nu vreau să apar în poze.', $photo->getCustomProperty('deletion_reason'));
+    }
+
+    public function test_a_removal_request_emails_every_moderator_in_the_organization(): void
+    {
+        Mail::fake();
+
+        $organization = Organization::factory()->create();
+        $event = Event::factory()->for($organization)->create(['franchise_partner_id' => $organization->franchise_partner_id]);
+        $admin = $this->userWithRole($organization, 'customer-admin');
+        $dpo = $this->userWithRole($organization, 'data-protection-officer');
+        // event-manager has media.upload/media.publish but NOT
+        // media.moderate-deletion-requests (RolesAndPermissionsSeeder) —
+        // must not receive this notification.
+        $this->userWithRole($organization, 'event-manager');
+
+        $event->addMedia(UploadedFile::fake()->image('published.jpg'))
+            ->withCustomProperties(['published' => true])
+            ->toMediaCollection('gallery');
+        $photo = $event->getMedia('gallery')->sole();
+
+        $signedUrl = URL::temporarySignedRoute('gallery.public', now()->addDay(), ['event' => $event->id]);
+
+        $this->post($signedUrl, ['media_id' => $photo->id, 'reason' => 'Nu vreau să apar în poze.', 'requester_name' => 'Ion Pop'])
+            ->assertRedirect();
+
+        Mail::assertSent(PhotoRemovalRequested::class, 2);
+        Mail::assertSent(PhotoRemovalRequested::class, fn (PhotoRemovalRequested $mail) => $mail->hasTo($admin->email) && $mail->requesterName === 'Ion Pop');
+        Mail::assertSent(PhotoRemovalRequested::class, fn (PhotoRemovalRequested $mail) => $mail->hasTo($dpo->email));
     }
 
     public function test_the_removal_request_can_include_an_optional_name_visible_to_the_organizer(): void
