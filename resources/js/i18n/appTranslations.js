@@ -188,6 +188,7 @@ export const APP_TRANSLATIONS = {
                 { title: 'Administrezi partenerii regionali din meniul „Parteneri”', body: 'Adaugi partenerii (nume + țară) care vă reprezintă în diverse țări — îi poți alege apoi ca responsabili de vânzare la fiecare eveniment, din secțiunea „Datele clientului”.' },
                 { title: 'Din lista de clienți, apasă „Evenimente” pe rândul clientului', body: 'Evenimentele sunt create doar de franciză/platformă, niciodată de client — aici le vezi și le administrezi pe ale lui.' },
                 { title: 'Apasă „Eveniment nou” și alegi tipul', body: '„Doar galerie foto” (tip restaurant) înseamnă fără participanți și fără contract GDPR — doar galerie. „Eveniment complet” cere și textul contractului GDPR (obligatoriu, plus un PDF opțional de contract), datele de facturare ale clientului și, opțional, emailul fotografului — platforma îi creează automat un cont dedicat, singurul care poate încărca poze la acel eveniment.' },
+                { title: 'Starea evenimentului se schimbă singură', body: 'Pornește „Ciornă”, trece automat în „Activ” la data de început, apoi în „Arhivat” după ce trece termenul de păstrare a pozelor — nu trebuie s-o schimbi manual.' },
                 { title: 'Poți invita chiar tu participanții la eveniment', body: 'Pe pagina „Evenimente” a clientului, apasă „Participanți” — nu trebuie să aștepți ca admin-ul clientului să facă el invitațiile, deși poate face și el asta din contul lui. Nu apare pentru evenimentele de tip restaurant.' },
             ],
             section2Eyebrow: 'Admin-ul unui client', section2Title: 'Cum gestionezi un eveniment deja creat, de la invitații la răspunsuri',
@@ -233,7 +234,6 @@ export const APP_TRANSLATIONS = {
             notYetTitle: 'Ce nu există încă în platformă',
             notYetItems: [
                 'Crearea unei francize noi direct din interfață — momentan se face doar prin acces tehnic direct.',
-                'Schimbarea manuală a stării unui eveniment (ciornă/activ/blocat/arhivat) din interfață.',
                 'Chestionarul trimis clientului rămâne, intenționat, complet în afara platformei.',
             ],
             footerPrefix: 'Ai nevoie de ceva ce nu există încă?', footerLink: 'Verifică jurnalul de audit', footerSuffix: 'sau spune-i direct dezvoltatorului.',
@@ -443,6 +443,7 @@ export const APP_TRANSLATIONS = {
                 { title: 'Manage regional partners under "Partners" in the menu', body: 'Add the partners (name + country) who represent you in different countries — you can then pick one as the sales-responsible party on each event, in the "Client\'s details" section.' },
                 { title: 'From the client list, click "Events" on the client\'s row', body: 'Events are only ever created by the franchise/platform, never by the client — this is where you see and manage theirs.' },
                 { title: 'Click "New event" and choose its type', body: '"Photo gallery only" (restaurant-type) means no participants and no GDPR contract — just a gallery. "Full event" also requires the GDPR contract text (required, plus an optional contract PDF), the client\'s billing details, and optionally the photographer\'s email — the platform automatically creates them a dedicated account, the only one allowed to upload photos to that event.' },
+                { title: "The event's status changes on its own", body: 'It starts as "Draft", automatically moves to "Active" on its start date, then to "Archived" once the photo retention period ends — you never change it by hand.' },
                 { title: 'You can invite participants to the event yourself', body: 'On the client\'s "Events" page, click "Participants" — you don\'t have to wait on the client\'s admin to send invitations, though they can do it too from their own account. Doesn\'t appear for restaurant-type events.' },
             ],
             section2Eyebrow: "A client's admin", section2Title: 'How to run an already-created event, from invitations to responses',
@@ -488,7 +489,6 @@ export const APP_TRANSLATIONS = {
             notYetTitle: "What the platform doesn't do yet",
             notYetItems: [
                 'Creating a new franchise partner from the interface — currently only possible through direct technical access.',
-                "Manually changing an event's status (draft/active/locked/archived) from the interface.",
                 'The questionnaire sent to the client is, deliberately, entirely outside the platform.',
             ],
             footerPrefix: 'Need something that doesn\'t exist yet?', footerLink: 'Check the audit log', footerSuffix: 'or tell the developer directly.',
@@ -698,6 +698,7 @@ export const APP_TRANSLATIONS = {
                 { title: 'Verwalten Sie regionale Partner unter „Partner" im Menü', body: 'Fügen Sie die Partner (Name + Land) hinzu, die Sie in verschiedenen Ländern vertreten — Sie können dann bei jedem Event einen als Verkaufszuständigen auswählen, im Abschnitt „Kundendaten".' },
                 { title: 'Klicken Sie in der Kundenliste auf „Events" bei der Zeile des Kunden', body: 'Events werden ausschließlich vom Franchise-/Plattform-Team erstellt, nie vom Kunden — hier sehen und verwalten Sie dessen Events.' },
                 { title: 'Klicken Sie auf „Neues Event" und wählen Sie den Typ', body: '„Nur Fotogalerie" (Typ Restaurant) bedeutet keine Teilnehmer und keinen GDPR-Vertrag — nur eine Galerie. „Vollständiges Event" erfordert zusätzlich den GDPR-Vertragstext (Pflicht, plus ein optionales Vertrags-PDF), die Rechnungsdaten des Kunden und optional die E-Mail des Fotografen — die Plattform erstellt ihm automatisch ein eigenes Konto, das einzige, das für dieses Event Fotos hochladen darf.' },
+                { title: 'Der Status des Events ändert sich von selbst', body: 'Er startet als „Entwurf", wechselt am Startdatum automatisch zu „Aktiv" und nach Ablauf der Fotoaufbewahrungsfrist zu „Archiviert" — Sie müssen ihn nie manuell ändern.' },
                 { title: 'Sie können Teilnehmer selbst zum Event einladen', body: 'Klicken Sie auf der „Events"-Seite des Kunden auf „Teilnehmer" — Sie müssen nicht warten, bis der Admin des Kunden die Einladungen verschickt, auch wenn dieser das ebenfalls von seinem eigenen Konto aus tun kann. Erscheint nicht bei Events vom Typ Restaurant.' },
             ],
             section2Eyebrow: 'Der Admin eines Kunden', section2Title: 'So verwalten Sie ein bereits erstelltes Event, von Einladungen bis zu den Antworten',
@@ -743,7 +744,6 @@ export const APP_TRANSLATIONS = {
             notYetTitle: 'Was die Plattform noch nicht kann',
             notYetItems: [
                 'Einen neuen Franchise-Partner direkt über die Oberfläche anlegen — derzeit nur über direkten technischen Zugriff möglich.',
-                'Den Status eines Events (Entwurf/Aktiv/Gesperrt/Archiviert) manuell über die Oberfläche ändern.',
                 'Der an den Kunden gesendete Fragebogen bleibt bewusst vollständig außerhalb der Plattform.',
             ],
             footerPrefix: 'Brauchen Sie etwas, das es noch nicht gibt?', footerLink: 'Auditprotokoll prüfen', footerSuffix: 'oder sagen Sie es direkt dem Entwickler.',

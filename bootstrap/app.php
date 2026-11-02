@@ -23,6 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // minute — this app's very first scheduled task, so check that
         // entry exists before assuming this runs at all in production.
         $schedule->command('events:process-retention')->daily();
+        $schedule->command('events:update-statuses')->daily();
     })
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->web(append: [
