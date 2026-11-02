@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\EnsureAppDomain;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\RedirectIfAuthenticated;
 use App\Http\Middleware\SetTenantContext;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests;
@@ -32,7 +33,10 @@ return Application::configure(basePath: dirname(__DIR__))
             SetTenantContext::class,
         ]);
 
-        $middleware->alias(['app-domain' => EnsureAppDomain::class]);
+        $middleware->alias([
+            'app-domain' => EnsureAppDomain::class,
+            'guest' => RedirectIfAuthenticated::class,
+        ]);
 
         // The 'web' group's own SubstituteBindings entry (which resolves
         // any {model} route parameter, e.g. EventController's {event})

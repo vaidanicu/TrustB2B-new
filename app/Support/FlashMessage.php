@@ -28,6 +28,7 @@ class FlashMessage
                 'participant.deletion_denied' => 'Cerere de ștergere respinsă pentru {name}',
                 'user.added' => 'Coleg adăugat: {name}',
                 'user.deleted' => 'Coleg șters: {name}',
+                'auth.already_authenticated' => 'Ești deja autentificat ca {name} ({email}). Ca să intri cu alt cont, apasă „Ieșire” mai întâi.',
             ],
             'en' => [
                 'event.created' => 'Event created: {name}',
@@ -41,6 +42,7 @@ class FlashMessage
                 'participant.deletion_denied' => 'Deletion request denied for {name}',
                 'user.added' => 'Colleague added: {name}',
                 'user.deleted' => 'Colleague deleted: {name}',
+                'auth.already_authenticated' => 'You are already signed in as {name} ({email}). To sign in with a different account, click "Sign out" first.',
             ],
             'de' => [
                 'event.created' => 'Event erstellt: {name}',
@@ -54,6 +56,7 @@ class FlashMessage
                 'participant.deletion_denied' => 'Löschanfrage abgelehnt für {name}',
                 'user.added' => 'Kollege hinzugefügt: {name}',
                 'user.deleted' => 'Kollege gelöscht: {name}',
+                'auth.already_authenticated' => 'Sie sind bereits als {name} ({email}) angemeldet. Um sich mit einem anderen Konto anzumelden, klicken Sie zuerst auf „Abmelden".',
             ],
         ];
 
