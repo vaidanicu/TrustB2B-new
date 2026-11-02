@@ -34,7 +34,11 @@ function Field({ label, field, errors, hint, required, ...props }) {
     return (
         <div>
             <InputLabel value={label} required={required} />
-            <TextInput className="mt-1 block w-full" {...field} {...props} />
+            {/* The browser's own address/profile autofill was filling free-text
+                fields like "Locație" with an unrelated saved value the moment
+                the form rendered — nothing in this form should ever be
+                autofilled from browser-saved data. */}
+            <TextInput autoComplete="off" className="mt-1 block w-full" {...field} {...props} />
             {hint && <p className="mt-1 text-xs text-ink-muted">{hint}</p>}
             <InputError message={errors} className="mt-1" />
         </div>
