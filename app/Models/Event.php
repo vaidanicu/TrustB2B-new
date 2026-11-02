@@ -33,8 +33,8 @@ use Spatie\MediaLibrary\InteractsWithMedia;
     'organizer', 'co_organizer', 'location', 'agency', 'photographer',
     'data_protection_contact', 'final_package_recipient',
     'organization_id', 'is_restaurant', 'gdpr_contract_text',
-    'client_contact_name', 'client_contact_email', 'client_address', 'client_tax_number',
-    'photographer_user_id',
+    'client_contact_name', 'client_company_name', 'client_contact_email', 'client_address', 'client_tax_number',
+    'photographer_user_id', 'partner_id',
     'retention_processed_at', 'export_path', 'export_password', 'export_confirmed_at',
 ])]
 class Event extends Model implements HasMedia
@@ -89,6 +89,18 @@ class Event extends Model implements HasMedia
     public function photographerUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'photographer_user_id');
+    }
+
+    /**
+     * The regional reseller responsible for this event's sale — see
+     * Partner's own docblock for why this is a different concept from
+     * franchise_partner_id.
+     *
+     * @return BelongsTo<Partner, $this>
+     */
+    public function partner(): BelongsTo
+    {
+        return $this->belongsTo(Partner::class);
     }
 
     /**

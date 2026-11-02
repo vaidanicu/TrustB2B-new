@@ -23,14 +23,14 @@ class RolesAndPermissionsSeeder extends Seeder
     private const ROLE_PERMISSIONS = [
         'platform-admin' => [
             'franchise-partners.manage', 'organizations.manage', 'users.manage', 'events.manage', 'audit-log.view',
-            'system.view-logs',
+            'system.view-logs', 'partners.manage',
         ],
         'franchisor-admin' => [
             'franchise-partners.manage', 'organizations.manage', 'users.manage', 'events.manage', 'audit-log.view',
-            'system.view-logs',
+            'system.view-logs', 'partners.manage',
         ],
         'franchise-partner-admin' => [
-            'organizations.manage', 'users.manage', 'events.manage', 'audit-log.view',
+            'organizations.manage', 'users.manage', 'events.manage', 'audit-log.view', 'partners.manage',
         ],
         // events.manage moved to franchise/platform level: events (and the
         // GDPR contract participants must accept) are set up by the agency

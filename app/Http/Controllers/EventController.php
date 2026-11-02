@@ -6,6 +6,7 @@ use App\Actions\Tenancy\AssignRole;
 use App\Actions\Tenancy\SendAccountCreatedEmail;
 use App\Models\Event;
 use App\Models\Organization;
+use App\Models\Partner;
 use App\Models\User;
 use App\Support\FlashMessage;
 use Illuminate\Http\RedirectResponse;
@@ -37,6 +38,7 @@ class EventController extends Controller
 
         return Inertia::render('Events/Create', [
             'organizations' => Organization::query()->orderBy('name')->get(['id', 'name']),
+            'partners' => Partner::query()->orderBy('name')->get(['id', 'name', 'country']),
             'selectedOrganizationId' => $request->integer('organization_id') ?: null,
         ]);
     }
@@ -66,10 +68,12 @@ class EventController extends Controller
             'gdpr_contract_text' => ['nullable', 'string', 'max:20000'],
             'gdpr_contract_file' => ['nullable', 'file', 'mimes:pdf', 'max:10240'],
             'client_contact_name' => ['nullable', 'string', 'max:255'],
+            'client_company_name' => ['nullable', 'string', 'max:255'],
             'client_contact_email' => ['nullable', 'email', 'max:255'],
             'client_address' => ['nullable', 'string', 'max:255'],
             'client_tax_number' => ['nullable', 'string', 'max:255'],
             'photographer_email' => ['nullable', 'email', 'max:255'],
+            'partner_id' => ['nullable', 'integer'],
         ]);
 
         $isRestaurant = $request->boolean('is_restaurant');
@@ -87,6 +91,12 @@ class EventController extends Controller
         // another partner's organization_id by hand.
         $organization = Organization::findOrFail($data['organization_id']);
 
+        // Same reasoning as $organization above: Partner's own TenantScope
+        // is what actually enforces "only a partner this actor can already
+        // see" — findOrFail 404s the same way it would for a bare id that
+        // doesn't exist at all otherwise.
+        $partnerId = filled($data['partner_id'] ?? null) ? Partner::findOrFail($data['partner_id'])->id : null;
+
         $photographerEmailSent = null;
         $photographerUser = null;
 
@@ -103,6 +113,7 @@ class EventController extends Controller
         $event = Event::create([
             ...$data,
             'organization_id' => $organization->id,
+            'partner_id' => $partnerId,
             'is_restaurant' => $isRestaurant,
             'gdpr_contract_text' => $isRestaurant ? null : $data['gdpr_contract_text'],
             'photographer_user_id' => $photographerUser?->id,

@@ -60,7 +60,7 @@ function ErrorSummary({ errors, title }) {
     );
 }
 
-export default function Create({ organizations, selectedOrganizationId }) {
+export default function Create({ organizations, partners, selectedOrganizationId }) {
     const { t } = useAppTranslations();
     const c = t.events.create;
 
@@ -86,9 +86,11 @@ export default function Create({ organizations, selectedOrganizationId }) {
         gdpr_contract_text: '',
         gdpr_contract_file: null,
         client_contact_name: '',
+        client_company_name: '',
         client_contact_email: '',
         client_address: '',
         client_tax_number: '',
+        partner_id: '',
     });
 
     function submit(e) {
@@ -177,10 +179,26 @@ export default function Create({ organizations, selectedOrganizationId }) {
                     <p className="mt-0.5 text-sm text-ink-muted">{c.sectionClientBody}</p>
 
                     <div className="mt-5 grid grid-cols-2 gap-x-4 gap-y-4">
+                        <Field label={c.clientCompanyNameLabel} placeholder={c.optional} field={{ value: data.client_company_name, onChange: (e) => setData('client_company_name', e.target.value) }} errors={errors.client_company_name} hint={c.clientCompanyNameHint} />
                         <Field label={c.clientContactNameLabel} placeholder={c.optional} field={{ value: data.client_contact_name, onChange: (e) => setData('client_contact_name', e.target.value) }} errors={errors.client_contact_name} hint={c.clientContactNameHint} />
                         <Field label={c.clientContactEmailLabel} type="email" placeholder={c.optional} field={{ value: data.client_contact_email, onChange: (e) => setData('client_contact_email', e.target.value) }} errors={errors.client_contact_email} hint={c.clientContactEmailHint} />
                         <Field label={c.clientAddressLabel} placeholder={c.optional} field={{ value: data.client_address, onChange: (e) => setData('client_address', e.target.value) }} errors={errors.client_address} hint={c.clientAddressHint} />
                         <Field label={c.clientTaxNumberLabel} placeholder={c.optional} field={{ value: data.client_tax_number, onChange: (e) => setData('client_tax_number', e.target.value) }} errors={errors.client_tax_number} hint={c.clientTaxNumberHint} />
+                        <div>
+                            <InputLabel value={c.partnerLabel} />
+                            <select
+                                value={data.partner_id}
+                                onChange={(e) => setData('partner_id', e.target.value)}
+                                className="mt-1 block w-full rounded-md border-line shadow-sm focus:border-accent focus:ring-accent"
+                            >
+                                <option value="">{c.partnerPlaceholder}</option>
+                                {partners.map((partner) => (
+                                    <option key={partner.id} value={partner.id}>{partner.name} ({partner.country})</option>
+                                ))}
+                            </select>
+                            <p className="mt-1 text-xs text-ink-muted">{c.partnerHint}</p>
+                            <InputError message={errors.partner_id} className="mt-1" />
+                        </div>
                     </div>
                 </section>
 
