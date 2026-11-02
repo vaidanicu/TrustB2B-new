@@ -26,6 +26,7 @@ class PhotoRemovalRequested extends Mailable
         public readonly Event $event,
         public readonly string $galleryUrl,
         public readonly ?string $requesterName,
+        public readonly string $requesterEmail,
         public readonly string $reason,
         public readonly string $lang = 'ro',
     ) {}
@@ -45,9 +46,8 @@ class PhotoRemovalRequested extends Mailable
 
     public function content(): Content
     {
-        $requesterLine = $this->requesterName !== null
-            ? strtr($this->t('requesterLine'), ['{name}' => $this->requesterName])
-            : $this->t('requesterUnknown');
+        $requesterName = $this->requesterName ?? $this->t('requesterUnnamed');
+        $requesterLine = strtr($this->t('requesterLine'), ['{name}' => $requesterName, '{email}' => $this->requesterEmail]);
 
         return new Content(
             view: 'mail.photo-removal-requested',
@@ -71,8 +71,8 @@ class PhotoRemovalRequested extends Mailable
             'ro' => [
                 'greeting' => 'Bună,',
                 'explain' => 'Cineva a cerut eliminarea unei fotografii din galeria publică a evenimentului „{event}”.',
-                'requesterLine' => 'Cerere trimisă de: {name}.',
-                'requesterUnknown' => 'Persoana nu și-a lăsat numele.',
+                'requesterLine' => 'Cerere trimisă de: {name} ({email}).',
+                'requesterUnnamed' => 'o persoană care nu și-a lăsat numele',
                 'reasonLabel' => 'Motiv:',
                 'button' => 'Vezi și decide în galerie',
                 'regards' => 'Cu stimă,',
@@ -80,8 +80,8 @@ class PhotoRemovalRequested extends Mailable
             'en' => [
                 'greeting' => 'Hi,',
                 'explain' => 'Someone has asked for a photo to be removed from the public gallery of "{event}".',
-                'requesterLine' => 'Requested by: {name}.',
-                'requesterUnknown' => "The person didn't leave their name.",
+                'requesterLine' => 'Requested by: {name} ({email}).',
+                'requesterUnnamed' => "someone who didn't leave their name",
                 'reasonLabel' => 'Reason:',
                 'button' => 'Review and decide in the gallery',
                 'regards' => 'Best regards,',
@@ -89,8 +89,8 @@ class PhotoRemovalRequested extends Mailable
             'de' => [
                 'greeting' => 'Hallo,',
                 'explain' => 'Jemand hat die Entfernung eines Fotos aus der öffentlichen Galerie von „{event}" beantragt.',
-                'requesterLine' => 'Angefragt von: {name}.',
-                'requesterUnknown' => 'Die Person hat ihren Namen nicht angegeben.',
+                'requesterLine' => 'Angefragt von: {name} ({email}).',
+                'requesterUnnamed' => 'jemandem, der seinen Namen nicht angegeben hat',
                 'reasonLabel' => 'Begründung:',
                 'button' => 'In der Galerie prüfen und entscheiden',
                 'regards' => 'Mit freundlichen Grüßen,',

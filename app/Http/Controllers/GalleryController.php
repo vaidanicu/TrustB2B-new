@@ -161,7 +161,7 @@ class GalleryController extends Controller
 
         $media->forceFill([
             'custom_properties' => collect($media->custom_properties)
-                ->except(['deletion_requested', 'deletion_reason', 'deletion_requested_at', 'deletion_requested_by'])
+                ->except(['deletion_requested', 'deletion_reason', 'deletion_requested_at', 'deletion_requested_by', 'deletion_requested_by_email'])
                 ->all(),
         ])->save();
 
@@ -203,6 +203,11 @@ class GalleryController extends Controller
             'media_id' => ['required', 'integer'],
             'reason' => ['required', 'string', 'max:1000'],
             'requester_name' => ['nullable', 'string', 'max:255'],
+            // Required (unlike the name): a real contact is the only
+            // accountability a fully anonymous, no-login public gallery can
+            // offer the organizer when judging whether a removal request
+            // is genuine.
+            'requester_email' => ['required', 'email', 'max:255'],
         ]);
 
         $media = $event->getMedia('gallery')->firstWhere('id', $data['media_id']);
@@ -212,12 +217,13 @@ class GalleryController extends Controller
             $media->setCustomProperty('deletion_requested', true);
             $media->setCustomProperty('deletion_reason', $data['reason']);
             $media->setCustomProperty('deletion_requested_by', $data['requester_name'] ?? null);
+            $media->setCustomProperty('deletion_requested_by_email', $data['requester_email']);
             $media->setCustomProperty('deletion_requested_at', now()->toIso8601String());
             $media->save();
 
             activity()->performedOn($event)->withProperties(['reason' => $data['reason']])->log('photo removal requested');
 
-            $this->notifyModerators($event, $data['requester_name'] ?? null, $data['reason']);
+            $this->notifyModerators($event, $data['requester_name'] ?? null, $data['requester_email'], $data['reason']);
         }
 
         return redirect($request->fullUrl())->with('status', 'Cererea ta a fost trimisă — organizatorul o va analiza.');
@@ -230,7 +236,7 @@ class GalleryController extends Controller
      * visitor. Never blocks the request itself: same non-blocking try/catch
      * pattern as every other mail send in this app.
      */
-    private function notifyModerators(Event $event, ?string $requesterName, string $reason): void
+    private function notifyModerators(Event $event, ?string $requesterName, string $requesterEmail, string $reason): void
     {
         $galleryUrl = route('gallery.index', $event);
 
@@ -244,6 +250,7 @@ class GalleryController extends Controller
                     $event,
                     $galleryUrl,
                     $requesterName,
+                    $requesterEmail,
                     $reason,
                     $moderator->locale ?? 'ro',
                 ));
@@ -268,6 +275,7 @@ class GalleryController extends Controller
             'removalRequested' => (bool) $media->getCustomProperty('deletion_requested', false),
             'removalReason' => $media->getCustomProperty('deletion_reason'),
             'removalRequestedBy' => $media->getCustomProperty('deletion_requested_by'),
+            'removalRequestedByEmail' => $media->getCustomProperty('deletion_requested_by_email'),
         ];
     }
 

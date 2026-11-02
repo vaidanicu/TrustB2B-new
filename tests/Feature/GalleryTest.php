@@ -269,12 +269,31 @@ class GalleryTest extends TestCase
 
         $signedUrl = URL::temporarySignedRoute('gallery.public', now()->addDay(), ['event' => $event->id]);
 
-        $this->post($signedUrl, ['media_id' => $photo->id, 'reason' => 'Nu vreau să apar în poze.'])
+        $this->post($signedUrl, ['media_id' => $photo->id, 'reason' => 'Nu vreau să apar în poze.', 'requester_email' => 'vizitator@example.test'])
             ->assertRedirect();
 
         $photo->refresh();
         $this->assertTrue((bool) $photo->getCustomProperty('deletion_requested'));
         $this->assertSame('Nu vreau să apar în poze.', $photo->getCustomProperty('deletion_reason'));
+        $this->assertSame('vizitator@example.test', $photo->getCustomProperty('deletion_requested_by_email'));
+    }
+
+    public function test_a_removal_request_requires_a_valid_email(): void
+    {
+        $organization = Organization::factory()->create();
+        $event = Event::factory()->for($organization)->create(['franchise_partner_id' => $organization->franchise_partner_id]);
+
+        $event->addMedia(UploadedFile::fake()->image('published.jpg'))
+            ->withCustomProperties(['published' => true])
+            ->toMediaCollection('gallery');
+        $photo = $event->getMedia('gallery')->sole();
+
+        $signedUrl = URL::temporarySignedRoute('gallery.public', now()->addDay(), ['event' => $event->id]);
+
+        $this->post($signedUrl, ['media_id' => $photo->id, 'reason' => 'Nu vreau să apar în poze.'])
+            ->assertSessionHasErrors('requester_email');
+
+        $this->assertFalse((bool) $photo->fresh()->getCustomProperty('deletion_requested'));
     }
 
     public function test_a_removal_request_emails_every_moderator_in_the_organization(): void
@@ -297,11 +316,11 @@ class GalleryTest extends TestCase
 
         $signedUrl = URL::temporarySignedRoute('gallery.public', now()->addDay(), ['event' => $event->id]);
 
-        $this->post($signedUrl, ['media_id' => $photo->id, 'reason' => 'Nu vreau să apar în poze.', 'requester_name' => 'Ion Pop'])
+        $this->post($signedUrl, ['media_id' => $photo->id, 'reason' => 'Nu vreau să apar în poze.', 'requester_name' => 'Ion Pop', 'requester_email' => 'ion@example.test'])
             ->assertRedirect();
 
         Mail::assertSent(PhotoRemovalRequested::class, 2);
-        Mail::assertSent(PhotoRemovalRequested::class, fn (PhotoRemovalRequested $mail) => $mail->hasTo($admin->email) && $mail->requesterName === 'Ion Pop');
+        Mail::assertSent(PhotoRemovalRequested::class, fn (PhotoRemovalRequested $mail) => $mail->hasTo($admin->email) && $mail->requesterName === 'Ion Pop' && $mail->requesterEmail === 'ion@example.test');
         Mail::assertSent(PhotoRemovalRequested::class, fn (PhotoRemovalRequested $mail) => $mail->hasTo($dpo->email));
     }
 
@@ -318,12 +337,14 @@ class GalleryTest extends TestCase
 
         $signedUrl = URL::temporarySignedRoute('gallery.public', now()->addDay(), ['event' => $event->id]);
 
-        $this->post($signedUrl, ['media_id' => $photo->id, 'reason' => 'motiv', 'requester_name' => 'Maria Pop'])
+        $this->post($signedUrl, ['media_id' => $photo->id, 'reason' => 'motiv', 'requester_name' => 'Maria Pop', 'requester_email' => 'maria@example.test'])
             ->assertRedirect();
 
         $this->actingAs($admin)
             ->get(route('gallery.index', $event))
-            ->assertInertia(fn ($page) => $page->where('photos.0.removalRequestedBy', 'Maria Pop'));
+            ->assertInertia(fn ($page) => $page
+                ->where('photos.0.removalRequestedBy', 'Maria Pop')
+                ->where('photos.0.removalRequestedByEmail', 'maria@example.test'));
     }
 
     public function test_a_customer_admin_can_approve_a_removal_request_and_delete_the_photo(): void

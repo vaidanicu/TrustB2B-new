@@ -120,7 +120,12 @@ function PhotoCard({ photo, eventId, canUpload, canPublish, canModerateRemovals,
             {photo.removalRequested && (
                 <div className="border-t border-danger-soft bg-danger-soft/40 px-2.5 py-2">
                     <p className="text-xs font-semibold text-danger-ink">{t.gallery.removalRequestedBadge}</p>
-                    {photo.removalRequestedBy && <p className="mt-0.5 text-xs font-medium text-ink">{photo.removalRequestedBy}</p>}
+                    {(photo.removalRequestedBy || photo.removalRequestedByEmail) && (
+                        <p className="mt-0.5 text-xs font-medium text-ink">
+                            {photo.removalRequestedBy || t.gallery.removalRequestedByUnnamed}
+                            {photo.removalRequestedByEmail && <span className="font-normal text-ink-muted"> · {photo.removalRequestedByEmail}</span>}
+                        </p>
+                    )}
                     {photo.removalReason && <p className="mt-0.5 text-xs text-ink-soft">{photo.removalReason}</p>}
                     {canModerateRemovals && (
                         <div className="mt-1.5 flex items-center gap-3">

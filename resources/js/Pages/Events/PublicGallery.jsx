@@ -10,7 +10,7 @@ function isVideo(url) {
 }
 
 function RemovalRequestForm({ photo, signedUrl, onDone }) {
-    const { data, setData, post, processing, errors } = useForm({ media_id: photo.id, reason: '', requester_name: '' });
+    const { data, setData, post, processing, errors } = useForm({ media_id: photo.id, reason: '', requester_name: '', requester_email: '' });
 
     function submit(e) {
         e.preventDefault();
@@ -23,9 +23,19 @@ function RemovalRequestForm({ photo, signedUrl, onDone }) {
                 type="text"
                 value={data.requester_name}
                 onChange={(e) => setData('requester_name', e.target.value)}
-                placeholder="Numele tău (opțional, ca să știe organizatorul cine a cerut)"
+                placeholder="Numele tău (opțional)"
                 className="block w-full rounded-md border-line text-xs shadow-sm focus:border-accent focus:ring-accent"
             />
+            <div>
+                <input
+                    type="email"
+                    value={data.requester_email}
+                    onChange={(e) => setData('requester_email', e.target.value)}
+                    placeholder="Emailul tău — obligatoriu, ca organizatorul să te poată contacta"
+                    className="block w-full rounded-md border-line text-xs shadow-sm focus:border-accent focus:ring-accent"
+                />
+                {errors.requester_email && <p className="mt-1 text-xs text-danger-ink">{errors.requester_email}</p>}
+            </div>
             <textarea
                 value={data.reason}
                 onChange={(e) => setData('reason', e.target.value)}
