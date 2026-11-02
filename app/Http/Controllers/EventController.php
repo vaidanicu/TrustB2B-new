@@ -32,6 +32,69 @@ use Inertia\Response;
  */
 class EventController extends Controller
 {
+    /**
+     * There was previously no way to see an event's own data again after
+     * creating it — reported: "wo kann ich die eingestellten Daten des
+     * Events mir ansehen?? Die sehe ich nicht mehr". Open to whoever can
+     * already reach the event elsewhere: the agency (events.manage) or
+     * the client's own staff (their organization_id matches the event's).
+     */
+    public function show(Request $request, Event $event): Response
+    {
+        abort_unless(
+            $request->user()->can('events.manage') || $request->user()->organization_id === $event->organization_id,
+            403
+        );
+
+        $event->loadMissing('organization', 'partner', 'photographerUser', 'creator');
+        $gdprContract = $event->getFirstMedia('gdpr-contract');
+
+        // Same reasoning as GalleryController::index()'s own backUrl: a
+        // franchise/platform viewer (no organization_id of their own)
+        // never reaches participants.status regardless of event type, and
+        // a restaurant event has no participants page to begin with.
+        $backUrl = $request->user()->organization_id === null
+            ? route('organizations.events', $event->organization)
+            : route('dashboard');
+
+        return Inertia::render('Events/Show', [
+            'backUrl' => $backUrl,
+            'event' => [
+                'id' => $event->id,
+                'name' => $event->name,
+                'purpose' => $event->purpose,
+                'country' => $event->country,
+                'language' => $event->language,
+                'isRestaurant' => $event->is_restaurant,
+                'status' => $event->status,
+                'startsAt' => $event->starts_at->format('d.m.Y H:i'),
+                'endsAt' => $event->ends_at->format('d.m.Y H:i'),
+                'retentionDays' => $event->retention_days,
+                'endOfCycleAction' => $event->end_of_cycle_action,
+                'organizer' => $event->organizer,
+                'coOrganizer' => $event->co_organizer,
+                'location' => $event->location,
+                'agency' => $event->agency,
+                'photographer' => $event->photographer,
+                'photographerAccountEmail' => $event->photographerUser?->email,
+                'dataProtectionContact' => $event->data_protection_contact,
+                'finalPackageRecipient' => $event->final_package_recipient,
+                'partnerName' => $event->partner ? "{$event->partner->name} ({$event->partner->country})" : null,
+                'clientCompanyName' => $event->client_company_name,
+                'clientContactName' => $event->client_contact_name,
+                'clientContactEmail' => $event->client_contact_email,
+                'clientAddress' => $event->client_address,
+                'clientTaxNumber' => $event->client_tax_number,
+                'gdprContractText' => $event->gdpr_contract_text,
+                'gdprContractFileUrl' => $gdprContract?->getUrl(),
+                'organizationName' => $event->organization?->name,
+                'organizationId' => $event->organization_id,
+                'createdByName' => $event->creator?->name,
+            ],
+            'canManage' => $request->user()->can('events.manage'),
+        ]);
+    }
+
     public function create(Request $request): Response
     {
         abort_unless($request->user()->can('events.manage'), 403);

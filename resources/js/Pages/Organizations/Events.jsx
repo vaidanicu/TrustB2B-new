@@ -77,7 +77,9 @@ export default function Events({ organization, events }) {
                                     className="grid grid-cols-[2.2fr_1fr_1.2fr_auto] items-center gap-3 border-b border-line px-5 py-4 text-sm last:border-0 hover:bg-paper-raised"
                                 >
                                     <span className="font-medium text-ink">
-                                        {event.name}
+                                        <Link href={route('events.show', event.id)} className="hover:underline">
+                                            {event.name}
+                                        </Link>
                                         {event.isRestaurant && (
                                             <span className="ml-2 rounded-full bg-paper-sunken px-2 py-0.5 text-xs font-semibold text-ink-muted">
                                                 {oe.restaurantBadge}
