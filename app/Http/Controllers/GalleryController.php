@@ -231,10 +231,16 @@ class GalleryController extends Controller
 
     /**
      * One email per media.moderate-deletion-requests holder in the event's
-     * organization, each in their own locale — there is no single "acting
-     * user" locale to borrow here, the submitter is an anonymous public
-     * visitor. Never blocks the request itself: same non-blocking try/catch
-     * pattern as every other mail send in this app.
+     * organization, PLUS the agency staff member who created the event
+     * (Event.created_by — "der Trustbridge Verantwortliche für dieses
+     * Event") — the client's own staff alone isn't necessarily who should
+     * be acting on this, and the creator always knows which event a
+     * request belongs to even when several run side by side. Deduplicated
+     * by email in case the creator happens to also hold the client-side
+     * permission. Each recipient gets it in their own locale — there is no
+     * single "acting user" locale to borrow here, the submitter is an
+     * anonymous public visitor. Never blocks the request itself: same
+     * non-blocking try/catch pattern as every other mail send in this app.
      */
     private function notifyModerators(Event $event, ?string $requesterName, string $requesterEmail, string $reason): void
     {
@@ -242,7 +248,10 @@ class GalleryController extends Controller
 
         $moderators = User::where('organization_id', $event->organization_id)
             ->permission('media.moderate-deletion-requests')
-            ->get();
+            ->get()
+            ->push($event->creator)
+            ->filter()
+            ->unique('email');
 
         foreach ($moderators as $moderator) {
             try {

@@ -296,12 +296,16 @@ class GalleryTest extends TestCase
         $this->assertFalse((bool) $photo->fresh()->getCustomProperty('deletion_requested'));
     }
 
-    public function test_a_removal_request_emails_every_moderator_in_the_organization(): void
+    public function test_a_removal_request_emails_every_moderator_and_the_events_creator(): void
     {
         Mail::fake();
 
         $organization = Organization::factory()->create();
-        $event = Event::factory()->for($organization)->create(['franchise_partner_id' => $organization->franchise_partner_id]);
+        $creator = User::factory()->create();
+        $event = Event::factory()->for($organization)->create([
+            'franchise_partner_id' => $organization->franchise_partner_id,
+            'created_by' => $creator->id,
+        ]);
         $admin = $this->userWithRole($organization, 'customer-admin');
         $dpo = $this->userWithRole($organization, 'data-protection-officer');
         // event-manager has media.upload/media.publish but NOT
@@ -319,9 +323,10 @@ class GalleryTest extends TestCase
         $this->post($signedUrl, ['media_id' => $photo->id, 'reason' => 'Nu vreau să apar în poze.', 'requester_name' => 'Ion Pop', 'requester_email' => 'ion@example.test'])
             ->assertRedirect();
 
-        Mail::assertSent(PhotoRemovalRequested::class, 2);
+        Mail::assertSent(PhotoRemovalRequested::class, 3);
         Mail::assertSent(PhotoRemovalRequested::class, fn (PhotoRemovalRequested $mail) => $mail->hasTo($admin->email) && $mail->requesterName === 'Ion Pop' && $mail->requesterEmail === 'ion@example.test');
         Mail::assertSent(PhotoRemovalRequested::class, fn (PhotoRemovalRequested $mail) => $mail->hasTo($dpo->email));
+        Mail::assertSent(PhotoRemovalRequested::class, fn (PhotoRemovalRequested $mail) => $mail->hasTo($creator->email));
     }
 
     public function test_the_removal_request_can_include_an_optional_name_visible_to_the_organizer(): void
