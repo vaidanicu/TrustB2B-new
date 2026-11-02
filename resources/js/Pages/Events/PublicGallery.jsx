@@ -75,13 +75,6 @@ function Lightbox({ photo, onClose }) {
                 ) : (
                     <img src={photo.url} alt="" className="max-h-[80vh] max-w-full rounded-md object-contain" />
                 )}
-                <a
-                    href={photo.url}
-                    download
-                    className="rounded-md bg-white px-4 py-2 text-xs font-semibold uppercase tracking-wide text-ink"
-                >
-                    Descarcă
-                </a>
             </div>
         </div>
     );
@@ -99,20 +92,17 @@ function PhotoCard({ photo, signedUrl, onOpen }) {
                     <img src={photo.url} alt="" className="h-full w-full object-cover" />
                 )}
             </button>
-            <div className="flex items-center justify-between gap-2 p-2.5">
-                <a href={photo.url} download className="text-xs text-ink-muted underline hover:text-ink">
-                    Descarcă
-                </a>
-                {!photo.removalRequested && !requesting && (
+            {!photo.removalRequested && !requesting && (
+                <div className="p-2.5">
                     <button type="button" onClick={() => setRequesting(true)} className="text-xs text-ink-muted underline hover:text-danger-ink">
                         Nu vreau să apar
                     </button>
-                )}
-            </div>
+                </div>
+            )}
             {photo.removalRequested ? (
-                <p className="px-2.5 pb-2.5 text-xs text-ink-muted">Cerere de eliminare trimisă — în analiză.</p>
+                <p className="p-2.5 text-xs text-ink-muted">Cerere de eliminare trimisă — în analiză.</p>
             ) : requesting ? (
-                <div className="px-2.5 pb-2.5">
+                <div className="p-2.5">
                     <RemovalRequestForm photo={photo} signedUrl={signedUrl} onDone={() => setRequesting(false)} />
                 </div>
             ) : null}
