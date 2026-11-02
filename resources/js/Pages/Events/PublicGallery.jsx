@@ -45,34 +45,74 @@ function RemovalRequestForm({ photo, signedUrl, onDone }) {
     );
 }
 
-function PhotoCard({ photo, signedUrl }) {
-    const [requesting, setRequesting] = useState(false);
-
+function Lightbox({ photo, onClose }) {
     return (
-        <div className="overflow-hidden rounded-lg bg-white shadow-sm">
-            <div className="aspect-square">
+        <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-ink/90 p-4"
+            onClick={onClose}
+        >
+            <button
+                type="button"
+                onClick={onClose}
+                className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20"
+                aria-label="Închide"
+            >
+                ✕
+            </button>
+            <div className="flex max-h-full max-w-full flex-col items-center gap-3" onClick={(e) => e.stopPropagation()}>
                 {isVideo(photo.url) ? (
-                    <video src={photo.url} controls className="h-full w-full object-cover" />
+                    <video src={photo.url} controls autoPlay className="max-h-[80vh] max-w-full rounded-md" />
                 ) : (
-                    <img src={photo.url} alt="" className="h-full w-full object-cover" />
+                    <img src={photo.url} alt="" className="max-h-[80vh] max-w-full rounded-md object-contain" />
                 )}
-            </div>
-            <div className="p-2.5">
-                {photo.removalRequested ? (
-                    <p className="text-xs text-ink-muted">Cerere de eliminare trimisă — în analiză.</p>
-                ) : requesting ? (
-                    <RemovalRequestForm photo={photo} signedUrl={signedUrl} onDone={() => setRequesting(false)} />
-                ) : (
-                    <button type="button" onClick={() => setRequesting(true)} className="text-xs text-ink-muted underline hover:text-danger-ink">
-                        Nu vreau să apar în această fotografie
-                    </button>
-                )}
+                <a
+                    href={photo.url}
+                    download
+                    className="rounded-md bg-white px-4 py-2 text-xs font-semibold uppercase tracking-wide text-ink"
+                >
+                    Descarcă
+                </a>
             </div>
         </div>
     );
 }
 
+function PhotoCard({ photo, signedUrl, onOpen }) {
+    const [requesting, setRequesting] = useState(false);
+
+    return (
+        <div className="overflow-hidden rounded-lg bg-white shadow-sm">
+            <button type="button" onClick={() => onOpen(photo)} className="block aspect-square w-full">
+                {isVideo(photo.url) ? (
+                    <video src={photo.url} className="h-full w-full object-cover" />
+                ) : (
+                    <img src={photo.url} alt="" className="h-full w-full object-cover" />
+                )}
+            </button>
+            <div className="flex items-center justify-between gap-2 p-2.5">
+                <a href={photo.url} download className="text-xs text-ink-muted underline hover:text-ink">
+                    Descarcă
+                </a>
+                {!photo.removalRequested && !requesting && (
+                    <button type="button" onClick={() => setRequesting(true)} className="text-xs text-ink-muted underline hover:text-danger-ink">
+                        Nu vreau să apar
+                    </button>
+                )}
+            </div>
+            {photo.removalRequested ? (
+                <p className="px-2.5 pb-2.5 text-xs text-ink-muted">Cerere de eliminare trimisă — în analiză.</p>
+            ) : requesting ? (
+                <div className="px-2.5 pb-2.5">
+                    <RemovalRequestForm photo={photo} signedUrl={signedUrl} onDone={() => setRequesting(false)} />
+                </div>
+            ) : null}
+        </div>
+    );
+}
+
 export default function PublicGallery({ eventName, photos, signedUrl }) {
+    const [openPhoto, setOpenPhoto] = useState(null);
+
     return (
         <div className="min-h-screen bg-paper pb-10">
             <Head title={eventName} />
@@ -85,8 +125,8 @@ export default function PublicGallery({ eventName, photos, signedUrl }) {
                 <div className="mb-5 rounded-lg bg-white p-5 text-center shadow-sm">
                     <h1 className="font-display text-lg font-semibold text-ink">{eventName}</h1>
                     <p className="mt-1 text-sm text-ink-muted">
-                        Dacă nu vrei să apari într-o fotografie, apasă „Nu vreau să apar" și spune-ne motivul — o analizăm și, dacă e
-                        întemeiat, o eliminăm.
+                        Apasă pe o fotografie sau un video ca să-l vezi mai mare. Dacă nu vrei să apari într-o fotografie, apasă „Nu vreau să
+                        apar" și spune-ne motivul — o analizăm și, dacă e întemeiat, o eliminăm.
                     </p>
                 </div>
 
@@ -97,11 +137,13 @@ export default function PublicGallery({ eventName, photos, signedUrl }) {
                 ) : (
                     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
                         {photos.map((photo) => (
-                            <PhotoCard key={photo.id} photo={photo} signedUrl={signedUrl} />
+                            <PhotoCard key={photo.id} photo={photo} signedUrl={signedUrl} onOpen={setOpenPhoto} />
                         ))}
                     </div>
                 )}
             </div>
+
+            {openPhoto && <Lightbox photo={openPhoto} onClose={() => setOpenPhoto(null)} />}
         </div>
     );
 }
