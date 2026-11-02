@@ -160,7 +160,7 @@ export default function Create({ organizations, partners, selectedOrganizationId
                         <div className="grid grid-cols-2 gap-4">
                             <Field
                                 label={c.startLabel}
-                                type="date"
+                                type="datetime-local"
                                 field={{ value: data.starts_at, onChange: (e) => setData('starts_at', e.target.value) }}
                                 errors={errors.starts_at}
                                 hint={c.startHint}
@@ -168,7 +168,7 @@ export default function Create({ organizations, partners, selectedOrganizationId
                             />
                             <Field
                                 label={c.endLabel}
-                                type="date"
+                                type="datetime-local"
                                 field={{ value: data.ends_at, onChange: (e) => setData('ends_at', e.target.value) }}
                                 errors={errors.ends_at}
                                 hint={c.endHint}

@@ -72,7 +72,7 @@ class ParticipantController extends Controller
             'event' => [
                 'id' => $event->id,
                 'name' => $event->name,
-                'date' => $event->starts_at->format('d.m.Y'),
+                'date' => $event->starts_at->format('d.m.Y H:i'),
                 'location' => $event->location,
             ],
             'participants' => $participants->map(fn (Participant $participant) => [
@@ -393,7 +393,7 @@ class ParticipantController extends Controller
         return [
             'organizer' => $event->organizer ?? $event->organization?->name ?? '',
             'name' => $event->name,
-            'date' => $event->starts_at->format('d F Y'),
+            'date' => $event->starts_at->format('d F Y, H:i'),
             'location' => $event->location ?? '',
             'documentVersion' => '1.0',
             'linkExpires' => $participant->link_expires_at->format('d F Y'),

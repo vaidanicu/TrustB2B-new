@@ -36,7 +36,7 @@ class DashboardController extends Controller
             'events' => $events->map(fn (Event $event) => [
                 'id' => $event->id,
                 'name' => $event->name,
-                'date' => $event->starts_at->format('d.m.Y'),
+                'date' => $event->starts_at->format('d.m.Y H:i'),
                 'status' => $event->status,
                 'isRestaurant' => $event->is_restaurant,
             ]),

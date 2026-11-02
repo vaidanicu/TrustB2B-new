@@ -53,7 +53,10 @@ class ParticipantInvited extends Mailable
         };
 
         $dateFormat = $this->lang === 'de' ? 'd. F Y' : 'd F Y';
-        $startsAt = $event->starts_at->locale($this->lang)->translatedFormat($dateFormat);
+        // The link always expires at end-of-day (ParticipantController::store()),
+        // so showing its time would always just say 23:59 — date-only stays
+        // meaningful there; the event's own start time is real information.
+        $startsAt = $event->starts_at->locale($this->lang)->translatedFormat($dateFormat.', H:i');
         $expiresAt = $this->participant->link_expires_at->locale($this->lang)->translatedFormat($dateFormat);
 
         $locationLine = $event->location

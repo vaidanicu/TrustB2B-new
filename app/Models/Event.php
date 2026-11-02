@@ -61,8 +61,8 @@ class Event extends Model implements HasMedia
     protected function casts(): array
     {
         return [
-            'starts_at' => 'date',
-            'ends_at' => 'date',
+            'starts_at' => 'datetime',
+            'ends_at' => 'datetime',
             'retention_days' => 'integer',
             'is_restaurant' => 'boolean',
             'retention_processed_at' => 'datetime',
