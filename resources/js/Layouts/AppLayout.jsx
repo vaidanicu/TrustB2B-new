@@ -73,7 +73,11 @@ export default function AppLayout({ title, active = null, actions = null, childr
     const isPartner = (user?.roles ?? []).includes('partner');
 
     const navItems = isPartner
-        ? [{ key: 'dashboard', label: t.nav.dashboard, href: route('dashboard') }, { key: 'guide', label: t.nav.guide, href: route('guide.index') }]
+        ? [
+              { key: 'dashboard', label: t.nav.dashboard, href: route('dashboard') },
+              { key: 'organizations', label: t.nav.organizations, href: route('organizations.index') },
+              { key: 'guide', label: t.nav.guide, href: route('guide.index') },
+          ]
         : isOrganizationScope
             ? [
                   { key: 'dashboard', label: t.nav.dashboard, href: route('dashboard') },

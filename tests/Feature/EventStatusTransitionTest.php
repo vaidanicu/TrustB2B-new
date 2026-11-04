@@ -11,8 +11,9 @@ use Tests\TestCase;
 /**
  * Event.status was otherwise never touched after creation — this command
  * is what actually moves it along: draft -> active at the start date,
- * active -> archived once the gallery retention deadline passes. 'locked'
- * stays a manual-only state.
+ * active -> finished at the end date, finished/active -> archived once
+ * the gallery retention deadline passes. 'locked' stays a manual-only
+ * state.
  */
 class EventStatusTransitionTest extends TestCase
 {
@@ -48,6 +49,38 @@ class EventStatusTransitionTest extends TestCase
         $this->assertSame('draft', $event->fresh()->status);
     }
 
+    public function test_an_active_event_becomes_finished_once_its_end_date_passes(): void
+    {
+        $organization = Organization::factory()->create();
+        $event = Event::factory()->for($organization)->create([
+            'franchise_partner_id' => $organization->franchise_partner_id,
+            'status' => 'active',
+            'starts_at' => now()->subDays(10),
+            'ends_at' => now()->subDays(10),
+            'retention_days' => 90,
+        ]);
+
+        $this->artisan(UpdateEventStatusesCommand::class)->assertSuccessful();
+
+        $this->assertSame('finished', $event->fresh()->status);
+    }
+
+    public function test_an_active_event_before_its_end_date_stays_active(): void
+    {
+        $organization = Organization::factory()->create();
+        $event = Event::factory()->for($organization)->create([
+            'franchise_partner_id' => $organization->franchise_partner_id,
+            'status' => 'active',
+            'starts_at' => now()->subDay(),
+            'ends_at' => now()->addWeek(),
+            'retention_days' => 90,
+        ]);
+
+        $this->artisan(UpdateEventStatusesCommand::class)->assertSuccessful();
+
+        $this->assertSame('active', $event->fresh()->status);
+    }
+
     public function test_an_active_event_becomes_archived_once_its_retention_deadline_passes(): void
     {
         $organization = Organization::factory()->create();
@@ -64,12 +97,28 @@ class EventStatusTransitionTest extends TestCase
         $this->assertSame('archived', $event->fresh()->status);
     }
 
-    public function test_an_active_event_before_its_retention_deadline_stays_active(): void
+    public function test_a_finished_event_becomes_archived_once_its_retention_deadline_passes(): void
     {
         $organization = Organization::factory()->create();
         $event = Event::factory()->for($organization)->create([
             'franchise_partner_id' => $organization->franchise_partner_id,
-            'status' => 'active',
+            'status' => 'finished',
+            'starts_at' => now()->subDays(100),
+            'ends_at' => now()->subDays(100),
+            'retention_days' => 60,
+        ]);
+
+        $this->artisan(UpdateEventStatusesCommand::class)->assertSuccessful();
+
+        $this->assertSame('archived', $event->fresh()->status);
+    }
+
+    public function test_a_finished_event_before_its_retention_deadline_stays_finished(): void
+    {
+        $organization = Organization::factory()->create();
+        $event = Event::factory()->for($organization)->create([
+            'franchise_partner_id' => $organization->franchise_partner_id,
+            'status' => 'finished',
             'starts_at' => now()->subDays(10),
             'ends_at' => now()->subDays(10),
             'retention_days' => 90,
@@ -77,7 +126,7 @@ class EventStatusTransitionTest extends TestCase
 
         $this->artisan(UpdateEventStatusesCommand::class)->assertSuccessful();
 
-        $this->assertSame('active', $event->fresh()->status);
+        $this->assertSame('finished', $event->fresh()->status);
     }
 
     public function test_a_locked_event_is_never_touched(): void

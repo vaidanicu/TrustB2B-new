@@ -59,7 +59,7 @@ function NewAdminCredentialsBanner({ email, password, emailSent, t }) {
     );
 }
 
-export default function Index({ organizations }) {
+export default function Index({ organizations, canManage }) {
     const { flash } = usePage().props;
     const { t } = useAppTranslations();
     const statusStyles = {
@@ -69,7 +69,11 @@ export default function Index({ organizations }) {
     };
 
     return (
-        <AppLayout title={t.organizations.index.title} active="organizations" actions={<NewOrganizationButton label={t.organizations.index.newOrganization} />}>
+        <AppLayout
+            title={t.organizations.index.title}
+            active="organizations"
+            actions={canManage ? <NewOrganizationButton label={t.organizations.index.newOrganization} /> : null}
+        >
             <Head title={t.organizations.index.title} />
 
             <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
@@ -108,7 +112,14 @@ export default function Index({ organizations }) {
                             >
                                 <span className="font-medium text-ink">{organization.name}</span>
                                 <span className="text-ink-soft">{organization.country}</span>
-                                <StatusSelect organization={organization} style={style} t={t} />
+                                {canManage ? (
+                                    <StatusSelect organization={organization} style={style} t={t} />
+                                ) : (
+                                    <span className={`inline-flex w-fit items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold ${style.bg} ${style.text}`}>
+                                        <span className={`h-1.5 w-1.5 rounded-full ${style.dot}`} />
+                                        {style.label}
+                                    </span>
+                                )}
                                 <span className="flex items-center justify-end">
                                     <Link href={route('organizations.events', organization.id)} className="text-xs text-accent underline">
                                         {t.organizations.events.title}

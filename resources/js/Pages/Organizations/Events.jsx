@@ -13,7 +13,7 @@ function NewEventButton({ organizationId, label }) {
     );
 }
 
-export default function Events({ organization, events }) {
+export default function Events({ organization, events, canManage }) {
     const { flash } = usePage().props;
     const { t } = useAppTranslations();
     const oe = t.organizations.events;
@@ -21,14 +21,16 @@ export default function Events({ organization, events }) {
         active: { label: t.statusEvent.active, dot: 'bg-teal', text: 'text-teal-ink', bg: 'bg-teal-soft' },
         draft: { label: t.statusEvent.draft, dot: 'bg-ink-muted', text: 'text-ink-soft', bg: 'bg-paper-sunken' },
         locked: { label: t.statusEvent.locked, dot: 'bg-amber-600', text: 'text-amber-700', bg: 'bg-amber-50' },
+        finished: { label: t.statusEvent.finished, dot: 'bg-accent', text: 'text-accent-ink', bg: 'bg-accent-soft' },
         archived: { label: t.statusEvent.archived, dot: 'bg-ink-muted', text: 'text-ink-muted', bg: 'bg-paper-sunken' },
     };
+    const gridCols = canManage ? 'grid-cols-[1.8fr_1fr_1.2fr_1.2fr_1fr_auto]' : 'grid-cols-[1.8fr_1fr_1.2fr_1.2fr_1fr]';
 
     return (
         <AppLayout
             title={`${oe.title} — ${organization.name}`}
             active="organizations"
-            actions={<NewEventButton organizationId={organization.id} label={oe.newEvent} />}
+            actions={canManage ? <NewEventButton organizationId={organization.id} label={oe.newEvent} /> : null}
         >
             <Head title={`${oe.title} — ${organization.name}`} />
 
@@ -49,17 +51,21 @@ export default function Events({ organization, events }) {
                     <div className="rounded-lg bg-white px-6 py-14 text-center shadow-sm">
                         <p className="text-sm font-medium text-ink">{oe.emptyTitle}</p>
                         <p className="mx-auto mt-1 max-w-sm text-sm text-ink-muted">{oe.emptyBody}</p>
-                        <div className="mt-5">
-                            <NewEventButton organizationId={organization.id} label={oe.newEvent} />
-                        </div>
+                        {canManage && (
+                            <div className="mt-5">
+                                <NewEventButton organizationId={organization.id} label={oe.newEvent} />
+                            </div>
+                        )}
                     </div>
                 ) : (
                     <div className="overflow-hidden rounded-lg bg-white shadow-sm">
-                        <div className="grid grid-cols-[2.2fr_1fr_1.2fr_auto] gap-3 border-b border-line px-5 py-3 text-xs font-semibold uppercase tracking-wide text-ink-muted">
+                        <div className={`grid ${gridCols} gap-3 border-b border-line px-5 py-3 text-xs font-semibold uppercase tracking-wide text-ink-muted`}>
                             <span>{oe.colEvent}</span>
                             <span>{oe.colDate}</span>
+                            <span>{oe.colPhotographer}</span>
+                            <span>{oe.colContact}</span>
                             <span>{oe.colStatus}</span>
-                            <span></span>
+                            {canManage && <span></span>}
                         </div>
 
                         {events.map((event) => {
@@ -74,7 +80,7 @@ export default function Events({ organization, events }) {
                             return (
                                 <div
                                     key={event.id}
-                                    className="grid grid-cols-[2.2fr_1fr_1.2fr_auto] items-center gap-3 border-b border-line px-5 py-4 text-sm last:border-0 hover:bg-paper-raised"
+                                    className={`grid ${gridCols} items-center gap-3 border-b border-line px-5 py-4 text-sm last:border-0 hover:bg-paper-raised`}
                                 >
                                     <span className="font-medium text-ink">
                                         <Link href={route('events.show', event.id)} className="hover:underline">
@@ -87,28 +93,40 @@ export default function Events({ organization, events }) {
                                         )}
                                     </span>
                                     <span className="text-ink-soft">{event.date}</span>
+                                    <span className="min-w-0 truncate text-ink-soft">
+                                        {event.photographerName || event.photographerEmail
+                                            ? [event.photographerName, event.photographerEmail].filter(Boolean).join(' · ')
+                                            : '—'}
+                                    </span>
+                                    <span className="min-w-0 truncate text-ink-soft">
+                                        {event.clientContactName || event.clientContactEmail
+                                            ? [event.clientContactName, event.clientContactEmail].filter(Boolean).join(' · ')
+                                            : '—'}
+                                    </span>
                                     <span className={`inline-flex w-fit items-center gap-1.5 rounded-full px-2.5 py-0.5 text-xs font-semibold ${style.bg} ${style.text}`}>
                                         <span className={`h-1.5 w-1.5 rounded-full ${style.dot}`} />
                                         {style.label}
                                     </span>
-                                    <span className="flex items-center justify-end gap-3">
-                                        {!event.isRestaurant && (
-                                            <>
-                                                <Link href={route('participants.status', event.id)} className="text-xs text-accent underline">
-                                                    {oe.participants}
-                                                </Link>
-                                                <Link href={route('participants.checkin', event.id)} className="text-xs text-accent underline">
-                                                    {oe.checkin}
-                                                </Link>
-                                            </>
-                                        )}
-                                        <Link href={route('gallery.index', event.id)} className="text-xs text-accent underline">
-                                            {oe.gallery}
-                                        </Link>
-                                        <button type="button" onClick={destroy} className="text-xs text-ink-muted underline hover:text-danger-ink">
-                                            {oe.delete}
-                                        </button>
-                                    </span>
+                                    {canManage && (
+                                        <span className="flex items-center justify-end gap-3">
+                                            {!event.isRestaurant && (
+                                                <>
+                                                    <Link href={route('participants.status', event.id)} className="text-xs text-accent underline">
+                                                        {oe.participants}
+                                                    </Link>
+                                                    <Link href={route('participants.checkin', event.id)} className="text-xs text-accent underline">
+                                                        {oe.checkin}
+                                                    </Link>
+                                                </>
+                                            )}
+                                            <Link href={route('gallery.index', event.id)} className="text-xs text-accent underline">
+                                                {oe.gallery}
+                                            </Link>
+                                            <button type="button" onClick={destroy} className="text-xs text-ink-muted underline hover:text-danger-ink">
+                                                {oe.delete}
+                                            </button>
+                                        </span>
+                                    )}
                                 </div>
                             );
                         })}

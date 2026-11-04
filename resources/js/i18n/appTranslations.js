@@ -8,7 +8,7 @@ export const APP_TRANSLATIONS = {
     ro: {
         nav: { dashboard: 'Dashboard', organizations: 'Clienți', partners: 'Parteneri', team: 'Echipă', auditLog: 'Jurnal audit', errorLog: 'Erori', guide: 'Ghid', profile: 'Profil', logout: 'Ieșire' },
         common: { cancel: 'Anulează', copy: 'Copiază', copied: 'Copiat ✓' },
-        statusEvent: { active: 'Activ', draft: 'Ciornă', locked: 'Blocat', archived: 'Arhivat' },
+        statusEvent: { active: 'Activ', draft: 'Ciornă', locked: 'Blocat', finished: 'Finalizat', archived: 'Arhivat' },
         statusOrganization: { active: 'Activ', onboarding: 'În activare', suspended: 'Suspendat' },
         dashboard: {
             title: 'Evenimente',
@@ -40,7 +40,7 @@ export const APP_TRANSLATIONS = {
             events: {
                 title: 'Evenimente', newEvent: 'Eveniment nou', back: '← Clienți',
                 emptyTitle: 'Niciun eveniment încă', emptyBody: 'Creează primul eveniment pentru acest client.',
-                colEvent: 'Eveniment', colDate: 'Dată', colStatus: 'Stare',
+                colEvent: 'Eveniment', colDate: 'Dată', colPhotographer: 'Fotograf', colContact: 'Contact client', colStatus: 'Stare',
                 restaurantBadge: 'Restaurant', participants: 'Participanți', checkin: 'Check-in', gallery: 'Galerie',
                 delete: 'Șterge', confirmDelete: 'Ștergi definitiv acest eveniment, cu tot ce ține de el (participanți, fotografii)?',
             },
@@ -141,6 +141,9 @@ export const APP_TRANSLATIONS = {
             show: {
                 back: '← Înapoi', restaurantBadge: 'Restaurant',
                 participants: 'Participanți', checkin: 'Check-in', gallery: 'Galerie',
+                rescheduleTitle: 'Reprogramează evenimentul',
+                rescheduleHint: 'Dacă evenimentul a fost mutat la altă dată — starea „Finalizat” se anulează automat dacă noua dată de sfârșit e în viitor.',
+                save: 'Salvează', saving: 'Se salvează…',
                 sectionDetails: 'Detalii eveniment',
                 startsAt: 'Început', endsAt: 'Sfârșit', purpose: 'Scop', country: 'Țară', language: 'Limbă',
                 retention: 'Păstrare poze', days: 'zile',
@@ -212,7 +215,7 @@ export const APP_TRANSLATIONS = {
                 { title: 'Administrezi partenerii regionali din meniul „Parteneri”', body: 'Adaugi partenerii (nume + țară) care vă reprezintă în diverse țări — îi poți alege apoi ca responsabili de vânzare la fiecare eveniment, din secțiunea „Datele clientului”.' },
                 { title: 'Din lista de clienți, apasă „Evenimente” pe rândul clientului', body: 'Evenimentele sunt create doar de franciză/platformă, niciodată de client — aici le vezi și le administrezi pe ale lui.' },
                 { title: 'Apasă „Eveniment nou” și alegi tipul', body: '„Doar galerie foto” (tip restaurant) înseamnă fără participanți și fără contract GDPR — doar galerie. „Eveniment complet” cere și textul contractului GDPR (obligatoriu, plus un PDF opțional de contract), datele de facturare ale clientului și, opțional, emailul fotografului — platforma îi creează automat un cont dedicat, singurul care poate încărca poze la acel eveniment.' },
-                { title: 'Starea evenimentului se schimbă singură', body: 'Pornește „Ciornă”, trece automat în „Activ” la data de început, apoi în „Arhivat” după ce trece termenul de păstrare a pozelor — nu trebuie s-o schimbi manual.' },
+                { title: 'Starea evenimentului se schimbă singură', body: 'Pornește „Ciornă”, trece automat în „Activ” la data de început, în „Finalizat” când trece data de sfârșit, apoi în „Arhivat” după ce trece termenul de păstrare a pozelor — nu trebuie s-o schimbi manual. Dacă evenimentul se reprogramează, modifici data direct din pagina evenimentului.' },
                 { title: 'Poți invita chiar tu participanții la eveniment', body: 'Pe pagina „Evenimente” a clientului, apasă „Participanți” — nu trebuie să aștepți ca admin-ul clientului să facă el invitațiile, deși poate face și el asta din contul lui. Nu apare pentru evenimentele de tip restaurant.' },
             ],
             section2Eyebrow: 'Admin-ul unui client', section2Title: 'Cum gestionezi un eveniment deja creat, de la invitații la răspunsuri',
@@ -287,7 +290,7 @@ export const APP_TRANSLATIONS = {
     en: {
         nav: { dashboard: 'Dashboard', organizations: 'Clients', partners: 'Partners', team: 'Team', auditLog: 'Audit log', errorLog: 'Errors', guide: 'Guide', profile: 'Profile', logout: 'Sign out' },
         common: { cancel: 'Cancel', copy: 'Copy', copied: 'Copied ✓' },
-        statusEvent: { active: 'Active', draft: 'Draft', locked: 'Locked', archived: 'Archived' },
+        statusEvent: { active: 'Active', draft: 'Draft', locked: 'Locked', finished: 'Finished', archived: 'Archived' },
         statusOrganization: { active: 'Active', onboarding: 'Onboarding', suspended: 'Suspended' },
         dashboard: {
             title: 'Events',
@@ -319,7 +322,7 @@ export const APP_TRANSLATIONS = {
             events: {
                 title: 'Events', newEvent: 'New event', back: '← Clients',
                 emptyTitle: 'No events yet', emptyBody: 'Create the first event for this client.',
-                colEvent: 'Event', colDate: 'Date', colStatus: 'Status',
+                colEvent: 'Event', colDate: 'Date', colPhotographer: 'Photographer', colContact: 'Client contact', colStatus: 'Status',
                 restaurantBadge: 'Restaurant', participants: 'Participants', checkin: 'Check-in', gallery: 'Gallery',
                 delete: 'Delete', confirmDelete: 'Permanently delete this event, along with everything attached to it (participants, photos)?',
             },
@@ -420,6 +423,9 @@ export const APP_TRANSLATIONS = {
             show: {
                 back: '← Back', restaurantBadge: 'Restaurant',
                 participants: 'Participants', checkin: 'Check-in', gallery: 'Gallery',
+                rescheduleTitle: 'Reschedule the event',
+                rescheduleHint: 'If the event moved to a different date — a "Finished" status is automatically undone if the new end date is in the future.',
+                save: 'Save', saving: 'Saving…',
                 sectionDetails: 'Event details',
                 startsAt: 'Starts', endsAt: 'Ends', purpose: 'Purpose', country: 'Country', language: 'Language',
                 retention: 'Photo retention', days: 'days',
@@ -491,7 +497,7 @@ export const APP_TRANSLATIONS = {
                 { title: 'Manage regional partners under "Partners" in the menu', body: 'Add the partners (name + country) who represent you in different countries — you can then pick one as the sales-responsible party on each event, in the "Client\'s details" section.' },
                 { title: 'From the client list, click "Events" on the client\'s row', body: 'Events are only ever created by the franchise/platform, never by the client — this is where you see and manage theirs.' },
                 { title: 'Click "New event" and choose its type', body: '"Photo gallery only" (restaurant-type) means no participants and no GDPR contract — just a gallery. "Full event" also requires the GDPR contract text (required, plus an optional contract PDF), the client\'s billing details, and optionally the photographer\'s email — the platform automatically creates them a dedicated account, the only one allowed to upload photos to that event.' },
-                { title: "The event's status changes on its own", body: 'It starts as "Draft", automatically moves to "Active" on its start date, then to "Archived" once the photo retention period ends — you never change it by hand.' },
+                { title: "The event's status changes on its own", body: 'It starts as "Draft", automatically moves to "Active" on its start date, to "Finished" once its end date passes, then to "Archived" once the photo retention period ends — you never change it by hand. If the event gets rescheduled, change the date right from the event\'s own page.' },
                 { title: 'You can invite participants to the event yourself', body: 'On the client\'s "Events" page, click "Participants" — you don\'t have to wait on the client\'s admin to send invitations, though they can do it too from their own account. Doesn\'t appear for restaurant-type events.' },
             ],
             section2Eyebrow: "A client's admin", section2Title: 'How to run an already-created event, from invitations to responses',
@@ -566,7 +572,7 @@ export const APP_TRANSLATIONS = {
     de: {
         nav: { dashboard: 'Dashboard', organizations: 'Kunden', partners: 'Partner', team: 'Team', auditLog: 'Auditprotokoll', errorLog: 'Fehler', guide: 'Anleitung', profile: 'Profil', logout: 'Abmelden' },
         common: { cancel: 'Abbrechen', copy: 'Kopieren', copied: 'Kopiert ✓' },
-        statusEvent: { active: 'Aktiv', draft: 'Entwurf', locked: 'Gesperrt', archived: 'Archiviert' },
+        statusEvent: { active: 'Aktiv', draft: 'Entwurf', locked: 'Gesperrt', finished: 'Fertig', archived: 'Archiviert' },
         statusOrganization: { active: 'Aktiv', onboarding: 'In Einrichtung', suspended: 'Gesperrt' },
         dashboard: {
             title: 'Events',
@@ -598,7 +604,7 @@ export const APP_TRANSLATIONS = {
             events: {
                 title: 'Events', newEvent: 'Neues Event', back: '← Kunden',
                 emptyTitle: 'Noch kein Event', emptyBody: 'Erstellen Sie das erste Event für diesen Kunden.',
-                colEvent: 'Event', colDate: 'Datum', colStatus: 'Status',
+                colEvent: 'Event', colDate: 'Datum', colPhotographer: 'Fotograf', colContact: 'Kundenkontakt', colStatus: 'Status',
                 restaurantBadge: 'Restaurant', participants: 'Teilnehmer', checkin: 'Check-in', gallery: 'Galerie',
                 delete: 'Löschen', confirmDelete: 'Dieses Event endgültig löschen, mit allem, was dazugehört (Teilnehmer, Fotos)?',
             },
@@ -699,6 +705,9 @@ export const APP_TRANSLATIONS = {
             show: {
                 back: '← Zurück', restaurantBadge: 'Restaurant',
                 participants: 'Teilnehmer', checkin: 'Check-in', gallery: 'Galerie',
+                rescheduleTitle: 'Event verschieben',
+                rescheduleHint: 'Falls das Event auf ein anderes Datum verschoben wurde — der Status „Fertig" wird automatisch zurückgesetzt, wenn das neue Enddatum in der Zukunft liegt.',
+                save: 'Speichern', saving: 'Wird gespeichert…',
                 sectionDetails: 'Event-Details',
                 startsAt: 'Beginn', endsAt: 'Ende', purpose: 'Zweck', country: 'Land', language: 'Sprache',
                 retention: 'Fotoaufbewahrung', days: 'Tage',
@@ -770,7 +779,7 @@ export const APP_TRANSLATIONS = {
                 { title: 'Verwalten Sie regionale Partner unter „Partner" im Menü', body: 'Fügen Sie die Partner (Name + Land) hinzu, die Sie in verschiedenen Ländern vertreten — Sie können dann bei jedem Event einen als Verkaufszuständigen auswählen, im Abschnitt „Kundendaten".' },
                 { title: 'Klicken Sie in der Kundenliste auf „Events" bei der Zeile des Kunden', body: 'Events werden ausschließlich vom Franchise-/Plattform-Team erstellt, nie vom Kunden — hier sehen und verwalten Sie dessen Events.' },
                 { title: 'Klicken Sie auf „Neues Event" und wählen Sie den Typ', body: '„Nur Fotogalerie" (Typ Restaurant) bedeutet keine Teilnehmer und keinen GDPR-Vertrag — nur eine Galerie. „Vollständiges Event" erfordert zusätzlich den GDPR-Vertragstext (Pflicht, plus ein optionales Vertrags-PDF), die Rechnungsdaten des Kunden und optional die E-Mail des Fotografen — die Plattform erstellt ihm automatisch ein eigenes Konto, das einzige, das für dieses Event Fotos hochladen darf.' },
-                { title: 'Der Status des Events ändert sich von selbst', body: 'Er startet als „Entwurf", wechselt am Startdatum automatisch zu „Aktiv" und nach Ablauf der Fotoaufbewahrungsfrist zu „Archiviert" — Sie müssen ihn nie manuell ändern.' },
+                { title: 'Der Status des Events ändert sich von selbst', body: 'Er startet als „Entwurf", wechselt am Startdatum automatisch zu „Aktiv", am Enddatum zu „Fertig" und nach Ablauf der Fotoaufbewahrungsfrist zu „Archiviert" — Sie müssen ihn nie manuell ändern. Wird das Event verschoben, ändern Sie das Datum direkt auf der Event-Seite.' },
                 { title: 'Sie können Teilnehmer selbst zum Event einladen', body: 'Klicken Sie auf der „Events"-Seite des Kunden auf „Teilnehmer" — Sie müssen nicht warten, bis der Admin des Kunden die Einladungen verschickt, auch wenn dieser das ebenfalls von seinem eigenen Konto aus tun kann. Erscheint nicht bei Events vom Typ Restaurant.' },
             ],
             section2Eyebrow: 'Der Admin eines Kunden', section2Title: 'So verwalten Sie ein bereits erstelltes Event, von Einladungen bis zu den Antworten',

@@ -9,6 +9,7 @@ export default function Dashboard({ events }) {
         active: { label: t.statusEvent.active, dot: 'bg-teal', text: 'text-teal-ink', bg: 'bg-teal-soft' },
         draft: { label: t.statusEvent.draft, dot: 'bg-ink-muted', text: 'text-ink-soft', bg: 'bg-paper-sunken' },
         locked: { label: t.statusEvent.locked, dot: 'bg-amber-600', text: 'text-amber-700', bg: 'bg-amber-50' },
+        finished: { label: t.statusEvent.finished, dot: 'bg-accent', text: 'text-accent-ink', bg: 'bg-accent-soft' },
         archived: { label: t.statusEvent.archived, dot: 'bg-ink-muted', text: 'text-ink-muted', bg: 'bg-paper-sunken' },
     };
     const activeCount = events.filter((event) => event.status === 'active').length;

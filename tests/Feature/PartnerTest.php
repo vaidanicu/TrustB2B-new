@@ -37,6 +37,15 @@ class PartnerTest extends TestCase
         return $user;
     }
 
+    private function partnerAccount(Partner $partner): User
+    {
+        $user = User::factory()->forFranchisePartner($partner->franchisePartner)->create();
+        (new AssignRole)->grant($user, 'partner', 'test');
+        $partner->forceFill(['user_id' => $user->id])->save();
+
+        return $user;
+    }
+
     public function test_a_franchise_partner_admin_can_create_a_partner(): void
     {
         $franchisePartner = FranchisePartner::factory()->create();
@@ -135,5 +144,65 @@ class PartnerTest extends TestCase
 
         $response->assertNotFound();
         $this->assertSame(0, Event::count());
+    }
+
+    public function test_a_partner_account_only_sees_clients_it_has_an_event_with(): void
+    {
+        $franchisePartner = FranchisePartner::factory()->create();
+        $partner = Partner::factory()->for($franchisePartner)->create();
+        $partnerUser = $this->partnerAccount($partner);
+
+        $theirClient = Organization::factory()->for($franchisePartner)->create(['name' => 'Theirs']);
+        Event::factory()->for($theirClient)->create(['franchise_partner_id' => $franchisePartner->id, 'partner_id' => $partner->id]);
+
+        $otherClient = Organization::factory()->for($franchisePartner)->create(['name' => 'Not theirs']);
+        Event::factory()->for($otherClient)->create(['franchise_partner_id' => $franchisePartner->id]);
+
+        $this->actingAs($partnerUser)
+            ->get(route('organizations.index'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page->component('Organizations/Index')
+                ->where('canManage', false)
+                ->has('organizations', 1)
+                ->where('organizations.0.name', 'Theirs'));
+    }
+
+    public function test_a_partner_account_sees_only_its_own_events_for_a_client_with_photographer_and_contact_columns(): void
+    {
+        $franchisePartner = FranchisePartner::factory()->create();
+        $partner = Partner::factory()->for($franchisePartner)->create();
+        $partnerUser = $this->partnerAccount($partner);
+        $organization = Organization::factory()->for($franchisePartner)->create();
+
+        $theirEvent = Event::factory()->for($organization)->create([
+            'franchise_partner_id' => $franchisePartner->id,
+            'partner_id' => $partner->id,
+            'photographer' => 'Ion Popescu',
+            'client_contact_name' => 'Bianca Ionescu',
+            'client_contact_email' => 'bianca@hotelaurora.ro',
+        ]);
+        Event::factory()->for($organization)->create(['franchise_partner_id' => $franchisePartner->id]);
+
+        $this->actingAs($partnerUser)
+            ->get(route('organizations.events', $organization))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page->component('Organizations/Events')
+                ->where('canManage', false)
+                ->has('events', 1)
+                ->where('events.0.id', $theirEvent->id)
+                ->where('events.0.photographerName', 'Ion Popescu')
+                ->where('events.0.clientContactEmail', 'bianca@hotelaurora.ro'));
+    }
+
+    public function test_a_partner_account_cannot_view_a_clients_events_it_has_no_event_with(): void
+    {
+        $franchisePartner = FranchisePartner::factory()->create();
+        $partner = Partner::factory()->for($franchisePartner)->create();
+        $partnerUser = $this->partnerAccount($partner);
+
+        $organization = Organization::factory()->for($franchisePartner)->create();
+        Event::factory()->for($organization)->create(['franchise_partner_id' => $franchisePartner->id]);
+
+        $this->actingAs($partnerUser)->get(route('organizations.events', $organization))->assertForbidden();
     }
 }

@@ -1,6 +1,9 @@
 import AppLayout from '@/Layouts/AppLayout';
+import InputError from '@/Components/InputError';
+import InputLabel from '@/Components/InputLabel';
+import TextInput from '@/Components/TextInput';
 import { useAppTranslations } from '@/i18n/appTranslations';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
 
 function Field({ label, value }) {
     if (!value) {
@@ -24,13 +27,65 @@ function Section({ title, children }) {
     );
 }
 
-export default function Show({ backUrl, event }) {
+function RescheduleForm({ event, es, ec }) {
+    const { data, setData, patch, processing, errors } = useForm({
+        starts_at: event.startsAtRaw,
+        ends_at: event.endsAtRaw,
+    });
+
+    function submit(e) {
+        e.preventDefault();
+        patch(route('events.update', event.id));
+    }
+
+    return (
+        <section className="rounded-lg bg-white p-6 shadow-sm">
+            <h2 className="mb-1 text-sm font-semibold uppercase tracking-wide text-ink-muted">{es.rescheduleTitle}</h2>
+            <p className="mb-4 text-xs text-ink-muted">{es.rescheduleHint}</p>
+            <form onSubmit={submit} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                    <InputLabel value={ec.startLabel} />
+                    <TextInput
+                        type="datetime-local"
+                        className="mt-1 block w-full"
+                        value={data.starts_at}
+                        onChange={(e) => setData('starts_at', e.target.value)}
+                    />
+                    <InputError message={errors.starts_at} className="mt-1" />
+                </div>
+                <div>
+                    <InputLabel value={ec.endLabel} />
+                    <TextInput
+                        type="datetime-local"
+                        className="mt-1 block w-full"
+                        value={data.ends_at}
+                        onChange={(e) => setData('ends_at', e.target.value)}
+                    />
+                    <InputError message={errors.ends_at} className="mt-1" />
+                </div>
+                <div className="sm:col-span-2">
+                    <button
+                        type="submit"
+                        disabled={processing}
+                        className="inline-flex items-center rounded-md border border-transparent bg-ink px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white transition hover:bg-ink-soft disabled:opacity-60"
+                    >
+                        {processing ? es.saving : es.save}
+                    </button>
+                </div>
+            </form>
+        </section>
+    );
+}
+
+export default function Show({ backUrl, event, canManage }) {
+    const { flash } = usePage().props;
     const { t } = useAppTranslations();
     const es = t.events.show;
     const statusStyles = {
         active: { label: t.statusEvent.active, text: 'text-teal-ink', bg: 'bg-teal-soft' },
         draft: { label: t.statusEvent.draft, text: 'text-ink-soft', bg: 'bg-paper-sunken' },
         locked: { label: t.statusEvent.locked, text: 'text-amber-700', bg: 'bg-amber-50' },
+        finished: { label: t.statusEvent.finished, text: 'text-accent-ink', bg: 'bg-accent-soft' },
         archived: { label: t.statusEvent.archived, text: 'text-ink-muted', bg: 'bg-paper-sunken' },
     };
     const style = statusStyles[event.status] ?? statusStyles.draft;
@@ -59,6 +114,12 @@ export default function Show({ backUrl, event }) {
                     {event.organizationName && <p className="mt-1 text-sm text-ink-muted">{event.organizationName}</p>}
                 </div>
 
+                {flash?.status && (
+                    <div className="rounded-md border border-teal bg-teal-soft px-4 py-3 text-sm text-teal-ink">
+                        {flash.status}
+                    </div>
+                )}
+
                 <div className="flex flex-wrap gap-3">
                     {!event.isRestaurant && (
                         <>
@@ -74,6 +135,8 @@ export default function Show({ backUrl, event }) {
                         {es.gallery}
                     </Link>
                 </div>
+
+                {canManage && <RescheduleForm event={event} es={es} ec={t.events.create} />}
 
                 <Section title={es.sectionDetails}>
                     <Field label={es.startsAt} value={event.startsAt} />

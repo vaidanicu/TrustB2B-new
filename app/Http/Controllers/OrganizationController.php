@@ -34,16 +34,29 @@ class OrganizationController extends Controller
 {
     public function index(Request $request): Response
     {
-        // Was "organization_id === null", which also let a Partner account
-        // through (it has no organization_id either, but isn't franchise/
-        // system-level staff) — organizations.manage is the real guard.
-        abort_unless($request->user()->can('organizations.manage'), 403);
+        $partner = $request->user()->partner;
 
-        $organizations = Organization::query()
-            ->orderBy('name')
-            ->get(['id', 'name', 'country', 'contract_status']);
+        // A Partner account sees only the clients it actually has an
+        // event with — never the full franchise client list, which stays
+        // behind organizations.manage below. Was "organization_id ===
+        // null", which also let a Partner through undiscriminated (it has
+        // no organization_id either, but isn't franchise/system-level
+        // staff) — this explicit branch is the real guard now.
+        if ($partner !== null) {
+            $organizations = Organization::query()
+                ->whereHas('events', fn ($query) => $query->where('partner_id', $partner->id))
+                ->orderBy('name')
+                ->get(['id', 'name', 'country', 'contract_status']);
+        } else {
+            abort_unless($request->user()->can('organizations.manage'), 403);
+
+            $organizations = Organization::query()
+                ->orderBy('name')
+                ->get(['id', 'name', 'country', 'contract_status']);
+        }
 
         return Inertia::render('Organizations/Index', [
+            'canManage' => $partner === null,
             'organizations' => $organizations->map(fn (Organization $organization) => [
                 'id' => $organization->id,
                 'name' => $organization->name,
@@ -87,21 +100,44 @@ class OrganizationController extends Controller
      * already guarantees $organization is one this actor can see (route
      * model binding resolves it the same tenant-scoped way); events.manage
      * guards actually touching it, same as EventController itself.
+     *
+     * A Partner account reaches this same screen read-only, narrowed to
+     * just its own events for this client (Event.partner_id) — reported:
+     * a partner needs a table of which events were done for a client, who
+     * photographed each one and who the client-side contact was, not
+     * scattered across individual removal-request emails. abort_unless
+     * here (rather than letting an empty table render) keeps a partner
+     * from browsing a client it has no event with at all.
      */
     public function events(Request $request, Organization $organization): Response
     {
-        abort_unless($request->user()->can('events.manage'), 403);
+        $partner = $request->user()->partner;
 
-        $events = $organization->events()->orderByDesc('starts_at')->get(['id', 'name', 'starts_at', 'status', 'is_restaurant']);
+        if ($partner !== null) {
+            abort_unless($organization->events()->where('partner_id', $partner->id)->exists(), 403);
+            $eventsQuery = $organization->events()->where('partner_id', $partner->id);
+        } else {
+            abort_unless($request->user()->can('events.manage'), 403);
+            $eventsQuery = $organization->events();
+        }
+
+        $events = $eventsQuery->orderByDesc('starts_at')
+            ->with('photographerUser')
+            ->get(['id', 'name', 'starts_at', 'status', 'is_restaurant', 'photographer', 'photographer_user_id', 'client_contact_name', 'client_contact_email']);
 
         return Inertia::render('Organizations/Events', [
             'organization' => ['id' => $organization->id, 'name' => $organization->name],
+            'canManage' => $partner === null,
             'events' => $events->map(fn (Event $event) => [
                 'id' => $event->id,
                 'name' => $event->name,
                 'date' => $event->starts_at->format('d.m.Y H:i'),
                 'status' => $event->status,
                 'isRestaurant' => $event->is_restaurant,
+                'photographerName' => $event->photographer,
+                'photographerEmail' => $event->photographerUser?->email,
+                'clientContactName' => $event->client_contact_name,
+                'clientContactEmail' => $event->client_contact_email,
             ]),
         ]);
     }

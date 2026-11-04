@@ -19,6 +19,7 @@ class FlashMessage
             'ro' => [
                 'event.created' => 'Eveniment creat: {name}',
                 'event.deleted' => 'Eveniment șters: {name}',
+                'event.rescheduled' => 'Data evenimentului a fost actualizată: {name}',
                 'gallery.uploaded' => 'Fotografii/video-uri încărcate.',
                 'gallery.photo_deleted' => 'Fotografie ștearsă.',
                 'gallery.removal_denied' => 'Cerere de eliminare respinsă.',
@@ -33,6 +34,7 @@ class FlashMessage
             'en' => [
                 'event.created' => 'Event created: {name}',
                 'event.deleted' => 'Event deleted: {name}',
+                'event.rescheduled' => 'Event date updated: {name}',
                 'gallery.uploaded' => 'Photos/videos uploaded.',
                 'gallery.photo_deleted' => 'Photo deleted.',
                 'gallery.removal_denied' => 'Removal request denied.',
@@ -47,6 +49,7 @@ class FlashMessage
             'de' => [
                 'event.created' => 'Event erstellt: {name}',
                 'event.deleted' => 'Event gelöscht: {name}',
+                'event.rescheduled' => 'Event-Datum aktualisiert: {name}',
                 'gallery.uploaded' => 'Fotos/Videos hochgeladen.',
                 'gallery.photo_deleted' => 'Foto gelöscht.',
                 'gallery.removal_denied' => 'Entfernungsanfrage abgelehnt.',

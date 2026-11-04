@@ -69,6 +69,8 @@ class EventController extends Controller
                 'status' => $event->status,
                 'startsAt' => $event->starts_at->format('d.m.Y H:i'),
                 'endsAt' => $event->ends_at->format('d.m.Y H:i'),
+                'startsAtRaw' => $event->starts_at->format('Y-m-d\TH:i'),
+                'endsAtRaw' => $event->ends_at->format('Y-m-d\TH:i'),
                 'retentionDays' => $event->retention_days,
                 'endOfCycleAction' => $event->end_of_cycle_action,
                 'organizer' => $event->organizer,
@@ -93,6 +95,39 @@ class EventController extends Controller
             ],
             'canManage' => $request->user()->can('events.manage'),
         ]);
+    }
+
+    /**
+     * The only field an agency actor can change after creation — reported:
+     * events need to move when a client postpones them, and
+     * UpdateEventStatusesCommand has no way to know that on its own.
+     * Rescheduling a 'finished' event back into the future reverts that
+     * automatic stamp (it isn't done after all); 'archived' is left
+     * alone, since the gallery may already be gone by then.
+     */
+    public function update(Request $request, Event $event): RedirectResponse
+    {
+        abort_unless($request->user()->can('events.manage'), 403);
+
+        $data = $request->validate([
+            'starts_at' => ['required', 'date'],
+            'ends_at' => ['required', 'date', 'after_or_equal:starts_at'],
+        ]);
+
+        $event->forceFill($data);
+
+        if ($event->status === 'finished' && $event->ends_at->isFuture()) {
+            $event->status = $event->starts_at->isFuture() ? 'draft' : 'active';
+        }
+
+        $event->save();
+
+        activity()
+            ->causedBy($request->user())
+            ->performedOn($event)
+            ->log('event rescheduled');
+
+        return back()->with('status', FlashMessage::t($request->user()->locale ?? 'ro', 'event.rescheduled', ['name' => $event->name]));
     }
 
     public function create(Request $request): Response

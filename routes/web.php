@@ -81,6 +81,7 @@ Route::middleware(['app-domain', 'auth', 'verified'])->group(function () {
     Route::get('/events/create', [EventController::class, 'create'])->name('events.create');
     Route::post('/events', [EventController::class, 'store'])->name('events.store');
     Route::get('/events/{event}', [EventController::class, 'show'])->name('events.show');
+    Route::patch('/events/{event}', [EventController::class, 'update'])->name('events.update');
     Route::delete('/events/{event}', [EventController::class, 'destroy'])->name('events.destroy');
     Route::get('/events/{event}/participants', [ParticipantController::class, 'statusBoard'])->name('participants.status');
     Route::post('/events/{event}/participants', [ParticipantController::class, 'store'])->name('participants.store');
