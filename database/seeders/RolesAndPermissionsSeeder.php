@@ -55,6 +55,13 @@ class RolesAndPermissionsSeeder extends Seeder
         // No admin permissions at all — participants reach the platform
         // through personalised invitation links, not role-based access.
         'participant' => [],
+        // A regional reseller's own login (PartnerController::findOrCreateAccount),
+        // view-only: sees every flagged photo across the events assigned
+        // to them (DashboardController), never moderates — that stays
+        // with the client's own media.moderate-deletion-requests holders.
+        'partner' => [
+            'removal-requests.view',
+        ],
     ];
 
     public function run(): void

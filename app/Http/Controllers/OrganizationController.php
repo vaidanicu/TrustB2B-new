@@ -34,9 +34,10 @@ class OrganizationController extends Controller
 {
     public function index(Request $request): Response
     {
-        // Organization-scoped users have their own account page for this
-        // later; today's screen is built for franchise/system-level staff.
-        abort_if($request->user()->organization_id !== null, 403);
+        // Was "organization_id === null", which also let a Partner account
+        // through (it has no organization_id either, but isn't franchise/
+        // system-level staff) — organizations.manage is the real guard.
+        abort_unless($request->user()->can('organizations.manage'), 403);
 
         $organizations = Organization::query()
             ->orderBy('name')
@@ -62,7 +63,7 @@ class OrganizationController extends Controller
      */
     public function updateStatus(Request $request, Organization $organization): RedirectResponse
     {
-        abort_if($request->user()->organization_id !== null, 403);
+        abort_unless($request->user()->can('organizations.manage'), 403);
 
         $data = $request->validate([
             'contract_status' => ['required', Rule::in(['onboarding', 'active', 'suspended'])],
@@ -107,7 +108,7 @@ class OrganizationController extends Controller
 
     public function create(Request $request): Response
     {
-        abort_if($request->user()->organization_id !== null, 403);
+        abort_unless($request->user()->can('organizations.manage'), 403);
 
         return Inertia::render('Organizations/Create', [
             // A franchise-partner-admin has exactly one franchise already —
@@ -121,7 +122,7 @@ class OrganizationController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        abort_if($request->user()->organization_id !== null, 403);
+        abort_unless($request->user()->can('organizations.manage'), 403);
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],

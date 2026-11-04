@@ -56,8 +56,15 @@ export const APP_TRANSLATIONS = {
                 sectionTitle: 'Date partener', sectionBody: 'Partenerul regional pe care îl poți alege ca responsabil de vânzare la fiecare eveniment.',
                 nameLabel: 'Nume', namePlaceholder: 'ex. Auras srl',
                 countryLabel: 'Țară', countryHint: 'Țara în care operează acest partener (ex. RO, HU, AT, DE).',
+                optional: 'opțional',
+                emailLabel: 'Email', emailHint: 'Dacă introduci un email, partenerul primește automat un cont — poate vedea toate cererile de eliminare de la evenimentele lui, într-un singur loc.',
                 franchiseLabel: 'Franciză parteneră',
                 submit: 'Creează partener', submitting: 'Se creează…',
+            },
+            dashboard: {
+                title: 'Cereri de eliminare', subtitle: 'Pozele semnalate pentru eliminare, din toate evenimentele tale, într-un singur loc.',
+                empty: 'Nicio cerere de eliminare în așteptare momentan.',
+                unnamed: 'Fără nume',
             },
         },
         users: {
@@ -328,8 +335,15 @@ export const APP_TRANSLATIONS = {
                 sectionTitle: 'Partner details', sectionBody: 'The regional partner you can pick as the sales-responsible party on each event.',
                 nameLabel: 'Name', namePlaceholder: 'e.g. Auras srl',
                 countryLabel: 'Country', countryHint: 'The country this partner operates in (e.g. RO, HU, AT, DE).',
+                optional: 'optional',
+                emailLabel: 'Email', emailHint: "If you enter an email, the partner automatically gets an account — they can see every removal request from their events in one place.",
                 franchiseLabel: 'Franchise partner',
                 submit: 'Create partner', submitting: 'Creating…',
+            },
+            dashboard: {
+                title: 'Removal requests', subtitle: 'Flagged photos from all your events, in one place.',
+                empty: 'No pending removal requests right now.',
+                unnamed: 'No name given',
             },
         },
         users: {
@@ -600,8 +614,15 @@ export const APP_TRANSLATIONS = {
                 sectionTitle: 'Partnerdaten', sectionBody: 'Der regionale Partner, den Sie bei jedem Event als Verkaufszuständigen auswählen können.',
                 nameLabel: 'Name', namePlaceholder: 'z. B. Auras srl',
                 countryLabel: 'Land', countryHint: 'Das Land, in dem dieser Partner tätig ist (z. B. RO, HU, AT, DE).',
+                optional: 'optional',
+                emailLabel: 'E-Mail', emailHint: 'Wenn Sie eine E-Mail eingeben, erhält der Partner automatisch ein Konto — er sieht dort alle Entfernungsanfragen seiner Events an einem Ort.',
                 franchiseLabel: 'Franchise-Partner',
                 submit: 'Partner erstellen', submitting: 'Wird erstellt…',
+            },
+            dashboard: {
+                title: 'Entfernungsanfragen', subtitle: 'Gemeldete Fotos aus all Ihren Events, an einem Ort.',
+                empty: 'Derzeit keine ausstehenden Entfernungsanfragen.',
+                unnamed: 'Kein Name angegeben',
             },
         },
         users: {

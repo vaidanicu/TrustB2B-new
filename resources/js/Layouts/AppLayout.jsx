@@ -66,25 +66,34 @@ export default function AppLayout({ title, active = null, actions = null, childr
     // three agency-level roles events.manage already is — checking role
     // names client-side, same reasoning as the two checks above.
     const canManagePartners = (user?.roles ?? []).some((role) => ['platform-admin', 'franchisor-admin', 'franchise-partner-admin'].includes(role));
+    // A Partner account (PartnerController::findOrCreateAccount) has
+    // organization_id === null just like franchise/platform staff, but
+    // isn't one of them — gets its own minimal nav instead of falling into
+    // the franchise/platform branch below, where every link would 403.
+    const isPartner = (user?.roles ?? []).includes('partner');
 
-    const navItems = isOrganizationScope
-        ? [
-              { key: 'dashboard', label: t.nav.dashboard, href: route('dashboard') },
-              ...(canManageTeam ? [{ key: 'users', label: t.nav.team, href: route('users.index') }] : []),
-              { key: 'audit-log', label: t.nav.auditLog, href: route('audit-log.index') },
-              { key: 'guide', label: t.nav.guide, href: route('guide.index') },
-          ]
-        : [
-              { key: 'organizations', label: t.nav.organizations, href: route('organizations.index') },
-              ...(canManagePartners ? [{ key: 'partners', label: t.nav.partners, href: route('partners.index') }] : []),
-              { key: 'audit-log', label: t.nav.auditLog, href: route('audit-log.index') },
-              ...(canViewErrorLog ? [{ key: 'error-log', label: t.nav.errorLog, href: route('error-log.index') }] : []),
-              { key: 'guide', label: t.nav.guide, href: route('guide.index') },
-          ];
+    const navItems = isPartner
+        ? [{ key: 'dashboard', label: t.nav.dashboard, href: route('dashboard') }, { key: 'guide', label: t.nav.guide, href: route('guide.index') }]
+        : isOrganizationScope
+            ? [
+                  { key: 'dashboard', label: t.nav.dashboard, href: route('dashboard') },
+                  ...(canManageTeam ? [{ key: 'users', label: t.nav.team, href: route('users.index') }] : []),
+                  { key: 'audit-log', label: t.nav.auditLog, href: route('audit-log.index') },
+                  { key: 'guide', label: t.nav.guide, href: route('guide.index') },
+              ]
+            : [
+                  { key: 'organizations', label: t.nav.organizations, href: route('organizations.index') },
+                  ...(canManagePartners ? [{ key: 'partners', label: t.nav.partners, href: route('partners.index') }] : []),
+                  { key: 'audit-log', label: t.nav.auditLog, href: route('audit-log.index') },
+                  ...(canViewErrorLog ? [{ key: 'error-log', label: t.nav.errorLog, href: route('error-log.index') }] : []),
+                  { key: 'guide', label: t.nav.guide, href: route('guide.index') },
+              ];
 
-    const contextLabel = isOrganizationScope
-        ? user.organization?.name
-        : (user?.franchise_partner?.name ?? (user?.roles ?? [])[0]);
+    const contextLabel = isPartner
+        ? user?.partner_name
+        : isOrganizationScope
+            ? user.organization?.name
+            : (user?.franchise_partner?.name ?? (user?.roles ?? [])[0]);
 
     return (
         <div className="min-h-screen bg-paper">

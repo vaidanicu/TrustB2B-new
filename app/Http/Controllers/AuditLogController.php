@@ -31,6 +31,14 @@ class AuditLogController extends Controller
 {
     public function index(Request $request): Response
     {
+        // Was unguarded — scoping alone isn't a permission check, and a new
+        // Partner account (organization_id null, franchise_partner_id set,
+        // like franchise staff) would otherwise fall into the
+        // franchise-scoped branch below and see that whole franchise's
+        // activity, despite audit-log.view never having been granted to
+        // the 'partner' role (RolesAndPermissionsSeeder).
+        abort_unless($request->user()->can('audit-log.view'), 403);
+
         $user = $request->user();
 
         $activities = Activity::query()

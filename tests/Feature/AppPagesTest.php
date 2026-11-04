@@ -52,12 +52,15 @@ class AppPagesTest extends TestCase
 
     public function test_organizations_page_lists_only_the_franchise_partners_own_organizations(): void
     {
+        $this->seed(RolesAndPermissionsSeeder::class);
+
         $franchiseA = FranchisePartner::factory()->create();
         $franchiseB = FranchisePartner::factory()->create();
         $orgA = Organization::factory()->create(['franchise_partner_id' => $franchiseA->id, 'name' => 'Hotel Aurora']);
         Organization::factory()->create(['franchise_partner_id' => $franchiseB->id, 'name' => 'Other Franchise Org']);
 
         $user = User::factory()->forFranchisePartner($franchiseA)->create();
+        (new AssignRole)->grant($user, 'franchise-partner-admin', 'test');
 
         $this->actingAs($user)
             ->get(route('organizations.index'))

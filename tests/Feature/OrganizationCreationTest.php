@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Actions\Tenancy\AssignRole;
 use App\Mail\StaffAccountCreated;
 use App\Models\FranchisePartner;
 use App\Models\Organization;
@@ -28,6 +29,7 @@ class OrganizationCreationTest extends TestCase
 
         $franchisePartner = FranchisePartner::factory()->create();
         $user = User::factory()->forFranchisePartner($franchisePartner)->create();
+        (new AssignRole)->grant($user, 'franchise-partner-admin', 'test');
 
         $response = $this->actingAs($user)->post(route('organizations.store'), [
             'name' => 'Hotel Aurora',
@@ -63,6 +65,7 @@ class OrganizationCreationTest extends TestCase
         $ownFranchise = FranchisePartner::factory()->create();
         $otherFranchise = FranchisePartner::factory()->create();
         $user = User::factory()->forFranchisePartner($ownFranchise)->create();
+        (new AssignRole)->grant($user, 'franchise-partner-admin', 'test');
 
         $this->actingAs($user)->post(route('organizations.store'), [
             'name' => 'Hotel Aurora',
@@ -109,8 +112,11 @@ class OrganizationCreationTest extends TestCase
 
     public function test_the_admin_email_must_be_unique(): void
     {
+        $this->seed(RolesAndPermissionsSeeder::class);
+
         $franchisePartner = FranchisePartner::factory()->create();
         $user = User::factory()->forFranchisePartner($franchisePartner)->create();
+        (new AssignRole)->grant($user, 'franchise-partner-admin', 'test');
         User::factory()->create(['email' => 'bianca@hotelaurora.ro']);
 
         $response = $this->actingAs($user)->post(route('organizations.store'), [
@@ -126,9 +132,12 @@ class OrganizationCreationTest extends TestCase
 
     public function test_a_franchise_partner_admin_can_change_a_clients_contract_status(): void
     {
+        $this->seed(RolesAndPermissionsSeeder::class);
+
         $franchisePartner = FranchisePartner::factory()->create();
         $organization = Organization::factory()->for($franchisePartner)->create(['contract_status' => 'onboarding']);
         $user = User::factory()->forFranchisePartner($franchisePartner)->create();
+        (new AssignRole)->grant($user, 'franchise-partner-admin', 'test');
 
         $this->actingAs($user)
             ->patch(route('organizations.update-status', $organization), ['contract_status' => 'active'])
@@ -139,9 +148,12 @@ class OrganizationCreationTest extends TestCase
 
     public function test_an_invalid_status_value_is_rejected(): void
     {
+        $this->seed(RolesAndPermissionsSeeder::class);
+
         $franchisePartner = FranchisePartner::factory()->create();
         $organization = Organization::factory()->for($franchisePartner)->create(['contract_status' => 'onboarding']);
         $user = User::factory()->forFranchisePartner($franchisePartner)->create();
+        (new AssignRole)->grant($user, 'franchise-partner-admin', 'test');
 
         $this->actingAs($user)
             ->patch(route('organizations.update-status', $organization), ['contract_status' => 'not-a-real-status'])

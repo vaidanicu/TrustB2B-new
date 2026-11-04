@@ -23,6 +23,7 @@ export default function Create({ franchisePartners }) {
     const { data, setData, post, processing, errors } = useForm({
         name: '',
         country: 'RO',
+        email: '',
         franchise_partner_id: franchisePartners?.[0]?.id ?? '',
     });
 
@@ -54,6 +55,14 @@ export default function Create({ franchisePartners }) {
                             field={{ value: data.country, onChange: (e) => setData('country', e.target.value.toUpperCase()) }}
                             errors={errors.country}
                             hint={c.countryHint}
+                        />
+                        <Field
+                            label={c.emailLabel}
+                            type="email"
+                            placeholder={c.optional}
+                            field={{ value: data.email, onChange: (e) => setData('email', e.target.value) }}
+                            errors={errors.email}
+                            hint={c.emailHint}
                         />
 
                         {franchisePartners?.length > 0 && (

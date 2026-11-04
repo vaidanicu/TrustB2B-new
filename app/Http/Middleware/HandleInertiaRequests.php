@@ -29,7 +29,7 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
-        $user = $request->user()?->loadMissing(['organization', 'franchisePartner']);
+        $user = $request->user()?->loadMissing(['organization', 'franchisePartner', 'partner']);
 
         return [
             ...parent::share($request),
@@ -39,6 +39,7 @@ class HandleInertiaRequests extends Middleware
                     'roles' => $user->getRoleNames(),
                     'organization' => $user->organization?->only(['id', 'name']),
                     'franchise_partner' => $user->franchisePartner?->only(['id', 'name', 'region_code']),
+                    'partner_name' => $user->partner?->name,
                 ] : null,
             ],
             // Shares whatever a controller actually flashed on the PREVIOUS

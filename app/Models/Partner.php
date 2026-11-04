@@ -17,7 +17,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * the agency (partners.manage: platform-/franchisor-/franchise-partner-admin),
  * never by a client's own staff.
  */
-#[Fillable(['franchise_partner_id', 'name', 'country'])]
+#[Fillable(['franchise_partner_id', 'name', 'country', 'email', 'user_id'])]
 class Partner extends Model
 {
     /** @use HasFactory<PartnerFactory> */
@@ -40,5 +40,19 @@ class Partner extends Model
     public function franchisePartner(): BelongsTo
     {
         return $this->belongsTo(FranchisePartner::class);
+    }
+
+    /**
+     * The login account this Partner can use to see every flagged photo
+     * across the events assigned to them — see
+     * PartnerController::findOrCreateAccount(). Optional: a Partner with no
+     * email is still a valid per-event attribution record, just without a
+     * dashboard of its own.
+     *
+     * @return BelongsTo<User, $this>
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 }
