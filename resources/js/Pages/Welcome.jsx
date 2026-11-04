@@ -89,7 +89,7 @@ export default function Welcome({ locale = 'ro' }) {
                 </section>
                 <section id="organizatori" className="tb-section tb-audiences" data-reveal><div className="tb-container tb-audience-layout"><div><SectionHeading eyebrow={t.audiencesEyebrow} title={t.audiencesTitle} body={t.audiencesSub} /><a className="tb-text-link" href={route('login')}>{t.login}<Icon name="arrow" /></a></div><div className="tb-audience-grid">{t.audiences.map((audience, index) => <div key={audience}><span>0{index + 1}</span><Icon name={['calendar', 'image', 'users', 'shield'][index]} /><h3>{audience}</h3></div>)}</div></div></section>
             </main>
-            <footer className="tb-footer"><div className="tb-container"><div className="tb-footer-top"><div><p className="tb-eyebrow">TrustBridge B2B</p><h2>{t.footerCta}</h2><p>{t.footerLabel}</p></div><a className="tb-button tb-button-light" href={route('login')}>{t.login}<Icon name="arrow" /></a></div><div className="tb-footer-bottom"><span>TrustBridge B2B Network</span><p>{t.footerDisclaimer}</p><LanguageSwitcher current={language} /></div></div></footer>
+            <footer className="tb-footer"><div className="tb-container"><div className="tb-footer-top"><div><p className="tb-eyebrow">TrustBridge B2B</p><h2>{t.footerCta}</h2><p>{t.footerLabel}</p></div><a className="tb-button tb-button-light" href={route('login')}>{t.login}<Icon name="arrow" /></a></div><div className="tb-footer-bottom"><span>TrustBridge B2B Network</span><p>{t.footerDisclaimer}</p><Link className="tb-text-link" href={route('legal.privacy-policy')}>{t.privacyPolicy}</Link><LanguageSwitcher current={language} /></div></div></footer>
         </div>
     );
 }

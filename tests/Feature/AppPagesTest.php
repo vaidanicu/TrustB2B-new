@@ -20,6 +20,13 @@ class AppPagesTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_the_privacy_policy_page_is_reachable_by_a_guest(): void
+    {
+        $this->get(route('legal.privacy-policy'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page->component('PrivacyPolicy'));
+    }
+
     public function test_two_factor_challenge_page_renders_for_a_guest_with_a_pending_login(): void
     {
         $user = User::factory()->create();

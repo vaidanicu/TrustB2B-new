@@ -23,6 +23,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [MarketingController::class, 'show'])->name('marketing.ro');
 Route::get('/en', [MarketingController::class, 'show'])->defaults('locale', 'en')->name('marketing.en');
 Route::get('/de', [MarketingController::class, 'show'])->defaults('locale', 'de')->name('marketing.de');
+Route::get('/privacy-policy', [MarketingController::class, 'privacyPolicy'])->name('legal.privacy-policy');
 
 // Named 'two-factor.login' (not something of our own) because Fortify's own
 // FailedTwoFactorLoginResponse redirects a wrong-code submission back to a

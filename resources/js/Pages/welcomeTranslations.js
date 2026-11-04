@@ -57,6 +57,7 @@ export const WELCOME_TRANSLATIONS = {
         audiences: ['Agenții de evenimente', 'Hoteluri și locații', 'Firme cu evenimente de clienți', 'Asociații și organizații'],
         footerCta: 'Construiește încredere, la fiecare eveniment.', footerLabel: 'Event Privacy & Media Platform',
         footerDisclaimer: 'TrustBridge sprijină procese orientate spre protecția datelor și documentate — nu oferă o garanție juridică automată. Textele, bazele legale și termenele trebuie aprobate pentru fiecare țară și tip de eveniment înainte de operare productivă.',
+        privacyPolicy: 'Politica de confidențialitate',
     },
     en: {
         htmlTitle: 'TrustBridge', login: 'Sign in', menu: 'Menu', skip: 'Skip to content',
@@ -106,6 +107,7 @@ export const WELCOME_TRANSLATIONS = {
         audiences: ['Event agencies', 'Hotels and venues', 'Companies with client events', 'Associations and organizations'],
         footerCta: 'Build trust, at every event.', footerLabel: 'Event Privacy & Media Platform',
         footerDisclaimer: 'TrustBridge supports privacy-oriented, documented processes — it does not provide an automatic legal guarantee. Final texts, legal bases and deadlines must be approved per country and event type before production use.',
+        privacyPolicy: 'Privacy Policy',
     },
     de: {
         htmlTitle: 'TrustBridge', login: 'Anmelden', menu: 'Menü', skip: 'Zum Inhalt springen',
@@ -155,5 +157,6 @@ export const WELCOME_TRANSLATIONS = {
         audiences: ['Eventagenturen', 'Hotels und Locations', 'Unternehmen mit Kundenveranstaltungen', 'Verbände und Organisationen'],
         footerCta: 'Vertrauen schaffen. Bei jedem Event.', footerLabel: 'Event Privacy & Media Platform',
         footerDisclaimer: 'TrustBridge unterstützt datenschutzorientierte, dokumentierte Abläufe — es bietet keine automatische Rechtsgarantie. Endgültige Texte, Rechtsgrundlagen und Fristen müssen vor dem produktiven Einsatz pro Land und Veranstaltungstyp freigegeben werden.',
+        privacyPolicy: 'Datenschutzerklärung',
     },
 };

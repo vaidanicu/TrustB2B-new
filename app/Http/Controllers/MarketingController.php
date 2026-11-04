@@ -31,6 +31,20 @@ class MarketingController extends Controller
         return Inertia::render('Welcome', ['locale' => $locale]);
     }
 
+    /**
+     * The one legal document on the whole platform kept in a single
+     * language rather than RO/EN/DE like everything else — it's the
+     * actual signed-off text (M&M Kft.'s GDPR counsel), not UI copy;
+     * translating it would mean maintaining three legally-binding
+     * versions that could silently drift apart. Reachable from both
+     * domains (unlike Welcome, which the app domain redirects away from)
+     * since a logged-in user is as entitled to read it as a visitor.
+     */
+    public function privacyPolicy(): Response
+    {
+        return Inertia::render('PrivacyPolicy');
+    }
+
     private function appHost(): ?string
     {
         return parse_url(config('app.url'), PHP_URL_HOST);
