@@ -54,6 +54,7 @@ export const APP_TRANSLATIONS = {
                 emailFailed: 'Emailul nu a putut fi trimis automat — trimite datele manual (apar o singură dată):',
                 emailLabel: 'Email', passwordLabel: 'Parolă',
                 delete: 'Șterge', confirmDelete: 'Ștergi definitiv acest partener? Evenimentele lui existente rămân, doar fără partener responsabil atribuit.',
+                reusedAccount: (email) => `„${email}” avea deja cont pe platformă — i s-a adăugat doar rolul de Partener. Nu s-a trimis niciun email (contul existent își știe deja parola).`,
             },
             create: {
                 title: 'Partener nou',
@@ -341,6 +342,7 @@ export const APP_TRANSLATIONS = {
                 emailFailed: "The email couldn't be sent automatically — send the details manually (they appear here, once):",
                 emailLabel: 'Email', passwordLabel: 'Password',
                 delete: 'Delete', confirmDelete: 'Permanently delete this partner? Its existing events stay, just without a responsible partner attached.',
+                reusedAccount: (email) => `"${email}" already had an account on the platform — it only got the Partner role added. No email was sent (the existing account already knows its password).`,
             },
             create: {
                 title: 'New partner',
@@ -628,6 +630,7 @@ export const APP_TRANSLATIONS = {
                 emailFailed: 'Die E-Mail konnte nicht automatisch gesendet werden — senden Sie die Daten manuell (sie erscheinen hier, einmalig):',
                 emailLabel: 'E-Mail', passwordLabel: 'Passwort',
                 delete: 'Löschen', confirmDelete: 'Diesen Partner endgültig löschen? Seine bestehenden Events bleiben erhalten, nur ohne zugewiesenen zuständigen Partner.',
+                reusedAccount: (email) => `„${email}" hatte bereits ein Konto auf der Plattform — es wurde nur die Partner-Rolle hinzugefügt. Es wurde keine E-Mail gesendet (das bestehende Konto kennt sein Passwort bereits).`,
             },
             create: {
                 title: 'Neuer Partner',

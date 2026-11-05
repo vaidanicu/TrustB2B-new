@@ -104,6 +104,7 @@ class PartnerTest extends TestCase
 
         $response->assertSessionHasNoErrors();
         $response->assertSessionMissing('newAccountPassword');
+        $response->assertSessionHas('reusedExistingAccount', 'office-ro@ttc-group.hu');
         $this->assertTrue($existing->fresh()->hasRole('partner'));
 
         Mail::assertNotSent(StaffAccountCreated::class);

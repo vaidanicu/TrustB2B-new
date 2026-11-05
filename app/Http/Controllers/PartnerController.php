@@ -68,6 +68,7 @@ class PartnerController extends Controller
         $partnerUserId = null;
         $newAccountEmail = null;
         $newAccountPassword = null;
+        $reusedExistingAccount = false;
 
         if (filled($data['email'] ?? null)) {
             [$partnerUser, $accountEmailSent, $newAccountPassword] = $this->findOrCreateAccount(
@@ -78,6 +79,13 @@ class PartnerController extends Controller
             );
             $partnerUserId = $partnerUser->id;
             $newAccountEmail = $newAccountPassword !== null ? $partnerUser->email : null;
+            // An email that already belonged to an account gets no new
+            // password and no email at all (an existing account already
+            // knows how to log in) — surfaced explicitly rather than
+            // silently, reported: an admin assuming a no-banner result
+            // meant the email send had silently failed, when really
+            // nothing was ever attempted.
+            $reusedExistingAccount = $newAccountPassword === null;
         }
 
         $partner = Partner::create([
@@ -100,7 +108,8 @@ class PartnerController extends Controller
         return redirect()->route('partners.index')
             ->with('accountEmailSent', $accountEmailSent)
             ->with('newAccountEmail', $newAccountEmail)
-            ->with('newAccountPassword', $newAccountPassword);
+            ->with('newAccountPassword', $newAccountPassword)
+            ->with('reusedExistingAccount', $reusedExistingAccount ? $data['email'] : null);
     }
 
     /**

@@ -59,6 +59,11 @@ export default function Index({ partners }) {
                 {flash?.newAccountPassword && (
                     <NewAccountCredentialsBanner email={flash.newAccountEmail} password={flash.newAccountPassword} emailSent={flash.accountEmailSent} t={t} />
                 )}
+                {flash?.reusedExistingAccount && (
+                    <div className="mb-5 rounded-md border border-line bg-paper-sunken px-4 py-3 text-sm text-ink-soft">
+                        {p.reusedAccount(flash.reusedExistingAccount)}
+                    </div>
+                )}
 
                 <p className="-mt-2 mb-6 text-sm text-ink-muted">
                     {partners.length} {partners.length === 1 ? p.countOne : p.countOther}
