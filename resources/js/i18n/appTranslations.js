@@ -50,6 +50,9 @@ export const APP_TRANSLATIONS = {
                 title: 'Parteneri', newPartner: 'Partener nou',
                 countOne: 'partener', countOther: 'parteneri',
                 colName: 'Nume', colCountry: 'Țară', empty: 'Niciun partener încă.',
+                emailSent: 'Trimis automat pe email noului partener. Datele apar și aici, o singură dată:',
+                emailFailed: 'Emailul nu a putut fi trimis automat — trimite datele manual (apar o singură dată):',
+                emailLabel: 'Email', passwordLabel: 'Parolă',
             },
             create: {
                 title: 'Partener nou',
@@ -333,6 +336,9 @@ export const APP_TRANSLATIONS = {
                 title: 'Partners', newPartner: 'New partner',
                 countOne: 'partner', countOther: 'partners',
                 colName: 'Name', colCountry: 'Country', empty: 'No partners yet.',
+                emailSent: 'Automatically emailed to the new partner. The details also appear here, once:',
+                emailFailed: "The email couldn't be sent automatically — send the details manually (they appear here, once):",
+                emailLabel: 'Email', passwordLabel: 'Password',
             },
             create: {
                 title: 'New partner',
@@ -616,6 +622,9 @@ export const APP_TRANSLATIONS = {
                 title: 'Partner', newPartner: 'Neuer Partner',
                 countOne: 'Partner', countOther: 'Partner',
                 colName: 'Name', colCountry: 'Land', empty: 'Noch keine Partner.',
+                emailSent: 'Automatisch an den neuen Partner gesendet. Die Daten erscheinen auch hier, einmalig:',
+                emailFailed: 'Die E-Mail konnte nicht automatisch gesendet werden — senden Sie die Daten manuell (sie erscheinen hier, einmalig):',
+                emailLabel: 'E-Mail', passwordLabel: 'Passwort',
             },
             create: {
                 title: 'Neuer Partner',

@@ -65,15 +65,18 @@ class PartnerController extends Controller
 
         $accountEmailSent = null;
         $partnerUserId = null;
+        $newAccountEmail = null;
+        $newAccountPassword = null;
 
         if (filled($data['email'] ?? null)) {
-            [$partnerUser, $accountEmailSent] = $this->findOrCreateAccount(
+            [$partnerUser, $accountEmailSent, $newAccountPassword] = $this->findOrCreateAccount(
                 $data['email'],
                 $data['name'],
                 $franchisePartnerId,
                 $request->user()->locale ?? 'ro',
             );
             $partnerUserId = $partnerUser->id;
+            $newAccountEmail = $newAccountPassword !== null ? $partnerUser->email : null;
         }
 
         $partner = Partner::create([
@@ -86,7 +89,17 @@ class PartnerController extends Controller
 
         activity()->causedBy($request->user())->performedOn($partner)->log('partner created');
 
-        return redirect()->route('partners.index')->with('accountEmailSent', $accountEmailSent);
+        // Same non-blocking fallback as OrganizationController::store()'s
+        // own newAdminEmail/newAdminPassword: the generated password is
+        // otherwise only ever sent once, by email — if that email never
+        // arrives (spam filtering, a typo'd domain, SMTP hiccup), it would
+        // be unrecoverable without this. Only set for a FRESH account
+        // (newAccountPassword is null when reusing an existing one), same
+        // as there.
+        return redirect()->route('partners.index')
+            ->with('accountEmailSent', $accountEmailSent)
+            ->with('newAccountEmail', $newAccountEmail)
+            ->with('newAccountPassword', $newAccountPassword);
     }
 
     /**
@@ -96,12 +109,13 @@ class PartnerController extends Controller
      * email the credentials — only a freshly created account gets that
      * email, an existing one already knows how to log in.
      *
-     * @return array{0: User, 1: bool|null}
+     * @return array{0: User, 1: bool|null, 2: string|null}
      */
     private function findOrCreateAccount(string $email, string $partnerName, int $franchisePartnerId, string $lang): array
     {
         $user = User::withoutGlobalScopes()->where('email', $email)->first();
         $emailSent = null;
+        $password = null;
 
         if ($user === null) {
             $password = Str::password(14);
@@ -120,6 +134,6 @@ class PartnerController extends Controller
 
         (new AssignRole)->grant($user, 'partner', 'regional partner account');
 
-        return [$user, $emailSent];
+        return [$user, $emailSent, $password];
     }
 }

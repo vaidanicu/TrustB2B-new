@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Actions\Tenancy\AssignRole;
+use App\Mail\StaffAccountCreated;
 use App\Models\Event;
 use App\Models\FranchisePartner;
 use App\Models\Organization;
@@ -10,6 +11,7 @@ use App\Models\Partner;
 use App\Models\User;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
 /**
@@ -61,6 +63,50 @@ class PartnerTest extends TestCase
         $partner = Partner::sole();
         $this->assertSame('Auras srl', $partner->name);
         $this->assertSame($franchisePartner->id, $partner->franchise_partner_id);
+    }
+
+    public function test_creating_a_partner_with_a_new_email_flashes_the_password_as_a_fallback(): void
+    {
+        Mail::fake();
+
+        $franchisePartner = FranchisePartner::factory()->create();
+        $user = $this->franchisePartnerAdmin($franchisePartner);
+
+        $response = $this->actingAs($user)->post(route('partners.store'), [
+            'name' => 'Csaba',
+            'country' => 'RO',
+            'email' => 'office-ro@ttc-group.hu',
+        ]);
+
+        $response->assertRedirect(route('partners.index'));
+        $response->assertSessionHas('newAccountEmail', 'office-ro@ttc-group.hu');
+        $response->assertSessionHas('newAccountPassword');
+
+        $account = User::where('email', 'office-ro@ttc-group.hu')->sole();
+        $this->assertTrue($account->hasRole('partner'));
+
+        Mail::assertSent(StaffAccountCreated::class, fn (StaffAccountCreated $mail) => $mail->hasTo('office-ro@ttc-group.hu'));
+    }
+
+    public function test_creating_a_partner_with_an_existing_email_does_not_flash_a_password(): void
+    {
+        Mail::fake();
+
+        $franchisePartner = FranchisePartner::factory()->create();
+        $user = $this->franchisePartnerAdmin($franchisePartner);
+        $existing = User::factory()->create(['email' => 'office-ro@ttc-group.hu']);
+
+        $response = $this->actingAs($user)->post(route('partners.store'), [
+            'name' => 'Csaba',
+            'country' => 'RO',
+            'email' => 'office-ro@ttc-group.hu',
+        ]);
+
+        $response->assertSessionHasNoErrors();
+        $response->assertSessionMissing('newAccountPassword');
+        $this->assertTrue($existing->fresh()->hasRole('partner'));
+
+        Mail::assertNotSent(StaffAccountCreated::class);
     }
 
     public function test_a_system_operator_must_pick_a_franchise_partner_explicitly(): void

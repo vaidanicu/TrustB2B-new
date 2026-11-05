@@ -1,6 +1,7 @@
 import AppLayout from '@/Layouts/AppLayout';
 import { useAppTranslations } from '@/i18n/appTranslations';
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, usePage } from '@inertiajs/react';
+import { useState } from 'react';
 
 function NewPartnerButton({ label }) {
     return (
@@ -13,7 +14,35 @@ function NewPartnerButton({ label }) {
     );
 }
 
+function NewAccountCredentialsBanner({ email, password, emailSent, t }) {
+    const [copied, setCopied] = useState(false);
+
+    async function copy() {
+        try {
+            await navigator.clipboard.writeText(`${email} / ${password}`);
+            setCopied(true);
+        } catch {
+            setCopied(false);
+        }
+    }
+
+    return (
+        <div className={'mb-5 rounded-md border px-4 py-3 text-sm ' + (emailSent ? 'border-teal bg-teal-soft text-teal-ink' : 'border-amber-600 bg-amber-50 text-amber-700')}>
+            <p className="font-medium">{emailSent ? t.partners.index.emailSent : t.partners.index.emailFailed}</p>
+            <div className="mt-1.5 flex flex-wrap items-center gap-3">
+                <span>
+                    {t.partners.index.emailLabel}: <strong>{email}</strong> · {t.partners.index.passwordLabel}: <strong>{password}</strong>
+                </span>
+                <button type="button" onClick={copy} className="shrink-0 rounded-md border border-current/30 px-3 py-1 text-xs font-semibold uppercase tracking-wide">
+                    {copied ? t.common.copied : t.common.copy}
+                </button>
+            </div>
+        </div>
+    );
+}
+
 export default function Index({ partners }) {
+    const { flash } = usePage().props;
     const { t } = useAppTranslations();
     const p = t.partners.index;
 
@@ -22,6 +51,10 @@ export default function Index({ partners }) {
             <Head title={p.title} />
 
             <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+                {flash?.newAccountPassword && (
+                    <NewAccountCredentialsBanner email={flash.newAccountEmail} password={flash.newAccountPassword} emailSent={flash.accountEmailSent} t={t} />
+                )}
+
                 <p className="-mt-2 mb-6 text-sm text-ink-muted">
                     {partners.length} {partners.length === 1 ? p.countOne : p.countOther}
                 </p>
