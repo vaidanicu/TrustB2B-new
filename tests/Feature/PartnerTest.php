@@ -132,6 +132,74 @@ class PartnerTest extends TestCase
         $this->actingAs($user)->post(route('partners.store'), ['name' => 'x', 'country' => 'RO'])->assertForbidden();
     }
 
+    public function test_a_franchise_partner_admin_can_edit_a_partners_name_and_country(): void
+    {
+        $franchisePartner = FranchisePartner::factory()->create();
+        $partner = Partner::factory()->for($franchisePartner)->create(['name' => 'Gall', 'country' => 'HU']);
+        $user = $this->franchisePartnerAdmin($franchisePartner);
+
+        $this->actingAs($user)
+            ->patch(route('partners.update', $partner), ['name' => 'Gall SRL', 'country' => 'ro'])
+            ->assertRedirect(route('partners.index'));
+
+        $fresh = $partner->fresh();
+        $this->assertSame('Gall SRL', $fresh->name);
+        $this->assertSame('RO', $fresh->country);
+    }
+
+    public function test_changing_a_partners_email_relinks_the_account_and_revokes_the_old_one(): void
+    {
+        Mail::fake();
+
+        $franchisePartner = FranchisePartner::factory()->create();
+        $partner = Partner::factory()->for($franchisePartner)->create(['email' => 'old@example.test']);
+        $oldUser = $this->partnerAccount($partner);
+        $user = $this->franchisePartnerAdmin($franchisePartner);
+
+        $response = $this->actingAs($user)->patch(route('partners.update', $partner), [
+            'name' => $partner->name,
+            'country' => $partner->country,
+            'email' => 'new@example.test',
+        ]);
+
+        $response->assertSessionHas('newAccountEmail', 'new@example.test');
+        $response->assertSessionHas('newAccountPassword');
+
+        $this->assertFalse($oldUser->fresh()->hasRole('partner'));
+
+        $newUser = User::where('email', 'new@example.test')->sole();
+        $this->assertTrue($newUser->hasRole('partner'));
+        $this->assertSame($newUser->id, $partner->fresh()->user_id);
+    }
+
+    public function test_removing_a_partners_email_revokes_the_role_and_unlinks_the_account(): void
+    {
+        $franchisePartner = FranchisePartner::factory()->create();
+        $partner = Partner::factory()->for($franchisePartner)->create(['email' => 'linked@example.test']);
+        $linkedUser = $this->partnerAccount($partner);
+        $user = $this->franchisePartnerAdmin($franchisePartner);
+
+        $this->actingAs($user)->patch(route('partners.update', $partner), [
+            'name' => $partner->name,
+            'country' => $partner->country,
+            'email' => '',
+        ]);
+
+        $this->assertFalse($linkedUser->fresh()->hasRole('partner'));
+        $this->assertNull($partner->fresh()->user_id);
+    }
+
+    public function test_an_organization_scoped_user_cannot_edit_a_partner(): void
+    {
+        $franchisePartner = FranchisePartner::factory()->create();
+        $partner = Partner::factory()->for($franchisePartner)->create();
+        $user = User::factory()->forOrganization()->create();
+
+        $this->actingAs($user)
+            ->patch(route('partners.update', $partner), ['name' => 'x', 'country' => 'RO'])
+            ->assertNotFound();
+    }
+
     public function test_a_franchise_partner_admin_can_delete_a_partner_without_an_account(): void
     {
         $franchisePartner = FranchisePartner::factory()->create();

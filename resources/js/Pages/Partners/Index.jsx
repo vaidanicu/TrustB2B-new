@@ -94,7 +94,10 @@ export default function Index({ partners }) {
                             >
                                 <span className="font-medium text-ink">{partner.name}</span>
                                 <span className="text-ink-soft">{partner.country}</span>
-                                <span className="flex items-center justify-end">
+                                <span className="flex items-center justify-end gap-3">
+                                    <Link href={route('partners.edit', partner.id)} className="text-xs text-accent underline">
+                                        {p.edit}
+                                    </Link>
                                     <button type="button" onClick={destroy} className="text-xs text-ink-muted underline hover:text-danger-ink">
                                         {p.delete}
                                     </button>

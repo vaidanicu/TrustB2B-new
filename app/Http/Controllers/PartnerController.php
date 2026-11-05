@@ -112,6 +112,89 @@ class PartnerController extends Controller
             ->with('reusedExistingAccount', $reusedExistingAccount ? $data['email'] : null);
     }
 
+    public function edit(Request $request, Partner $partner): Response
+    {
+        abort_unless($request->user()->can('partners.manage'), 403);
+
+        return Inertia::render('Partners/Edit', [
+            'partner' => [
+                'id' => $partner->id,
+                'name' => $partner->name,
+                'country' => $partner->country,
+                'email' => $partner->email,
+            ],
+        ]);
+    }
+
+    /**
+     * Name/country are plain field updates. Email is the delicate part —
+     * changing it re-runs the exact same findOrCreateAccount() flow as
+     * store() (same password/reused-account fallback banners on redirect),
+     * and the PREVIOUS linked account (if different from the new one, or
+     * if the email was removed entirely) has its now-dangling 'partner'
+     * role revoked, same reasoning as destroy(). franchise_partner_id is
+     * deliberately not editable here — immutable after creation, same as
+     * every other tenancy-boundary field in this app.
+     */
+    public function update(Request $request, Partner $partner): RedirectResponse
+    {
+        abort_unless($request->user()->can('partners.manage'), 403);
+
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'country' => ['required', 'string', 'size:2'],
+            'email' => ['nullable', 'email', 'max:255'],
+        ]);
+
+        $newEmail = $data['email'] ?? null;
+        $previousUser = $partner->user;
+
+        $accountEmailSent = null;
+        $newAccountEmail = null;
+        $newAccountPassword = null;
+        $reusedExistingAccount = false;
+        $partnerUserId = $partner->user_id;
+
+        if ($newEmail !== $partner->email) {
+            if (filled($newEmail)) {
+                [$partnerUser, $accountEmailSent, $newAccountPassword] = $this->findOrCreateAccount(
+                    $newEmail,
+                    $data['name'],
+                    $partner->franchise_partner_id,
+                    $request->user()->locale ?? 'ro',
+                );
+                $partnerUserId = $partnerUser->id;
+                $newAccountEmail = $newAccountPassword !== null ? $partnerUser->email : null;
+                $reusedExistingAccount = $newAccountPassword === null;
+
+                if ($previousUser !== null && $previousUser->id !== $partnerUser->id) {
+                    (new AssignRole)->revoke($previousUser, 'partner', 'partner email changed');
+                }
+            } else {
+                if ($previousUser !== null) {
+                    (new AssignRole)->revoke($previousUser, 'partner', 'partner email removed');
+                }
+                $partnerUserId = null;
+            }
+        }
+
+        $partner->forceFill([
+            'name' => $data['name'],
+            'country' => strtoupper($data['country']),
+            'email' => $newEmail,
+            'user_id' => $partnerUserId,
+        ])->save();
+
+        activity()->causedBy($request->user())->performedOn($partner)->log('partner updated');
+
+        return redirect()->route('partners.index')
+            ->with('status', FlashMessage::t($request->user()->locale ?? 'ro', 'partner.updated', ['name' => $partner->name]))
+            ->with('accountEmailSent', $accountEmailSent)
+            ->with('newAccountEmail', $newAccountEmail)
+            ->with('newAccountPassword', $newAccountPassword)
+            ->with('reusedExistingAccount', $reusedExistingAccount ? $newEmail : null);
+    }
+
     /**
      * Only the Partner row itself is removed — events.partner_id is
      * nullOnDelete() (create_partners_table/the later migration), so any

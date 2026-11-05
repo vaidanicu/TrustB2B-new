@@ -55,6 +55,7 @@ export const APP_TRANSLATIONS = {
                 emailLabel: 'Email', passwordLabel: 'Parolă',
                 delete: 'Șterge', confirmDelete: 'Ștergi definitiv acest partener? Evenimentele lui existente rămân, doar fără partener responsabil atribuit.',
                 reusedAccount: (email) => `„${email}” avea deja cont pe platformă — i s-a adăugat doar rolul de Partener. Nu s-a trimis niciun email (contul existent își știe deja parola).`,
+                edit: 'Editează',
             },
             create: {
                 title: 'Partener nou',
@@ -65,6 +66,11 @@ export const APP_TRANSLATIONS = {
                 emailLabel: 'Email', emailHint: 'Dacă introduci un email, partenerul primește automat un cont — poate vedea toate cererile de eliminare de la evenimentele lui, într-un singur loc.',
                 franchiseLabel: 'Franciză parteneră',
                 submit: 'Creează partener', submitting: 'Se creează…',
+            },
+            edit: {
+                title: 'Editează partener',
+                emailHint: 'Dacă schimbi emailul, partenerul se leagă de contul acelei adrese (sau primește unul nou) — rolul de Partener se scoate automat de pe contul vechi.',
+                submit: 'Salvează',
             },
             dashboard: {
                 title: 'Cereri de eliminare', subtitle: 'Pozele semnalate pentru eliminare, din toate evenimentele tale, într-un singur loc.',
@@ -224,6 +230,15 @@ export const APP_TRANSLATIONS = {
                 { title: 'Starea evenimentului se schimbă singură', body: 'Pornește „Ciornă”, trece automat în „Activ” la data de început, în „Finalizat” când trece data de sfârșit, apoi în „Arhivat” după ce trece termenul de păstrare a pozelor — nu trebuie s-o schimbi manual. Dacă evenimentul se reprogramează, modifici data direct din pagina evenimentului.' },
                 { title: 'Poți invita chiar tu participanții la eveniment', body: 'Pe pagina „Evenimente” a clientului, apasă „Participanți” — nu trebuie să aștepți ca admin-ul clientului să facă el invitațiile, deși poate face și el asta din contul lui. Nu apare pentru evenimentele de tip restaurant.' },
             ],
+            partnerEyebrow: 'Partener regional', partnerTitle: 'Ce vezi și ce poți face cu un cont de Partener',
+            partnerSteps: [
+                { title: 'Primești un cont de la franciză/platformă', body: 'Cineva cu rol de admin îți adaugă emailul la pagina „Parteneri” — primești automat o parolă pe email și te poți loga direct, fără alt pas.' },
+                { title: 'Meniul tău e restrâns — doar Dashboard, Clienți și Ghid', body: 'Nu vezi lista completă de clienți a francizei, nici jurnalul de audit, nici alți parteneri — doar ce ține strict de evenimentele tale.' },
+                { title: '„Clienți” îți arată doar clienții cu care ai deja un eveniment', body: 'Click pe un client arată un tabel cu evenimentele tale pentru el: fotograf, contact client, dată, stare — nu și evenimentele altor parteneri sau ale francizei direct.' },
+                { title: 'Poți crea evenimente noi, pentru orice client din franciza ta', body: 'Din „Clienți” sau din pagina evenimentelor unui client, apeși „Eveniment nou” — funcționează și pentru un client cu care nu ai mai lucrat încă. Partenerul responsabil se completează automat cu tine, nu poți alege pe altcineva.' },
+                { title: 'Nu poți reprograma sau șterge niciun eveniment', body: 'Asta rămâne doar la franciză/platformă — tu poți doar să creezi și să vezi.' },
+                { title: 'Dashboard-ul tău arată cererile de eliminare poze, din toate evenimentele tale', body: 'Dacă cineva cere eliminarea unei poze de la unul dintre evenimentele tale, apare direct aici, într-un singur loc — nu mai cade pe emailul personal al nimănui din franciză.' },
+            ],
             section2Eyebrow: 'Admin-ul unui client', section2Title: 'Cum gestionezi un eveniment deja creat, de la invitații la răspunsuri',
             section2Steps: [
                 { title: 'Autentifică-te cu contul primit de la franciză', body: 'Vei ajunge direct pe Dashboard — lista evenimentelor create pentru organizația ta. Evenimentele în sine nu le creezi tu, doar le gestionezi.' },
@@ -343,6 +358,7 @@ export const APP_TRANSLATIONS = {
                 emailLabel: 'Email', passwordLabel: 'Password',
                 delete: 'Delete', confirmDelete: 'Permanently delete this partner? Its existing events stay, just without a responsible partner attached.',
                 reusedAccount: (email) => `"${email}" already had an account on the platform — it only got the Partner role added. No email was sent (the existing account already knows its password).`,
+                edit: 'Edit',
             },
             create: {
                 title: 'New partner',
@@ -353,6 +369,11 @@ export const APP_TRANSLATIONS = {
                 emailLabel: 'Email', emailHint: "If you enter an email, the partner automatically gets an account — they can see every removal request from their events in one place.",
                 franchiseLabel: 'Franchise partner',
                 submit: 'Create partner', submitting: 'Creating…',
+            },
+            edit: {
+                title: 'Edit partner',
+                emailHint: "If you change the email, the partner is linked to that address's account instead (or gets a new one) — the Partner role is automatically removed from the old account.",
+                submit: 'Save',
             },
             dashboard: {
                 title: 'Removal requests', subtitle: 'Flagged photos from all your events, in one place.',
@@ -512,6 +533,15 @@ export const APP_TRANSLATIONS = {
                 { title: "The event's status changes on its own", body: 'It starts as "Draft", automatically moves to "Active" on its start date, to "Finished" once its end date passes, then to "Archived" once the photo retention period ends — you never change it by hand. If the event gets rescheduled, change the date right from the event\'s own page.' },
                 { title: 'You can invite participants to the event yourself', body: 'On the client\'s "Events" page, click "Participants" — you don\'t have to wait on the client\'s admin to send invitations, though they can do it too from their own account. Doesn\'t appear for restaurant-type events.' },
             ],
+            partnerEyebrow: 'Regional partner', partnerTitle: 'What you see and can do with a Partner account',
+            partnerSteps: [
+                { title: 'You get an account from the franchise/platform', body: 'Someone with an admin role adds your email on the "Partners" page — you automatically get a password by email and can sign in right away, no other step needed.' },
+                { title: 'Your menu is narrow — just Dashboard, Clients and Guide', body: "You don't see the franchise's full client list, the audit log, or other partners — only what's strictly your own." },
+                { title: '"Clients" only shows clients you already have an event with', body: "Clicking a client shows a table of your own events for them: photographer, client contact, date, status — not other partners' events, or the franchise's own." },
+                { title: 'You can create new events, for any client in your franchise', body: 'From "Clients", or from a specific client\'s own events page, click "New event" — this works even for a client you have never worked with before. The responsible partner is filled in automatically as you, with no way to pick someone else.' },
+                { title: "You can't reschedule or delete any event", body: "That stays franchise/platform-only — you can only create and view." },
+                { title: 'Your Dashboard shows removal requests from all your own events', body: "If someone requests a photo be removed from one of your events, it shows up here directly, in one place — it no longer lands in anyone's personal inbox at the franchise." },
+            ],
             section2Eyebrow: "A client's admin", section2Title: 'How to run an already-created event, from invitations to responses',
             section2Steps: [
                 { title: 'Sign in with the account you received from the franchise', body: "You'll land directly on the Dashboard — the list of events created for your organization. You don't create the events yourself, only manage them." },
@@ -631,6 +661,7 @@ export const APP_TRANSLATIONS = {
                 emailLabel: 'E-Mail', passwordLabel: 'Passwort',
                 delete: 'Löschen', confirmDelete: 'Diesen Partner endgültig löschen? Seine bestehenden Events bleiben erhalten, nur ohne zugewiesenen zuständigen Partner.',
                 reusedAccount: (email) => `„${email}" hatte bereits ein Konto auf der Plattform — es wurde nur die Partner-Rolle hinzugefügt. Es wurde keine E-Mail gesendet (das bestehende Konto kennt sein Passwort bereits).`,
+                edit: 'Bearbeiten',
             },
             create: {
                 title: 'Neuer Partner',
@@ -641,6 +672,11 @@ export const APP_TRANSLATIONS = {
                 emailLabel: 'E-Mail', emailHint: 'Wenn Sie eine E-Mail eingeben, erhält der Partner automatisch ein Konto — er sieht dort alle Entfernungsanfragen seiner Events an einem Ort.',
                 franchiseLabel: 'Franchise-Partner',
                 submit: 'Partner erstellen', submitting: 'Wird erstellt…',
+            },
+            edit: {
+                title: 'Partner bearbeiten',
+                emailHint: 'Wenn Sie die E-Mail ändern, wird der Partner stattdessen mit dem Konto dieser Adresse verknüpft (oder erhält ein neues) — die Partner-Rolle wird automatisch vom alten Konto entfernt.',
+                submit: 'Speichern',
             },
             dashboard: {
                 title: 'Entfernungsanfragen', subtitle: 'Gemeldete Fotos aus all Ihren Events, an einem Ort.',
@@ -799,6 +835,15 @@ export const APP_TRANSLATIONS = {
                 { title: 'Klicken Sie auf „Neues Event" und wählen Sie den Typ', body: '„Nur Fotogalerie" (Typ Restaurant) bedeutet keine Teilnehmer und keinen GDPR-Vertrag — nur eine Galerie. „Vollständiges Event" erfordert zusätzlich den GDPR-Vertragstext (Pflicht, plus ein optionales Vertrags-PDF), die Rechnungsdaten des Kunden und optional die E-Mail des Fotografen — die Plattform erstellt ihm automatisch ein eigenes Konto, das einzige, das für dieses Event Fotos hochladen darf.' },
                 { title: 'Der Status des Events ändert sich von selbst', body: 'Er startet als „Entwurf", wechselt am Startdatum automatisch zu „Aktiv", am Enddatum zu „Fertig" und nach Ablauf der Fotoaufbewahrungsfrist zu „Archiviert" — Sie müssen ihn nie manuell ändern. Wird das Event verschoben, ändern Sie das Datum direkt auf der Event-Seite.' },
                 { title: 'Sie können Teilnehmer selbst zum Event einladen', body: 'Klicken Sie auf der „Events"-Seite des Kunden auf „Teilnehmer" — Sie müssen nicht warten, bis der Admin des Kunden die Einladungen verschickt, auch wenn dieser das ebenfalls von seinem eigenen Konto aus tun kann. Erscheint nicht bei Events vom Typ Restaurant.' },
+            ],
+            partnerEyebrow: 'Regionaler Partner', partnerTitle: 'Was Sie mit einem Partner-Konto sehen und tun können',
+            partnerSteps: [
+                { title: 'Sie erhalten ein Konto vom Franchise/der Plattform', body: 'Jemand mit Admin-Rolle fügt Ihre E-Mail auf der Seite „Partner" hinzu — Sie erhalten automatisch ein Passwort per E-Mail und können sich sofort anmelden, ohne weiteren Schritt.' },
+                { title: 'Ihr Menü ist eingeschränkt — nur Dashboard, Kunden und Anleitung', body: 'Sie sehen nicht die vollständige Kundenliste des Franchise, nicht das Auditprotokoll, auch nicht andere Partner — nur, was streng zu Ihren eigenen Events gehört.' },
+                { title: '„Kunden" zeigt nur Kunden, mit denen Sie bereits ein Event haben', body: 'Ein Klick auf einen Kunden zeigt eine Tabelle Ihrer eigenen Events für ihn: Fotograf, Kundenkontakt, Datum, Status — nicht die Events anderer Partner oder des Franchise selbst.' },
+                { title: 'Sie können neue Events erstellen, für jeden Kunden in Ihrem Franchise', body: 'Auf „Kunden" oder auf der Event-Seite eines bestimmten Kunden klicken Sie auf „Neues Event" — das funktioniert auch für einen Kunden, mit dem Sie noch nie gearbeitet haben. Der zuständige Partner wird automatisch mit Ihnen ausgefüllt, Sie können niemand anderen auswählen.' },
+                { title: 'Sie können kein Event verschieben oder löschen', body: 'Das bleibt ausschließlich Franchise/Plattform vorbehalten — Sie können nur erstellen und ansehen.' },
+                { title: 'Ihr Dashboard zeigt Entfernungsanfragen aus all Ihren eigenen Events', body: 'Wenn jemand die Entfernung eines Fotos aus einem Ihrer Events beantragt, erscheint es hier direkt, an einem Ort — es landet nicht mehr in irgendjemandes persönlichem Postfach beim Franchise.' },
             ],
             section2Eyebrow: 'Der Admin eines Kunden', section2Title: 'So verwalten Sie ein bereits erstelltes Event, von Einladungen bis zu den Antworten',
             section2Steps: [

@@ -42,6 +42,7 @@ export default function Index() {
                 <p className="-mt-2 text-sm text-ink-muted">{g.intro}</p>
 
                 <Section eyebrow={g.section1Eyebrow} title={g.section1Title} steps={g.section1Steps} />
+                <Section eyebrow={g.partnerEyebrow} title={g.partnerTitle} steps={g.partnerSteps} />
                 <Section eyebrow={g.section2Eyebrow} title={g.section2Title} steps={g.section2Steps} />
                 <Section eyebrow={g.checkinEyebrow} title={g.checkinTitle} steps={g.checkinSteps} />
                 <Section eyebrow={g.galleryEyebrow} title={g.galleryTitle} steps={g.gallerySteps} />
