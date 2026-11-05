@@ -53,6 +53,7 @@ export const APP_TRANSLATIONS = {
                 emailSent: 'Trimis automat pe email noului partener. Datele apar și aici, o singură dată:',
                 emailFailed: 'Emailul nu a putut fi trimis automat — trimite datele manual (apar o singură dată):',
                 emailLabel: 'Email', passwordLabel: 'Parolă',
+                delete: 'Șterge', confirmDelete: 'Ștergi definitiv acest partener? Evenimentele lui existente rămân, doar fără partener responsabil atribuit.',
             },
             create: {
                 title: 'Partener nou',
@@ -339,6 +340,7 @@ export const APP_TRANSLATIONS = {
                 emailSent: 'Automatically emailed to the new partner. The details also appear here, once:',
                 emailFailed: "The email couldn't be sent automatically — send the details manually (they appear here, once):",
                 emailLabel: 'Email', passwordLabel: 'Password',
+                delete: 'Delete', confirmDelete: 'Permanently delete this partner? Its existing events stay, just without a responsible partner attached.',
             },
             create: {
                 title: 'New partner',
@@ -625,6 +627,7 @@ export const APP_TRANSLATIONS = {
                 emailSent: 'Automatisch an den neuen Partner gesendet. Die Daten erscheinen auch hier, einmalig:',
                 emailFailed: 'Die E-Mail konnte nicht automatisch gesendet werden — senden Sie die Daten manuell (sie erscheinen hier, einmalig):',
                 emailLabel: 'E-Mail', passwordLabel: 'Passwort',
+                delete: 'Löschen', confirmDelete: 'Diesen Partner endgültig löschen? Seine bestehenden Events bleiben erhalten, nur ohne zugewiesenen zuständigen Partner.',
             },
             create: {
                 title: 'Neuer Partner',

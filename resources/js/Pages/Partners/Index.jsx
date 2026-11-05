@@ -1,6 +1,6 @@
 import AppLayout from '@/Layouts/AppLayout';
 import { useAppTranslations } from '@/i18n/appTranslations';
-import { Head, Link, usePage } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 
 function NewPartnerButton({ label }) {
@@ -51,6 +51,11 @@ export default function Index({ partners }) {
             <Head title={p.title} />
 
             <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+                {flash?.status && (
+                    <div className="mb-5 rounded-md border border-teal bg-teal-soft px-4 py-3 text-sm text-teal-ink">
+                        {flash.status}
+                    </div>
+                )}
                 {flash?.newAccountPassword && (
                     <NewAccountCredentialsBanner email={flash.newAccountEmail} password={flash.newAccountPassword} emailSent={flash.accountEmailSent} t={t} />
                 )}
@@ -60,24 +65,38 @@ export default function Index({ partners }) {
                 </p>
 
                 <div className="overflow-hidden rounded-lg bg-white shadow-sm">
-                    <div className="grid grid-cols-[2fr_1fr] gap-3 border-b border-line px-5 py-3 text-xs font-semibold uppercase tracking-wide text-ink-muted">
+                    <div className="grid grid-cols-[2fr_1fr_auto] gap-3 border-b border-line px-5 py-3 text-xs font-semibold uppercase tracking-wide text-ink-muted">
                         <span>{p.colName}</span>
                         <span>{p.colCountry}</span>
+                        <span></span>
                     </div>
 
                     {partners.length === 0 && (
                         <p className="px-5 py-6 text-sm text-ink-muted">{p.empty}</p>
                     )}
 
-                    {partners.map((partner) => (
-                        <div
-                            key={partner.id}
-                            className="grid grid-cols-[2fr_1fr] items-center gap-3 border-b border-line px-5 py-4 text-sm last:border-0 hover:bg-paper-raised"
-                        >
-                            <span className="font-medium text-ink">{partner.name}</span>
-                            <span className="text-ink-soft">{partner.country}</span>
-                        </div>
-                    ))}
+                    {partners.map((partner) => {
+                        function destroy() {
+                            if (confirm(p.confirmDelete)) {
+                                router.delete(route('partners.destroy', partner.id));
+                            }
+                        }
+
+                        return (
+                            <div
+                                key={partner.id}
+                                className="grid grid-cols-[2fr_1fr_auto] items-center gap-3 border-b border-line px-5 py-4 text-sm last:border-0 hover:bg-paper-raised"
+                            >
+                                <span className="font-medium text-ink">{partner.name}</span>
+                                <span className="text-ink-soft">{partner.country}</span>
+                                <span className="flex items-center justify-end">
+                                    <button type="button" onClick={destroy} className="text-xs text-ink-muted underline hover:text-danger-ink">
+                                        {p.delete}
+                                    </button>
+                                </span>
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
         </AppLayout>

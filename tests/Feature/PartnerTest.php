@@ -131,6 +131,80 @@ class PartnerTest extends TestCase
         $this->actingAs($user)->post(route('partners.store'), ['name' => 'x', 'country' => 'RO'])->assertForbidden();
     }
 
+    public function test_a_franchise_partner_admin_can_delete_a_partner_without_an_account(): void
+    {
+        $franchisePartner = FranchisePartner::factory()->create();
+        $partner = Partner::factory()->for($franchisePartner)->create();
+        $user = $this->franchisePartnerAdmin($franchisePartner);
+
+        $this->actingAs($user)->delete(route('partners.destroy', $partner))->assertRedirect();
+
+        $this->assertSame(0, Partner::count());
+    }
+
+    public function test_deleting_a_partner_with_an_account_only_revokes_the_role_not_the_account(): void
+    {
+        $franchisePartner = FranchisePartner::factory()->create();
+        $partner = Partner::factory()->for($franchisePartner)->create();
+        $partnerUser = $this->partnerAccount($partner);
+        $admin = $this->franchisePartnerAdmin($franchisePartner);
+
+        $this->actingAs($admin)->delete(route('partners.destroy', $partner))->assertRedirect();
+
+        $this->assertSame(0, Partner::count());
+        $this->assertNotNull($partnerUser->fresh());
+        $this->assertFalse($partnerUser->fresh()->hasRole('partner'));
+    }
+
+    public function test_deleting_a_partner_does_not_delete_its_events_just_the_attribution(): void
+    {
+        $franchisePartner = FranchisePartner::factory()->create();
+        $partner = Partner::factory()->for($franchisePartner)->create();
+        $admin = $this->franchisePartnerAdmin($franchisePartner);
+        $organization = Organization::factory()->for($franchisePartner)->create();
+        $event = Event::factory()->for($organization)->create([
+            'franchise_partner_id' => $franchisePartner->id,
+            'partner_id' => $partner->id,
+        ]);
+
+        $this->actingAs($admin)->delete(route('partners.destroy', $partner));
+
+        $this->assertNotNull($event->fresh());
+        $this->assertNull($event->fresh()->partner_id);
+    }
+
+    public function test_deleting_a_partner_linked_to_an_admin_account_keeps_its_admin_role(): void
+    {
+        $franchisePartner = FranchisePartner::factory()->create();
+        $partner = Partner::factory()->for($franchisePartner)->create(['name' => 'MM Kft.']);
+        $admin = $this->franchisePartnerAdmin($franchisePartner);
+        $partner->forceFill(['user_id' => $admin->id])->save();
+        (new AssignRole)->grant($admin, 'partner', 'test');
+
+        $this->actingAs($admin)->delete(route('partners.destroy', $partner))->assertRedirect();
+
+        $fresh = $admin->fresh();
+        $this->assertFalse($fresh->hasRole('partner'));
+        $this->assertTrue($fresh->hasRole('franchise-partner-admin'));
+    }
+
+    public function test_an_organization_scoped_user_cannot_delete_a_partner(): void
+    {
+        $franchisePartner = FranchisePartner::factory()->create();
+        $partner = Partner::factory()->for($franchisePartner)->create();
+        $user = User::factory()->forOrganization()->create();
+
+        // Partner's own TenantScope ('organization_id') already excludes
+        // this row from route-model-binding's query for an org-scoped
+        // actor — 404, not 403, same as every other tenant-scoped model
+        // in this app (see EventShowTest's own equivalent case). The same
+        // scope would also hide it from a plain Partner::count() run
+        // while still "acting as" that org-scoped user, hence
+        // withoutGlobalScopes() here.
+        $this->actingAs($user)->delete(route('partners.destroy', $partner))->assertNotFound();
+        $this->assertSame(1, Partner::withoutGlobalScopes()->count());
+    }
+
     public function test_a_franchise_partner_admin_only_sees_their_own_partners(): void
     {
         $ownFranchise = FranchisePartner::factory()->create();

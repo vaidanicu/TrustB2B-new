@@ -7,6 +7,7 @@ use App\Actions\Tenancy\SendAccountCreatedEmail;
 use App\Models\FranchisePartner;
 use App\Models\Partner;
 use App\Models\User;
+use App\Support\FlashMessage;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -100,6 +101,35 @@ class PartnerController extends Controller
             ->with('accountEmailSent', $accountEmailSent)
             ->with('newAccountEmail', $newAccountEmail)
             ->with('newAccountPassword', $newAccountPassword);
+    }
+
+    /**
+     * Only the Partner row itself is removed — events.partner_id is
+     * nullOnDelete() (create_partners_table/the later migration), so any
+     * event that had this partner responsible simply loses the
+     * attribution, nothing cascades. The linked login account (if any)
+     * is NEVER deleted here: it may be the very same account as an admin
+     * also acting as this Partner (e.g. "MM Kft." for HU,
+     * User::isActingAsPartnerOnly()) — only the now-dangling 'partner'
+     * role is revoked from it, via AssignRole, the one sanctioned place
+     * that happens.
+     */
+    public function destroy(Request $request, Partner $partner): RedirectResponse
+    {
+        abort_unless($request->user()->can('partners.manage'), 403);
+
+        $name = $partner->name;
+        $linkedUser = $partner->user;
+
+        activity()->causedBy($request->user())->performedOn($partner)->log('partner deleted');
+
+        $partner->delete();
+
+        if ($linkedUser !== null) {
+            (new AssignRole)->revoke($linkedUser, 'partner', 'partner deleted');
+        }
+
+        return back()->with('status', FlashMessage::t($request->user()->locale ?? 'ro', 'partner.deleted', ['name' => $name]));
     }
 
     /**
