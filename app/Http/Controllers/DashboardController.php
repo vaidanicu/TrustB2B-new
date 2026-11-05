@@ -27,7 +27,7 @@ class DashboardController extends Controller
     {
         $user = $request->user();
 
-        if ($user->partner !== null) {
+        if ($user->isActingAsPartnerOnly()) {
             return $this->partnerDashboard($user->partner);
         }
 

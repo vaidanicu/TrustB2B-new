@@ -205,4 +205,30 @@ class PartnerTest extends TestCase
 
         $this->actingAs($partnerUser)->get(route('organizations.events', $organization))->assertForbidden();
     }
+
+    public function test_an_admin_account_linked_as_a_partner_still_sees_the_full_client_list_and_dashboard(): void
+    {
+        $franchisePartner = FranchisePartner::factory()->create();
+        $partner = Partner::factory()->for($franchisePartner)->create(['name' => 'MM Kft.', 'country' => 'HU']);
+        $admin = $this->franchisePartnerAdmin($franchisePartner);
+        $partner->forceFill(['user_id' => $admin->id])->save();
+        (new AssignRole)->grant($admin, 'partner', 'test');
+
+        $theirClient = Organization::factory()->for($franchisePartner)->create(['name' => 'Theirs']);
+        Event::factory()->for($theirClient)->create(['franchise_partner_id' => $franchisePartner->id, 'partner_id' => $partner->id]);
+
+        $otherClient = Organization::factory()->for($franchisePartner)->create(['name' => 'Other']);
+        Event::factory()->for($otherClient)->create(['franchise_partner_id' => $franchisePartner->id]);
+
+        $this->actingAs($admin)
+            ->get(route('organizations.index'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page->component('Organizations/Index')
+                ->where('canManage', true)
+                ->has('organizations', 2));
+
+        $this->actingAs($admin)
+            ->get(route('dashboard'))
+            ->assertRedirect(route('organizations.index'));
+    }
 }

@@ -34,7 +34,8 @@ class OrganizationController extends Controller
 {
     public function index(Request $request): Response
     {
-        $partner = $request->user()->partner;
+        $user = $request->user();
+        $partner = $user->isActingAsPartnerOnly() ? $user->partner : null;
 
         // A Partner account sees only the clients it actually has an
         // event with — never the full franchise client list, which stays
@@ -42,13 +43,16 @@ class OrganizationController extends Controller
         // null", which also let a Partner through undiscriminated (it has
         // no organization_id either, but isn't franchise/system-level
         // staff) — this explicit branch is the real guard now.
+        // isActingAsPartnerOnly() (not partner() directly) is what keeps
+        // an admin account also linked as a Partner (e.g. "MM Kft." for
+        // HU) on the full, unrestricted list.
         if ($partner !== null) {
             $organizations = Organization::query()
                 ->whereHas('events', fn ($query) => $query->where('partner_id', $partner->id))
                 ->orderBy('name')
                 ->get(['id', 'name', 'country', 'contract_status']);
         } else {
-            abort_unless($request->user()->can('organizations.manage'), 403);
+            abort_unless($user->can('organizations.manage'), 403);
 
             $organizations = Organization::query()
                 ->orderBy('name')
@@ -111,13 +115,14 @@ class OrganizationController extends Controller
      */
     public function events(Request $request, Organization $organization): Response
     {
-        $partner = $request->user()->partner;
+        $user = $request->user();
+        $partner = $user->isActingAsPartnerOnly() ? $user->partner : null;
 
         if ($partner !== null) {
             abort_unless($organization->events()->where('partner_id', $partner->id)->exists(), 403);
             $eventsQuery = $organization->events()->where('partner_id', $partner->id);
         } else {
-            abort_unless($request->user()->can('events.manage'), 403);
+            abort_unless($user->can('events.manage'), 403);
             $eventsQuery = $organization->events();
         }
 

@@ -70,7 +70,13 @@ export default function AppLayout({ title, active = null, actions = null, childr
     // organization_id === null just like franchise/platform staff, but
     // isn't one of them — gets its own minimal nav instead of falling into
     // the franchise/platform branch below, where every link would 403.
-    const isPartner = (user?.roles ?? []).includes('partner');
+    // Excluding the three admin roles mirrors User::isActingAsPartnerOnly()
+    // server-side: the platform operator's own admin account is also the
+    // Partner record for Hungary ("MM Kft.") and must keep the full nav,
+    // not fall into the restricted partner-only one just for holding both
+    // roles at once.
+    const isPartner = (user?.roles ?? []).includes('partner')
+        && !(user?.roles ?? []).some((role) => ['platform-admin', 'franchisor-admin', 'franchise-partner-admin'].includes(role));
 
     const navItems = isPartner
         ? [

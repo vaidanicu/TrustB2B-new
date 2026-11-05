@@ -108,4 +108,20 @@ class User extends Authenticatable
     {
         return $this->hasOne(Partner::class);
     }
+
+    /**
+     * True only for an account whose entire capability IS the Partner
+     * role — reported: the platform operator's own admin account also
+     * needs to be the Partner record for Hungary ("MM Kft."), and must
+     * keep seeing everything, not fall into the restricted partner-only
+     * dashboard/client-list just because a Partner row now points at it.
+     * Every "show the partner-only view" branch (DashboardController,
+     * OrganizationController, AppLayout's nav) reads this, not partner()
+     * directly, so admin + Partner always wins.
+     */
+    public function isActingAsPartnerOnly(): bool
+    {
+        return $this->partner !== null
+            && ! $this->hasAnyRole(['platform-admin', 'franchisor-admin', 'franchise-partner-admin']);
+    }
 }
