@@ -13,7 +13,7 @@ function NewEventButton({ organizationId, label }) {
     );
 }
 
-export default function Events({ organization, events, canManage }) {
+export default function Events({ organization, events, canManage, canCreateEvent }) {
     const { flash } = usePage().props;
     const { t } = useAppTranslations();
     const oe = t.organizations.events;
@@ -30,7 +30,7 @@ export default function Events({ organization, events, canManage }) {
         <AppLayout
             title={`${oe.title} — ${organization.name}`}
             active="organizations"
-            actions={canManage ? <NewEventButton organizationId={organization.id} label={oe.newEvent} /> : null}
+            actions={canCreateEvent ? <NewEventButton organizationId={organization.id} label={oe.newEvent} /> : null}
         >
             <Head title={`${oe.title} — ${organization.name}`} />
 

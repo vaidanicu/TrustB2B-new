@@ -20,15 +20,22 @@ use Inertia\Response;
 /**
  * AP07/08. Events are set up by the agency (franchise-partner-admin or
  * platform-/franchisor-admin — the 'events.manage' permission, see
- * RolesAndPermissionsSeeder) on behalf of a client, never by the client's
- * own staff: the GDPR contract participants must accept before attending is
- * drafted here, and a customer-admin/event-manager deciding their own
- * consent terms isn't something this platform allows. organization_id is
- * therefore no longer auto-stamped from the acting user's own tenant
- * context (they have none — franchise/platform staff aren't scoped to an
- * organization) but chosen explicitly from the organizations that actor can
- * already see (Organization's own TenantScope: all of them for a system
- * operator, only their own franchise's for a franchise-partner-admin).
+ * RolesAndPermissionsSeeder) or by a Partner for its own clients — never
+ * by the client's own staff: the GDPR contract participants must accept
+ * before attending is drafted here, and a customer-admin/event-manager
+ * deciding their own consent terms isn't something this platform allows.
+ * organization_id is therefore no longer auto-stamped from the acting
+ * user's own tenant context (they have none — franchise/platform staff
+ * and Partners aren't scoped to an organization) but chosen explicitly
+ * from the organizations that actor can already see (Organization's own
+ * TenantScope: all of them for a system operator, only their own
+ * franchise's for a franchise-partner-admin or Partner).
+ *
+ * A Partner (User::isActingAsPartnerOnly()) reaches create()/store() too,
+ * but never events.manage's full reach: it can create events for any
+ * client in its own franchise, always attributed to itself (partner_id is
+ * forced, never a free choice), and still can't reschedule or delete —
+ * update()/destroy() stay franchise/platform-only below.
  */
 class EventController extends Controller
 {
@@ -41,8 +48,11 @@ class EventController extends Controller
      */
     public function show(Request $request, Event $event): Response
     {
+        $user = $request->user();
+        $isOwnPartnerEvent = $user->isActingAsPartnerOnly() && $event->partner_id === $user->partner->id;
+
         abort_unless(
-            $request->user()->can('events.manage') || $request->user()->organization_id === $event->organization_id,
+            $user->can('events.manage') || $user->organization_id === $event->organization_id || $isOwnPartnerEvent,
             403
         );
 
@@ -53,7 +63,7 @@ class EventController extends Controller
         // franchise/platform viewer (no organization_id of their own)
         // never reaches participants.status regardless of event type, and
         // a restaurant event has no participants page to begin with.
-        $backUrl = $request->user()->organization_id === null
+        $backUrl = $user->organization_id === null
             ? route('organizations.events', $event->organization)
             : route('dashboard');
 
@@ -93,7 +103,7 @@ class EventController extends Controller
                 'organizationId' => $event->organization_id,
                 'createdByName' => $event->creator?->name,
             ],
-            'canManage' => $request->user()->can('events.manage'),
+            'canManage' => $user->can('events.manage'),
         ]);
     }
 
@@ -132,18 +142,28 @@ class EventController extends Controller
 
     public function create(Request $request): Response
     {
-        abort_unless($request->user()->can('events.manage'), 403);
+        $user = $request->user();
+        $partner = $user->isActingAsPartnerOnly() ? $user->partner : null;
+
+        abort_unless($partner !== null || $user->can('events.manage'), 403);
 
         return Inertia::render('Events/Create', [
             'organizations' => Organization::query()->orderBy('name')->get(['id', 'name']),
-            'partners' => Partner::query()->orderBy('name')->get(['id', 'name', 'country']),
+            // A Partner never picks "Partener responsabil" — it's always
+            // itself, forced in store() below — so it gets no dropdown
+            // list at all, just its own name shown read-only.
+            'partners' => $partner === null ? Partner::query()->orderBy('name')->get(['id', 'name', 'country']) : [],
+            'lockedPartnerName' => $partner?->name,
             'selectedOrganizationId' => $request->integer('organization_id') ?: null,
         ]);
     }
 
     public function store(Request $request): RedirectResponse
     {
-        abort_unless($request->user()->can('events.manage'), 403);
+        $user = $request->user();
+        $actingPartner = $user->isActingAsPartnerOnly() ? $user->partner : null;
+
+        abort_unless($actingPartner !== null || $user->can('events.manage'), 403);
 
         $data = $request->validate([
             'organization_id' => ['required', 'integer'],
@@ -189,11 +209,15 @@ class EventController extends Controller
         // another partner's organization_id by hand.
         $organization = Organization::findOrFail($data['organization_id']);
 
-        // Same reasoning as $organization above: Partner's own TenantScope
-        // is what actually enforces "only a partner this actor can already
-        // see" — findOrFail 404s the same way it would for a bare id that
+        // A Partner is always the event's own partner — never a free
+        // choice (the dropdown doesn't even reach it, see create()) — a
+        // franchise/platform actor still picks one explicitly. Same
+        // TenantScope reasoning as $organization above for that pick:
+        // findOrFail 404s the same way it would for a bare id that
         // doesn't exist at all otherwise.
-        $partnerId = filled($data['partner_id'] ?? null) ? Partner::findOrFail($data['partner_id'])->id : null;
+        $partnerId = $actingPartner !== null
+            ? $actingPartner->id
+            : (filled($data['partner_id'] ?? null) ? Partner::findOrFail($data['partner_id'])->id : null);
 
         $photographerEmailSent = null;
         $photographerUser = null;
@@ -204,7 +228,7 @@ class EventController extends Controller
                 $data['photographer'] ?? $data['photographer_email'],
                 $organization,
                 $data['name'],
-                $request->user()->locale ?? 'ro',
+                $user->locale ?? 'ro',
             );
         }
 
@@ -215,7 +239,7 @@ class EventController extends Controller
             'is_restaurant' => $isRestaurant,
             'gdpr_contract_text' => $isRestaurant ? null : $data['gdpr_contract_text'],
             'photographer_user_id' => $photographerUser?->id,
-            'created_by' => $request->user()->id,
+            'created_by' => $user->id,
             'status' => 'draft',
         ]);
 
@@ -224,12 +248,12 @@ class EventController extends Controller
         }
 
         activity()
-            ->causedBy($request->user())
+            ->causedBy($user)
             ->performedOn($event)
             ->log('event created');
 
         return redirect()->route('organizations.events', $organization)
-            ->with('status', FlashMessage::t($request->user()->locale ?? 'ro', 'event.created', ['name' => $event->name]))
+            ->with('status', FlashMessage::t($user->locale ?? 'ro', 'event.created', ['name' => $event->name]))
             ->with('photographerEmailSent', $photographerEmailSent);
     }
 

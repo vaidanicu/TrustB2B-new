@@ -61,6 +61,11 @@ class OrganizationController extends Controller
 
         return Inertia::render('Organizations/Index', [
             'canManage' => $partner === null,
+            // A Partner can't create a new client organization, but can
+            // still start an event for any client in its franchise — the
+            // "New client" header button swaps for "New event" instead of
+            // just disappearing.
+            'isPartnerActor' => $partner !== null,
             'organizations' => $organizations->map(fn (Organization $organization) => [
                 'id' => $organization->id,
                 'name' => $organization->name,
@@ -133,6 +138,11 @@ class OrganizationController extends Controller
         return Inertia::render('Organizations/Events', [
             'organization' => ['id' => $organization->id, 'name' => $organization->name],
             'canManage' => $partner === null,
+            // Everyone who can see this page at all — full events.manage
+            // or a Partner with at least one existing event here — may
+            // add another one for this same client; only destructive/
+            // administrative actions stay behind canManage.
+            'canCreateEvent' => true,
             'events' => $events->map(fn (Event $event) => [
                 'id' => $event->id,
                 'name' => $event->name,

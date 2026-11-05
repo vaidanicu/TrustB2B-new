@@ -14,6 +14,17 @@ function NewOrganizationButton({ label }) {
     );
 }
 
+function NewEventButton({ label }) {
+    return (
+        <Link
+            href={route('events.create')}
+            className="inline-flex items-center rounded-md border border-transparent bg-ink px-4 py-2 text-xs font-semibold uppercase tracking-widest text-white transition hover:bg-ink-soft"
+        >
+            {label}
+        </Link>
+    );
+}
+
 function StatusSelect({ organization, style, t }) {
     function change(e) {
         router.patch(route('organizations.update-status', organization.id), { contract_status: e.target.value }, { preserveScroll: true });
@@ -59,7 +70,7 @@ function NewAdminCredentialsBanner({ email, password, emailSent, t }) {
     );
 }
 
-export default function Index({ organizations, canManage }) {
+export default function Index({ organizations, canManage, isPartnerActor }) {
     const { flash } = usePage().props;
     const { t } = useAppTranslations();
     const statusStyles = {
@@ -72,7 +83,13 @@ export default function Index({ organizations, canManage }) {
         <AppLayout
             title={t.organizations.index.title}
             active="organizations"
-            actions={canManage ? <NewOrganizationButton label={t.organizations.index.newOrganization} /> : null}
+            actions={
+                canManage ? (
+                    <NewOrganizationButton label={t.organizations.index.newOrganization} />
+                ) : isPartnerActor ? (
+                    <NewEventButton label={t.organizations.events.newEvent} />
+                ) : null
+            }
         >
             <Head title={t.organizations.index.title} />
 

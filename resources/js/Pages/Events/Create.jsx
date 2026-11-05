@@ -64,7 +64,7 @@ function ErrorSummary({ errors, title }) {
     );
 }
 
-export default function Create({ organizations, partners, selectedOrganizationId }) {
+export default function Create({ organizations, partners, selectedOrganizationId, lockedPartnerName }) {
     const { t } = useAppTranslations();
     const c = t.events.create;
 
@@ -190,17 +190,26 @@ export default function Create({ organizations, partners, selectedOrganizationId
                         <Field label={c.clientTaxNumberLabel} placeholder={c.optional} field={{ value: data.client_tax_number, onChange: (e) => setData('client_tax_number', e.target.value) }} errors={errors.client_tax_number} hint={c.clientTaxNumberHint} />
                         <div>
                             <InputLabel value={c.partnerLabel} />
-                            <select
-                                value={data.partner_id}
-                                onChange={(e) => setData('partner_id', e.target.value)}
-                                className="mt-1 block w-full rounded-md border-line shadow-sm focus:border-accent focus:ring-accent"
-                            >
-                                <option value="">{c.partnerPlaceholder}</option>
-                                {partners.map((partner) => (
-                                    <option key={partner.id} value={partner.id}>{partner.name} ({partner.country})</option>
-                                ))}
-                            </select>
-                            <p className="mt-1 text-xs text-ink-muted">{c.partnerHint}</p>
+                            {lockedPartnerName ? (
+                                <>
+                                    <p className="mt-1 rounded-md border border-line bg-paper-sunken px-3 py-2 text-sm text-ink-soft">{lockedPartnerName}</p>
+                                    <p className="mt-1 text-xs text-ink-muted">{c.partnerLockedHint}</p>
+                                </>
+                            ) : (
+                                <>
+                                    <select
+                                        value={data.partner_id}
+                                        onChange={(e) => setData('partner_id', e.target.value)}
+                                        className="mt-1 block w-full rounded-md border-line shadow-sm focus:border-accent focus:ring-accent"
+                                    >
+                                        <option value="">{c.partnerPlaceholder}</option>
+                                        {partners.map((partner) => (
+                                            <option key={partner.id} value={partner.id}>{partner.name} ({partner.country})</option>
+                                        ))}
+                                    </select>
+                                    <p className="mt-1 text-xs text-ink-muted">{c.partnerHint}</p>
+                                </>
+                            )}
                             <InputError message={errors.partner_id} className="mt-1" />
                         </div>
                     </div>
