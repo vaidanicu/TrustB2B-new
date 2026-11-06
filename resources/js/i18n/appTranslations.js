@@ -55,6 +55,8 @@ export const APP_TRANSLATIONS = {
                 emailLabel: 'Email', passwordLabel: 'Parolă',
                 delete: 'Șterge', confirmDelete: 'Ștergi definitiv acest partener? Evenimentele lui existente rămân, doar fără partener responsabil atribuit.',
                 reusedAccount: (email) => `„${email}” avea deja cont pe platformă — i s-a adăugat doar rolul de Partener. Nu s-a trimis niciun email (contul existent își știe deja parola).`,
+                resetPassword: 'Resetează parola', confirmResetPassword: 'Generezi o parolă nouă pentru acest partener? Parola veche nu va mai funcționa.',
+                passwordReset: 'Parolă nouă generată — nu s-a trimis niciun email, transmite-o tu manual partenerului:',
                 edit: 'Editează',
             },
             create: {
@@ -364,6 +366,8 @@ export const APP_TRANSLATIONS = {
                 emailLabel: 'Email', passwordLabel: 'Password',
                 delete: 'Delete', confirmDelete: 'Permanently delete this partner? Its existing events stay, just without a responsible partner attached.',
                 reusedAccount: (email) => `"${email}" already had an account on the platform — it only got the Partner role added. No email was sent (the existing account already knows its password).`,
+                resetPassword: 'Reset password', confirmResetPassword: "Generate a new password for this partner? The old one will stop working.",
+                passwordReset: 'New password generated — no email was sent, pass it on to the partner yourself:',
                 edit: 'Edit',
             },
             create: {
@@ -673,6 +677,8 @@ export const APP_TRANSLATIONS = {
                 emailLabel: 'E-Mail', passwordLabel: 'Passwort',
                 delete: 'Löschen', confirmDelete: 'Diesen Partner endgültig löschen? Seine bestehenden Events bleiben erhalten, nur ohne zugewiesenen zuständigen Partner.',
                 reusedAccount: (email) => `„${email}" hatte bereits ein Konto auf der Plattform — es wurde nur die Partner-Rolle hinzugefügt. Es wurde keine E-Mail gesendet (das bestehende Konto kennt sein Passwort bereits).`,
+                resetPassword: 'Passwort zurücksetzen', confirmResetPassword: 'Ein neues Passwort für diesen Partner erzeugen? Das alte funktioniert dann nicht mehr.',
+                passwordReset: 'Neues Passwort erzeugt — es wurde keine E-Mail gesendet, geben Sie es dem Partner selbst weiter:',
                 edit: 'Bearbeiten',
             },
             create: {

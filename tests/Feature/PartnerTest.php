@@ -200,6 +200,44 @@ class PartnerTest extends TestCase
             ->assertNotFound();
     }
 
+    public function test_a_franchise_partner_admin_can_reset_a_partners_password(): void
+    {
+        $franchisePartner = FranchisePartner::factory()->create();
+        $partner = Partner::factory()->for($franchisePartner)->create();
+        $partnerUser = $this->partnerAccount($partner);
+        $oldHash = $partnerUser->password;
+        $admin = $this->franchisePartnerAdmin($franchisePartner);
+
+        $response = $this->actingAs($admin)->patch(route('partners.reset-password', $partner));
+
+        $response->assertRedirect(route('partners.index'));
+        $response->assertSessionHas('newAccountEmail', $partnerUser->email);
+        $response->assertSessionHas('newAccountPassword');
+        $response->assertSessionHas('passwordReset', true);
+        $this->assertNotSame($oldHash, $partnerUser->fresh()->password);
+    }
+
+    public function test_resetting_the_password_of_a_partner_with_no_account_does_nothing(): void
+    {
+        $franchisePartner = FranchisePartner::factory()->create();
+        $partner = Partner::factory()->for($franchisePartner)->create();
+        $admin = $this->franchisePartnerAdmin($franchisePartner);
+
+        $this->actingAs($admin)
+            ->patch(route('partners.reset-password', $partner))
+            ->assertSessionMissing('newAccountPassword');
+    }
+
+    public function test_an_organization_scoped_user_cannot_reset_a_partners_password(): void
+    {
+        $franchisePartner = FranchisePartner::factory()->create();
+        $partner = Partner::factory()->for($franchisePartner)->create();
+        $this->partnerAccount($partner);
+        $user = User::factory()->forOrganization()->create();
+
+        $this->actingAs($user)->patch(route('partners.reset-password', $partner))->assertNotFound();
+    }
+
     public function test_a_franchise_partner_admin_can_delete_a_partner_without_an_account(): void
     {
         $franchisePartner = FranchisePartner::factory()->create();

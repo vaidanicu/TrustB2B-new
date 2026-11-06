@@ -14,7 +14,7 @@ function NewPartnerButton({ label }) {
     );
 }
 
-function NewAccountCredentialsBanner({ email, password, emailSent, t }) {
+function NewAccountCredentialsBanner({ email, password, emailSent, passwordReset, t }) {
     const [copied, setCopied] = useState(false);
 
     async function copy() {
@@ -26,9 +26,15 @@ function NewAccountCredentialsBanner({ email, password, emailSent, t }) {
         }
     }
 
+    // Resetting a password never emails anything (the whole point is not
+    // depending on email delivery) — its own message/color wins over the
+    // create/edit flow's emailSent-based one.
+    const message = passwordReset ? t.partners.index.passwordReset : emailSent ? t.partners.index.emailSent : t.partners.index.emailFailed;
+    const colorClass = passwordReset || emailSent ? 'border-teal bg-teal-soft text-teal-ink' : 'border-amber-600 bg-amber-50 text-amber-700';
+
     return (
-        <div className={'mb-5 rounded-md border px-4 py-3 text-sm ' + (emailSent ? 'border-teal bg-teal-soft text-teal-ink' : 'border-amber-600 bg-amber-50 text-amber-700')}>
-            <p className="font-medium">{emailSent ? t.partners.index.emailSent : t.partners.index.emailFailed}</p>
+        <div className={`mb-5 rounded-md border px-4 py-3 text-sm ${colorClass}`}>
+            <p className="font-medium">{message}</p>
             <div className="mt-1.5 flex flex-wrap items-center gap-3">
                 <span>
                     {t.partners.index.emailLabel}: <strong>{email}</strong> · {t.partners.index.passwordLabel}: <strong>{password}</strong>
@@ -57,7 +63,13 @@ export default function Index({ partners }) {
                     </div>
                 )}
                 {flash?.newAccountPassword && (
-                    <NewAccountCredentialsBanner email={flash.newAccountEmail} password={flash.newAccountPassword} emailSent={flash.accountEmailSent} t={t} />
+                    <NewAccountCredentialsBanner
+                        email={flash.newAccountEmail}
+                        password={flash.newAccountPassword}
+                        emailSent={flash.accountEmailSent}
+                        passwordReset={flash.passwordReset}
+                        t={t}
+                    />
                 )}
                 {flash?.reusedExistingAccount && (
                     <div className="mb-5 rounded-md border border-line bg-paper-sunken px-4 py-3 text-sm text-ink-soft">
@@ -87,6 +99,12 @@ export default function Index({ partners }) {
                             }
                         }
 
+                        function resetPassword() {
+                            if (confirm(p.confirmResetPassword)) {
+                                router.patch(route('partners.reset-password', partner.id));
+                            }
+                        }
+
                         return (
                             <div
                                 key={partner.id}
@@ -98,6 +116,11 @@ export default function Index({ partners }) {
                                     <Link href={route('partners.edit', partner.id)} className="text-xs text-accent underline">
                                         {p.edit}
                                     </Link>
+                                    {partner.hasAccount && (
+                                        <button type="button" onClick={resetPassword} className="text-xs text-accent underline">
+                                            {p.resetPassword}
+                                        </button>
+                                    )}
                                     <button type="button" onClick={destroy} className="text-xs text-ink-muted underline hover:text-danger-ink">
                                         {p.delete}
                                     </button>

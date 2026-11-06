@@ -30,10 +30,15 @@ class PartnerController extends Controller
     {
         abort_unless($request->user()->can('partners.manage'), 403);
 
-        $partners = Partner::query()->orderBy('name')->get(['id', 'name', 'country']);
+        $partners = Partner::query()->orderBy('name')->get(['id', 'name', 'country', 'user_id']);
 
         return Inertia::render('Partners/Index', [
-            'partners' => $partners,
+            'partners' => $partners->map(fn (Partner $partner) => [
+                'id' => $partner->id,
+                'name' => $partner->name,
+                'country' => $partner->country,
+                'hasAccount' => $partner->user_id !== null,
+            ]),
         ]);
     }
 
@@ -222,6 +227,33 @@ class PartnerController extends Controller
         }
 
         return back()->with('status', FlashMessage::t($request->user()->locale ?? 'ro', 'partner.deleted', ['name' => $name]));
+    }
+
+    /**
+     * A self-service alternative to a tinker script every time a
+     * partner's password needs recovering — reported, in the middle of
+     * exactly that happening by hand over SSH. Generates a fresh one and
+     * shows it once on screen (same banner as create()/update()'s own
+     * fallback), without depending on email delivery at all — the admin
+     * hands it to the partner directly (phone, WhatsApp, in person).
+     */
+    public function resetPassword(Request $request, Partner $partner): RedirectResponse
+    {
+        abort_unless($request->user()->can('partners.manage'), 403);
+
+        if ($partner->user === null) {
+            return back()->with('status', FlashMessage::t($request->user()->locale ?? 'ro', 'partner.no_account', ['name' => $partner->name]));
+        }
+
+        $password = Str::password(14);
+        $partner->user->forceFill(['password' => Hash::make($password)])->save();
+
+        activity()->causedBy($request->user())->performedOn($partner->user)->log('partner password reset');
+
+        return redirect()->route('partners.index')
+            ->with('newAccountEmail', $partner->user->email)
+            ->with('newAccountPassword', $password)
+            ->with('passwordReset', true);
     }
 
     /**
