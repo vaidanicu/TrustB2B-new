@@ -484,9 +484,14 @@ class GalleryTest extends TestCase
         $otherOrganization = Organization::factory()->create();
 
         $photographer = $this->userWithRole($ownOrganization, 'photographer');
+        // Restaurant, specifically: index()'s own backUrl takes the branch
+        // that used to build a URL from $event->organization — the relation,
+        // not the raw column — which silently comes back null here (that
+        // org isn't this photographer's own) and crashed route() with a 500.
         $event = Event::factory()->for($otherOrganization)->create([
             'franchise_partner_id' => $otherOrganization->franchise_partner_id,
             'photographer_user_id' => $photographer->id,
+            'is_restaurant' => true,
         ]);
 
         $this->actingAs($photographer)->get(route('gallery.index', $event))->assertOk();

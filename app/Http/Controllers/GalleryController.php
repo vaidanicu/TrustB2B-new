@@ -78,8 +78,14 @@ class GalleryController extends Controller
         // to, and a franchise/platform viewer with no organization_id of
         // their own never reaches that page at all regardless of event
         // type — route both cases back to the client's event list instead.
+        // organization_id (the raw column), not the organization() relation:
+        // a cross-client photographer (resolveRouteBinding's own carve-out)
+        // has no visibility into Organization at all — its own TenantScope
+        // only ever matches their single home organization — so loading the
+        // relation here would silently come back null and route() would
+        // throw trying to build a URL from it.
         $backUrl = $event->is_restaurant || $user->organization_id === null
-            ? route('organizations.events', $event->organization)
+            ? route('organizations.events', $event->organization_id)
             : route('participants.status', $event);
 
         return Inertia::render('Events/Gallery', [

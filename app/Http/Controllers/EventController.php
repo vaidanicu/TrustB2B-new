@@ -78,8 +78,11 @@ class EventController extends Controller
         // franchise/platform viewer (no organization_id of their own)
         // never reaches participants.status regardless of event type, and
         // a restaurant event has no participants page to begin with.
+        // organization_id (the raw column), not the organization() relation
+        // loaded above — see GalleryController::index()'s own comment for
+        // why the relation can silently come back null here.
         $backUrl = $user->organization_id === null
-            ? route('organizations.events', $event->organization)
+            ? route('organizations.events', $event->organization_id)
             : route('dashboard');
 
         return Inertia::render('Events/Show', [
