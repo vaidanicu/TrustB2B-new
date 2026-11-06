@@ -73,17 +73,30 @@ class GalleryController extends Controller
 
         $publicGalleryUrl = $this->publicGalleryUrl($event);
 
-        // Restaurant events have no participants.status page (404s, by
-        // design — see ParticipantController::statusBoard()) to come back
-        // to, and a franchise/platform viewer with no organization_id of
-        // their own never reaches that page at all regardless of event
-        // type — route both cases back to the client's event list instead.
-        // organization_id (the raw column), not the organization() relation:
-        // a cross-client photographer (resolveRouteBinding's own carve-out)
-        // has no visibility into Organization at all — its own TenantScope
-        // only ever matches their single home organization — so loading the
-        // relation here would silently come back null and route() would
-        // throw trying to build a URL from it.
+        // A franchise/platform/Partner viewer (no organization_id of their
+        // own) never reaches participants.status regardless of event type
+        // (organizations.manage/Partner ownership — not an organization_id
+        // — is what let them into the gallery at all) — route them to the
+        // client's event list instead. organization_id (the raw column),
+        // not the organization() relation: a cross-client photographer
+        // (resolveRouteBinding's own carve-out) has no visibility into
+        // Organization at all — its own TenantScope only ever matches
+        // their single home organization — so loading the relation here
+        // would silently come back null and route() would throw trying to
+        // build a URL from it.
+        //
+        // A real org-scoped staff member (customer-admin/event-manager)
+        // viewing a RESTAURANT event's gallery is the one case that must
+        // stay separate from the above: reported — it was sent to
+        // organizations.events too (the "no participants.status page to
+        // come back to" reasoning originally lumped it in with the
+        // franchise/platform/Partner case), which 403s for this role
+        // (organizations.manage is franchise/platform-only, and it owns no
+        // Partner row). Its own dashboard already lists this exact
+        // restaurant event with a direct gallery link, so that's the right
+        // destination instead — same as EventController::show()'s own,
+        // simpler backUrl (organization_id === null or not), which never
+        // had this bug because it doesn't special-case is_restaurant at all.
         //
         // A photographer gets neither of those destinations at all: it has
         // no 'events.manage'/Partner access to organizations.events (403,
@@ -95,8 +108,10 @@ class GalleryController extends Controller
         // email, granted additively) still gets its usual destination.
         if ($user->isActingAsPhotographerOnly()) {
             $backUrl = route('dashboard');
-        } elseif ($event->is_restaurant || $user->organization_id === null) {
+        } elseif ($user->organization_id === null) {
             $backUrl = route('organizations.events', $event->organization_id);
+        } elseif ($event->is_restaurant) {
+            $backUrl = route('dashboard');
         } else {
             $backUrl = route('participants.status', $event);
         }

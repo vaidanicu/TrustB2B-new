@@ -424,6 +424,49 @@ class GalleryTest extends TestCase
                 ->where('backUrl', route('organizations.events', $organization)));
     }
 
+    /**
+     * Reported live: a customer-admin's "← Back" link on a restaurant
+     * event's gallery 403'd. index()'s own backUrl lumped "no
+     * participants.status page to come back to" (true for a restaurant
+     * event) together with "no organization_id of their own" (true for a
+     * franchise/platform/Partner viewer) into one branch pointing at
+     * organizations.events — but a real org-scoped customer-admin/
+     * event-manager has neither organizations.manage nor a Partner row, so
+     * that destination 403'd for exactly the role that actually owns this
+     * event day to day.
+     */
+    public function test_a_customer_admin_can_go_back_from_a_restaurant_events_gallery(): void
+    {
+        $organization = Organization::factory()->create();
+        $event = Event::factory()->for($organization)->create([
+            'franchise_partner_id' => $organization->franchise_partner_id,
+            'is_restaurant' => true,
+        ]);
+        $admin = $this->userWithRole($organization, 'customer-admin');
+
+        $response = $this->actingAs($admin)
+            ->get(route('gallery.index', $event))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page->where('backUrl', route('dashboard')));
+
+        $this->actingAs($admin)->get($response->viewData('page')['props']['backUrl'])->assertOk();
+    }
+
+    public function test_a_customer_admin_still_goes_back_to_the_participants_board_for_a_non_restaurant_event(): void
+    {
+        $organization = Organization::factory()->create();
+        $event = Event::factory()->for($organization)->create([
+            'franchise_partner_id' => $organization->franchise_partner_id,
+            'is_restaurant' => false,
+        ]);
+        $admin = $this->userWithRole($organization, 'customer-admin');
+
+        $this->actingAs($admin)
+            ->get(route('gallery.index', $event))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page->where('backUrl', route('participants.status', $event)));
+    }
+
     public function test_a_photographer_cannot_moderate_removal_requests(): void
     {
         $organization = Organization::factory()->create();
