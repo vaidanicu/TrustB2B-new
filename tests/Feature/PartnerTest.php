@@ -612,4 +612,41 @@ class PartnerTest extends TestCase
             ->get(route('dashboard'))
             ->assertRedirect(route('organizations.index'));
     }
+
+    public function test_a_partner_can_manage_participants_on_its_own_event(): void
+    {
+        $franchisePartner = FranchisePartner::factory()->create();
+        $partner = Partner::factory()->for($franchisePartner)->create();
+        $partnerUser = $this->partnerAccount($partner);
+        $organization = Organization::factory()->for($franchisePartner)->create();
+        $event = Event::factory()->for($organization)->create([
+            'franchise_partner_id' => $franchisePartner->id,
+            'partner_id' => $partner->id,
+            'is_restaurant' => false,
+        ]);
+
+        $this->actingAs($partnerUser)
+            ->get(route('participants.status', $event))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page->component('Participants/StatusBoard'));
+
+        $this->actingAs($partnerUser)
+            ->get(route('participants.checkin', $event))
+            ->assertOk();
+    }
+
+    public function test_a_partner_cannot_manage_participants_on_someone_elses_event(): void
+    {
+        $franchisePartner = FranchisePartner::factory()->create();
+        $partner = Partner::factory()->for($franchisePartner)->create();
+        $partnerUser = $this->partnerAccount($partner);
+        $organization = Organization::factory()->for($franchisePartner)->create();
+        $event = Event::factory()->for($organization)->create([
+            'franchise_partner_id' => $franchisePartner->id,
+            'is_restaurant' => false,
+        ]);
+
+        $this->actingAs($partnerUser)->get(route('participants.status', $event))->assertForbidden();
+        $this->actingAs($partnerUser)->get(route('participants.checkin', $event))->assertForbidden();
+    }
 }

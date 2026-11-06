@@ -63,7 +63,7 @@ class ParticipantController extends Controller
 
     public function statusBoard(Request $request, Event $event): Response
     {
-        $this->authorizeParticipantManagement($request);
+        $this->authorizeParticipantManagement($request, $event);
         abort_if($event->is_restaurant, 404);
 
         $participants = $event->participants()->orderByDesc('created_at')->get();
@@ -91,7 +91,7 @@ class ParticipantController extends Controller
 
     public function store(Request $request, Event $event): RedirectResponse
     {
-        $this->authorizeParticipantManagement($request);
+        $this->authorizeParticipantManagement($request, $event);
         abort_if($event->is_restaurant, 404);
 
         $data = $request->validate([
@@ -156,7 +156,7 @@ class ParticipantController extends Controller
 
     public function destroy(Request $request, Event $event, Participant $participant): RedirectResponse
     {
-        $this->authorizeParticipantManagement($request);
+        $this->authorizeParticipantManagement($request, $event);
         abort_unless($participant->event_id === $event->id, 404);
 
         $name = $participant->name;
@@ -174,7 +174,7 @@ class ParticipantController extends Controller
 
     public function denyDeletionRequest(Request $request, Event $event, Participant $participant): RedirectResponse
     {
-        $this->authorizeParticipantManagement($request);
+        $this->authorizeParticipantManagement($request, $event);
         abort_unless($participant->event_id === $event->id, 404);
 
         $participant->forceFill(['deletion_requested_at' => null])->save();
@@ -197,7 +197,7 @@ class ParticipantController extends Controller
      */
     public function checkin(Request $request, Event $event): Response
     {
-        $this->authorizeParticipantManagement($request);
+        $this->authorizeParticipantManagement($request, $event);
         abort_if($event->is_restaurant, 404);
 
         return Inertia::render('Participants/Checkin', [
@@ -207,7 +207,7 @@ class ParticipantController extends Controller
 
     public function checkinStore(Request $request, Event $event): RedirectResponse
     {
-        $this->authorizeParticipantManagement($request);
+        $this->authorizeParticipantManagement($request, $event);
         abort_if($event->is_restaurant, 404);
 
         $data = $request->validate([
@@ -379,11 +379,17 @@ class ParticipantController extends Controller
      * 'events.manage', same permission EventController gates on) can do it
      * too: they're the ones who set the event and its GDPR contract up in
      * the first place, and shouldn't have to depend on the client's own
-     * account existing or being available to actually send invitations.
+     * account existing or being available to actually send invitations. A
+     * Partner may do the same, but only for its OWN event — same per-row
+     * scoping reasoning as EventController::update()/destroy(), since
+     * events.manage carries no such restriction on its own.
      */
-    private function authorizeParticipantManagement(Request $request): void
+    private function authorizeParticipantManagement(Request $request, Event $event): void
     {
-        abort_unless($request->user()->organization_id !== null || $request->user()->can('events.manage'), 403);
+        $user = $request->user();
+        $isOwnPartnerEvent = $user->isActingAsPartnerOnly() && $event->partner_id === $user->partner->id;
+
+        abort_unless($user->organization_id !== null || $user->can('events.manage') || $isOwnPartnerEvent, 403);
     }
 
     private function eventPayload(Participant $participant): array
