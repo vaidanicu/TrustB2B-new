@@ -8,6 +8,7 @@ use App\Models\Event;
 use App\Models\FranchisePartner;
 use App\Models\Organization;
 use App\Models\Participant;
+use App\Models\Partner;
 use App\Models\User;
 use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -39,6 +40,15 @@ class GalleryTest extends TestCase
     {
         $user = User::factory()->forOrganization($organization)->create();
         (new AssignRole)->grant($user, $role, 'test');
+
+        return $user;
+    }
+
+    private function partnerAccount(Partner $partner): User
+    {
+        $user = User::factory()->forFranchisePartner($partner->franchisePartner)->create();
+        (new AssignRole)->grant($user, 'partner', 'test');
+        $partner->forceFill(['user_id' => $user->id])->save();
 
         return $user;
     }
@@ -425,6 +435,98 @@ class GalleryTest extends TestCase
         $photo = $event->getMedia('gallery')->sole();
 
         $this->actingAs($photographer)
+            ->patch(route('gallery.approve-removal', [$event, $photo]))
+            ->assertForbidden();
+    }
+
+    public function test_a_partner_can_upload_to_its_own_event_when_no_photographer_is_assigned(): void
+    {
+        $franchisePartner = FranchisePartner::factory()->create();
+        $organization = Organization::factory()->for($franchisePartner)->create();
+        $partner = Partner::factory()->for($franchisePartner)->create();
+        $partnerUser = $this->partnerAccount($partner);
+        $event = Event::factory()->for($organization)->create([
+            'franchise_partner_id' => $franchisePartner->id,
+            'partner_id' => $partner->id,
+        ]);
+
+        $this->actingAs($partnerUser)
+            ->post(route('gallery.store', $event), ['photos' => [UploadedFile::fake()->image('photo.jpg')]])
+            ->assertRedirect();
+
+        $this->assertSame(1, $event->fresh()->getMedia('gallery')->count());
+    }
+
+    public function test_a_partner_cannot_upload_once_the_client_has_its_own_photographer(): void
+    {
+        $franchisePartner = FranchisePartner::factory()->create();
+        $organization = Organization::factory()->for($franchisePartner)->create();
+        $partner = Partner::factory()->for($franchisePartner)->create();
+        $partnerUser = $this->partnerAccount($partner);
+        $photographer = $this->userWithRole($organization, 'photographer');
+        $event = Event::factory()->for($organization)->create([
+            'franchise_partner_id' => $franchisePartner->id,
+            'partner_id' => $partner->id,
+            'photographer_user_id' => $photographer->id,
+        ]);
+
+        $this->actingAs($partnerUser)
+            ->post(route('gallery.store', $event), ['photos' => [UploadedFile::fake()->image('photo.jpg')]])
+            ->assertForbidden();
+
+        $this->assertSame(0, $event->fresh()->getMedia('gallery')->count());
+    }
+
+    public function test_a_partner_cannot_upload_to_someone_elses_event(): void
+    {
+        $franchisePartner = FranchisePartner::factory()->create();
+        $organization = Organization::factory()->for($franchisePartner)->create();
+        $partner = Partner::factory()->for($franchisePartner)->create();
+        $partnerUser = $this->partnerAccount($partner);
+        $event = Event::factory()->for($organization)->create(['franchise_partner_id' => $franchisePartner->id]);
+
+        $this->actingAs($partnerUser)
+            ->post(route('gallery.store', $event), ['photos' => [UploadedFile::fake()->image('photo.jpg')]])
+            ->assertForbidden();
+    }
+
+    public function test_a_partner_can_approve_a_removal_request_on_its_own_event(): void
+    {
+        $franchisePartner = FranchisePartner::factory()->create();
+        $organization = Organization::factory()->for($franchisePartner)->create();
+        $partner = Partner::factory()->for($franchisePartner)->create();
+        $partnerUser = $this->partnerAccount($partner);
+        $event = Event::factory()->for($organization)->create([
+            'franchise_partner_id' => $franchisePartner->id,
+            'partner_id' => $partner->id,
+        ]);
+
+        $event->addMedia(UploadedFile::fake()->image('flagged.jpg'))
+            ->withCustomProperties(['published' => true, 'deletion_requested' => true])
+            ->toMediaCollection('gallery');
+        $photo = $event->getMedia('gallery')->sole();
+
+        $this->actingAs($partnerUser)
+            ->patch(route('gallery.approve-removal', [$event, $photo]))
+            ->assertRedirect();
+
+        $this->assertSame(0, $event->fresh()->getMedia('gallery')->count());
+    }
+
+    public function test_a_partner_cannot_moderate_removal_requests_on_someone_elses_event(): void
+    {
+        $franchisePartner = FranchisePartner::factory()->create();
+        $organization = Organization::factory()->for($franchisePartner)->create();
+        $partner = Partner::factory()->for($franchisePartner)->create();
+        $partnerUser = $this->partnerAccount($partner);
+        $event = Event::factory()->for($organization)->create(['franchise_partner_id' => $franchisePartner->id]);
+
+        $event->addMedia(UploadedFile::fake()->image('flagged.jpg'))
+            ->withCustomProperties(['published' => true, 'deletion_requested' => true])
+            ->toMediaCollection('gallery');
+        $photo = $event->getMedia('gallery')->sole();
+
+        $this->actingAs($partnerUser)
             ->patch(route('gallery.approve-removal', [$event, $photo]))
             ->assertForbidden();
     }

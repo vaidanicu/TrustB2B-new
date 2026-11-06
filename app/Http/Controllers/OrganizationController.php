@@ -29,6 +29,14 @@ use Inertia\Response;
  * AND kept in the redirect flash as a fallback — same non-blocking
  * try/catch pattern as ParticipantController@store, since account creation
  * must never fail just because SMTP is briefly unreachable.
+ *
+ * A Partner (User::isActingAsPartnerOnly()) may also create and
+ * administer clients now — reported: "kann Kunden und Events erzeugen
+ * und administrieren" — but only its OWN ones (isOwnPartnerClient()):
+ * created by it directly (Organization.partner_id) or merely one it has
+ * an event with (Event.partner_id). organizations.manage carries no such
+ * per-row scoping on its own, so every method below checks this
+ * explicitly rather than widening that permission to the 'partner' role.
  */
 class OrganizationController extends Controller
 {
@@ -37,18 +45,20 @@ class OrganizationController extends Controller
         $user = $request->user();
         $partner = $user->isActingAsPartnerOnly() ? $user->partner : null;
 
-        // A Partner account sees only the clients it actually has an
-        // event with — never the full franchise client list, which stays
-        // behind organizations.manage below. Was "organization_id ===
-        // null", which also let a Partner through undiscriminated (it has
-        // no organization_id either, but isn't franchise/system-level
-        // staff) — this explicit branch is the real guard now.
-        // isActingAsPartnerOnly() (not partner() directly) is what keeps
-        // an admin account also linked as a Partner (e.g. "MM Kft." for
-        // HU) on the full, unrestricted list.
+        // A Partner account sees only its OWN clients — either ones it
+        // created itself (Organization.partner_id) or ones it merely has
+        // an event with (Event.partner_id, set by a franchise/platform
+        // actor assigning it as sales-responsible) — never the full
+        // franchise client list, which stays behind organizations.manage
+        // below. isActingAsPartnerOnly() (not partner() directly) is what
+        // keeps an admin account also linked as a Partner (e.g. "MM Kft."
+        // for HU) on the full, unrestricted list.
         if ($partner !== null) {
             $organizations = Organization::query()
-                ->whereHas('events', fn ($query) => $query->where('partner_id', $partner->id))
+                ->where(function ($query) use ($partner) {
+                    $query->where('partner_id', $partner->id)
+                        ->orWhereHas('events', fn ($eventsQuery) => $eventsQuery->where('partner_id', $partner->id));
+                })
                 ->orderBy('name')
                 ->get(['id', 'name', 'country', 'contract_status']);
         } else {
@@ -60,12 +70,11 @@ class OrganizationController extends Controller
         }
 
         return Inertia::render('Organizations/Index', [
-            'canManage' => $partner === null,
-            // A Partner can't create a new client organization, but can
-            // still start an event for any client in its franchise — the
-            // "New client" header button swaps for "New event" instead of
-            // just disappearing.
-            'isPartnerActor' => $partner !== null,
+            // A Partner can also create a new client and change its own
+            // clients' contract status now — same "administers its own
+            // clients" ability as a franchise/platform actor, just
+            // narrowed to the rows above.
+            'canManage' => $partner !== null || $user->can('organizations.manage'),
             'organizations' => $organizations->map(fn (Organization $organization) => [
                 'id' => $organization->id,
                 'name' => $organization->name,
@@ -81,11 +90,15 @@ class OrganizationController extends Controller
      * simply no control to do it with. A franchise/platform actor can now
      * set it directly from the client list, same authorization as
      * index()/create() since it's the same "franchise/system-level staff
-     * manage clients" screen.
+     * manage clients" screen. A Partner may do the same, but only for its
+     * own client (same ownership test as index()'s query).
      */
     public function updateStatus(Request $request, Organization $organization): RedirectResponse
     {
-        abort_unless($request->user()->can('organizations.manage'), 403);
+        $user = $request->user();
+        $isOwnPartnerClient = $this->isOwnPartnerClient($user, $organization);
+
+        abort_unless($user->can('organizations.manage') || $isOwnPartnerClient, 403);
 
         $data = $request->validate([
             'contract_status' => ['required', Rule::in(['onboarding', 'active', 'suspended'])],
@@ -94,12 +107,31 @@ class OrganizationController extends Controller
         $organization->forceFill($data)->save();
 
         activity()
-            ->causedBy($request->user())
+            ->causedBy($user)
             ->performedOn($organization)
             ->withProperties(['status' => $data['contract_status']])
             ->log('organization status changed');
 
         return back();
+    }
+
+    /**
+     * "Its own client", for a Partner: one it created itself
+     * (Organization.partner_id) or one it merely has an event with
+     * (Event.partner_id) — the same two-part test index()'s own query
+     * applies, reused everywhere a Partner acts on a specific
+     * Organization instead of just listing them.
+     */
+    private function isOwnPartnerClient(User $user, Organization $organization): bool
+    {
+        if (! $user->isActingAsPartnerOnly()) {
+            return false;
+        }
+
+        $partnerId = $user->partner->id;
+
+        return $organization->partner_id === $partnerId
+            || $organization->events()->where('partner_id', $partnerId)->exists();
     }
 
     /**
@@ -110,13 +142,16 @@ class OrganizationController extends Controller
      * model binding resolves it the same tenant-scoped way); events.manage
      * guards actually touching it, same as EventController itself.
      *
-     * A Partner account reaches this same screen read-only, narrowed to
-     * just its own events for this client (Event.partner_id) — reported:
-     * a partner needs a table of which events were done for a client, who
-     * photographed each one and who the client-side contact was, not
-     * scattered across individual removal-request emails. abort_unless
-     * here (rather than letting an empty table render) keeps a partner
-     * from browsing a client it has no event with at all.
+     * A Partner account reaches this same screen too. If it owns this
+     * client (Organization.partner_id — e.g. one it created itself), it
+     * sees and administers every event for it, same as a franchise actor.
+     * Otherwise, narrowed to just its own events for this client
+     * (Event.partner_id) — reported: a partner needs a table of which
+     * events were done for a client, who photographed each one and who
+     * the client-side contact was, not scattered across individual
+     * removal-request emails. abort_unless here (rather than letting an
+     * empty table render) keeps a partner from browsing a client it
+     * neither owns nor has any event with.
      */
     public function events(Request $request, Organization $organization): Response
     {
@@ -124,8 +159,11 @@ class OrganizationController extends Controller
         $partner = $user->isActingAsPartnerOnly() ? $user->partner : null;
 
         if ($partner !== null) {
-            abort_unless($organization->events()->where('partner_id', $partner->id)->exists(), 403);
-            $eventsQuery = $organization->events()->where('partner_id', $partner->id);
+            $ownsClient = $organization->partner_id === $partner->id;
+
+            abort_unless($ownsClient || $organization->events()->where('partner_id', $partner->id)->exists(), 403);
+
+            $eventsQuery = $ownsClient ? $organization->events() : $organization->events()->where('partner_id', $partner->id);
         } else {
             abort_unless($user->can('events.manage'), 403);
             $eventsQuery = $organization->events();
@@ -137,11 +175,10 @@ class OrganizationController extends Controller
 
         return Inertia::render('Organizations/Events', [
             'organization' => ['id' => $organization->id, 'name' => $organization->name],
-            'canManage' => $partner === null,
-            // Everyone who can see this page at all — full events.manage
-            // or a Partner with at least one existing event here — may
-            // add another one for this same client; only destructive/
-            // administrative actions stay behind canManage.
+            // True for either branch — the Partner one is already
+            // narrowed to just its own rows above, so "administer what
+            // you can see" holds either way.
+            'canManage' => true,
             'canCreateEvent' => true,
             'events' => $events->map(fn (Event $event) => [
                 'id' => $event->id,
@@ -159,13 +196,15 @@ class OrganizationController extends Controller
 
     public function create(Request $request): Response
     {
-        abort_unless($request->user()->can('organizations.manage'), 403);
+        $user = $request->user();
+        abort_unless($user->can('organizations.manage') || $user->isActingAsPartnerOnly(), 403);
 
         return Inertia::render('Organizations/Create', [
-            // A franchise-partner-admin has exactly one franchise already —
-            // no choice to make. Only a system operator (no franchise of
-            // their own) picks one explicitly.
-            'franchisePartners' => $request->user()->franchise_partner_id !== null
+            // A franchise-partner-admin (or a Partner — both already have
+            // exactly one franchise_partner_id of their own) has no choice
+            // to make. Only a system operator (no franchise of their own)
+            // picks one explicitly.
+            'franchisePartners' => $user->franchise_partner_id !== null
                 ? []
                 : FranchisePartner::query()->orderBy('name')->get(['id', 'name']),
         ]);
@@ -173,24 +212,28 @@ class OrganizationController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        abort_unless($request->user()->can('organizations.manage'), 403);
+        $user = $request->user();
+        $partner = $user->isActingAsPartnerOnly() ? $user->partner : null;
+
+        abort_unless($user->can('organizations.manage') || $partner !== null, 403);
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'country' => ['required', 'string', 'size:2'],
             'data_protection_contact_email' => ['nullable', 'email', 'max:255'],
             'franchise_partner_id' => [
-                Rule::requiredIf($request->user()->franchise_partner_id === null),
+                Rule::requiredIf($user->franchise_partner_id === null),
                 'nullable', 'exists:franchise_partners,id',
             ],
             'admin_name' => ['required', 'string', 'max:255'],
             'admin_email' => ['required', 'email', 'max:255', 'unique:users,email'],
         ]);
 
-        $franchisePartnerId = $request->user()->franchise_partner_id ?? $data['franchise_partner_id'];
+        $franchisePartnerId = $user->franchise_partner_id ?? $data['franchise_partner_id'];
 
         $organization = Organization::create([
             'franchise_partner_id' => $franchisePartnerId,
+            'partner_id' => $partner?->id,
             'name' => $data['name'],
             'country' => $data['country'],
             'data_protection_contact_email' => $data['data_protection_contact_email'] ?? null,
@@ -209,18 +252,18 @@ class OrganizationController extends Controller
 
         (new AssignRole)->grant($admin, 'customer-admin', 'organization created via admin UI');
 
-        activity()->causedBy($request->user())->performedOn($organization)->log('organization created');
+        activity()->causedBy($user)->performedOn($organization)->log('organization created');
 
         $emailSent = (new SendAccountCreatedEmail)->send(
             $admin,
             $password,
             'organization-admin',
             $organization->name,
-            $request->user()->locale ?? 'ro',
+            $user->locale ?? 'ro',
         );
 
         return redirect()->route('organizations.index')
-            ->with('status', FlashMessage::t($request->user()->locale ?? 'ro', 'organization.created', ['name' => $organization->name]))
+            ->with('status', FlashMessage::t($user->locale ?? 'ro', 'organization.created', ['name' => $organization->name]))
             ->with('newAdminEmail', $admin->email)
             ->with('newAdminPassword', $password)
             ->with('newAdminEmailSent', $emailSent);

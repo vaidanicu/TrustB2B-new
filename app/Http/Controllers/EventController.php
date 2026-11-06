@@ -103,7 +103,7 @@ class EventController extends Controller
                 'organizationId' => $event->organization_id,
                 'createdByName' => $event->creator?->name,
             ],
-            'canManage' => $user->can('events.manage'),
+            'canManage' => $user->can('events.manage') || $isOwnPartnerEvent,
         ]);
     }
 
@@ -114,10 +114,19 @@ class EventController extends Controller
      * Rescheduling a 'finished' event back into the future reverts that
      * automatic stamp (it isn't done after all); 'archived' is left
      * alone, since the gallery may already be gone by then.
+     *
+     * A Partner may also reschedule, but only its OWN event (partner_id
+     * match) — events.manage has no such per-row scoping (any
+     * franchise/platform actor who holds it can touch any event in their
+     * franchise), so a blanket role grant would have let a Partner touch
+     * every event in the franchise, not just its own.
      */
     public function update(Request $request, Event $event): RedirectResponse
     {
-        abort_unless($request->user()->can('events.manage'), 403);
+        $user = $request->user();
+        $isOwnPartnerEvent = $user->isActingAsPartnerOnly() && $event->partner_id === $user->partner->id;
+
+        abort_unless($user->can('events.manage') || $isOwnPartnerEvent, 403);
 
         $data = $request->validate([
             'starts_at' => ['required', 'date'],
@@ -133,11 +142,11 @@ class EventController extends Controller
         $event->save();
 
         activity()
-            ->causedBy($request->user())
+            ->causedBy($user)
             ->performedOn($event)
             ->log('event rescheduled');
 
-        return back()->with('status', FlashMessage::t($request->user()->locale ?? 'ro', 'event.rescheduled', ['name' => $event->name]));
+        return back()->with('status', FlashMessage::t($user->locale ?? 'ro', 'event.rescheduled', ['name' => $event->name]));
     }
 
     public function create(Request $request): Response
@@ -293,15 +302,23 @@ class EventController extends Controller
         return [$user, $emailSent];
     }
 
+    /**
+     * A Partner may also delete, but only its OWN event — same per-row
+     * scoping reasoning as update() above, since events.manage itself
+     * carries no such restriction.
+     */
     public function destroy(Request $request, Event $event): RedirectResponse
     {
-        abort_unless($request->user()->can('events.manage'), 403);
+        $user = $request->user();
+        $isOwnPartnerEvent = $user->isActingAsPartnerOnly() && $event->partner_id === $user->partner->id;
+
+        abort_unless($user->can('events.manage') || $isOwnPartnerEvent, 403);
 
         $name = $event->name;
         $organization = $event->organization;
 
         activity()
-            ->causedBy($request->user())
+            ->causedBy($user)
             ->performedOn($event)
             ->log('event deleted');
 
@@ -312,6 +329,6 @@ class EventController extends Controller
         $event->delete();
 
         return redirect()->route('organizations.events', $organization)
-            ->with('status', FlashMessage::t($request->user()->locale ?? 'ro', 'event.deleted', ['name' => $name]));
+            ->with('status', FlashMessage::t($user->locale ?? 'ro', 'event.deleted', ['name' => $name]));
     }
 }

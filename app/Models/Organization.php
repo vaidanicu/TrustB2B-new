@@ -16,7 +16,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * documents, media, data-subject requests). See roadmap §2/§6 and AP05.
  */
 #[Fillable([
-    'franchise_partner_id', 'name', 'country', 'languages',
+    'franchise_partner_id', 'partner_id', 'name', 'country', 'languages',
     'data_protection_contact_email', 'contract_status',
     'storage_quota_mb', 'event_quota',
 ])]
@@ -51,6 +51,19 @@ class Organization extends Model
     public function franchisePartner(): BelongsTo
     {
         return $this->belongsTo(FranchisePartner::class);
+    }
+
+    /**
+     * The regional reseller that onboarded this client — reported: a
+     * Partner should be able to create and administer its own clients
+     * directly. Distinct from Event.partner_id (sales attribution per
+     * event); this one is "who brought this client onto the platform".
+     *
+     * @return BelongsTo<Partner, $this>
+     */
+    public function partner(): BelongsTo
+    {
+        return $this->belongsTo(Partner::class);
     }
 
     /**

@@ -42,15 +42,20 @@ class GalleryController extends Controller
 {
     public function index(Request $request, Event $event): Response
     {
+        $user = $request->user();
+        $isOwnPartnerEvent = $user->isActingAsPartnerOnly() && $event->partner_id === $user->partner->id;
+
         // events.manage holders (franchise/platform — the only ones who can
         // create an event at all, see EventController) couldn't reach this
         // page before: a restaurant-type event has nothing else to click
         // into (no participants/check-in), leaving no way to even see the
         // public gallery link/QR they need to hand the client. They still
         // can't upload/publish themselves (canUpload/canPublish below stay
-        // false for them) — only that they can see the page.
+        // false for them) — only that they can see the page. A Partner
+        // reaches it too, for its own event, with canUpload/
+        // canModerateRemovals below reflecting what it can actually do.
         abort_unless(
-            $request->user()->can('media.upload') || $request->user()->can('media.publish') || $request->user()->can('events.manage'),
+            $user->can('media.upload') || $user->can('media.publish') || $user->can('events.manage') || $isOwnPartnerEvent,
             403
         );
 
@@ -61,16 +66,16 @@ class GalleryController extends Controller
         // to, and a franchise/platform viewer with no organization_id of
         // their own never reaches that page at all regardless of event
         // type — route both cases back to the client's event list instead.
-        $backUrl = $event->is_restaurant || $request->user()->organization_id === null
+        $backUrl = $event->is_restaurant || $user->organization_id === null
             ? route('organizations.events', $event->organization)
             : route('participants.status', $event);
 
         return Inertia::render('Events/Gallery', [
             'event' => ['id' => $event->id, 'name' => $event->name],
             'backUrl' => $backUrl,
-            'canUpload' => $request->user()->can('media.upload'),
-            'canPublish' => $request->user()->can('media.publish'),
-            'canModerateRemovals' => $request->user()->can('media.moderate-deletion-requests'),
+            'canUpload' => $this->canUpload($user, $event),
+            'canPublish' => $user->can('media.publish'),
+            'canModerateRemovals' => $user->can('media.moderate-deletion-requests') || $isOwnPartnerEvent,
             'photos' => $event->getMedia('gallery')->map(fn (Media $media) => $this->photoPayload($media))->values(),
             'publicGalleryUrl' => $publicGalleryUrl,
             'publicGalleryQrSvg' => QrCode::svg($publicGalleryUrl),
@@ -130,7 +135,7 @@ class GalleryController extends Controller
 
     public function destroy(Request $request, Event $event, Media $media): RedirectResponse
     {
-        abort_unless($request->user()->can('media.upload'), 403);
+        abort_unless($this->canUpload($request->user(), $event), 403);
         abort_unless($media->model_type === Event::class && $media->model_id === $event->id, 404);
 
         $media->delete();
@@ -138,25 +143,39 @@ class GalleryController extends Controller
         return back();
     }
 
+    /**
+     * A Partner may also approve/deny a removal request, but only for its
+     * OWN event — "kann Fotos löschen auf Antrag des Kunden" (can delete
+     * photos on the client's request), the same per-row scoping reasoning
+     * as EventController::update()/destroy() above it, since
+     * media.moderate-deletion-requests carries no such restriction on its
+     * own.
+     */
     public function approveRemoval(Request $request, Event $event, Media $media): RedirectResponse
     {
-        abort_unless($request->user()->can('media.moderate-deletion-requests'), 403);
+        $user = $request->user();
+        $isOwnPartnerEvent = $user->isActingAsPartnerOnly() && $event->partner_id === $user->partner->id;
+
+        abort_unless($user->can('media.moderate-deletion-requests') || $isOwnPartnerEvent, 403);
         abort_unless($media->model_type === Event::class && $media->model_id === $event->id, 404);
 
         activity()
-            ->causedBy($request->user())
+            ->causedBy($user)
             ->performedOn($event)
             ->withProperties(['reason' => $media->getCustomProperty('deletion_reason')])
             ->log('photo removal request approved, photo deleted');
 
         $media->delete();
 
-        return back()->with('status', FlashMessage::t($request->user()->locale ?? 'ro', 'gallery.photo_deleted'));
+        return back()->with('status', FlashMessage::t($user->locale ?? 'ro', 'gallery.photo_deleted'));
     }
 
     public function denyRemoval(Request $request, Event $event, Media $media): RedirectResponse
     {
-        abort_unless($request->user()->can('media.moderate-deletion-requests'), 403);
+        $user = $request->user();
+        $isOwnPartnerEvent = $user->isActingAsPartnerOnly() && $event->partner_id === $user->partner->id;
+
+        abort_unless($user->can('media.moderate-deletion-requests') || $isOwnPartnerEvent, 403);
         abort_unless($media->model_type === Event::class && $media->model_id === $event->id, 404);
 
         $media->forceFill([
@@ -165,9 +184,9 @@ class GalleryController extends Controller
                 ->all(),
         ])->save();
 
-        activity()->causedBy($request->user())->performedOn($event)->log('photo removal request declined');
+        activity()->causedBy($user)->performedOn($event)->log('photo removal request declined');
 
-        return back()->with('status', FlashMessage::t($request->user()->locale ?? 'ro', 'gallery.removal_denied'));
+        return back()->with('status', FlashMessage::t($user->locale ?? 'ro', 'gallery.removal_denied'));
     }
 
     /**
@@ -316,17 +335,36 @@ class GalleryController extends Controller
      * event-manager, who outrank any single event's assignment — may use
      * it. Events with no designation keep today's org-wide behaviour.
      */
-    private function authorizeUpload(Request $request, Event $event): void
+    /**
+     * Upload is normally any media.upload holder in the org, but once an
+     * event has ONE specific photographer designated (EventController's
+     * photographer_user_id), only that exact account — or a customer-admin/
+     * event-manager, who outrank any single event's assignment — may use
+     * it. Events with no designation keep today's org-wide behaviour.
+     *
+     * A Partner may also upload to its OWN event, but only as a fallback —
+     * "kann Fotos hochladen, wenn der Kunde keinen eigenen Fotografen
+     * benennt" (can upload if the client hasn't named its own
+     * photographer): the moment a photographer IS designated, that
+     * exclusive lock applies to the Partner exactly like anyone else
+     * without the role — no fallback branch reaches that case at all.
+     */
+    private function canUpload(User $user, Event $event): bool
     {
-        abort_unless($request->user()->can('media.upload'), 403);
+        if ($event->photographer_user_id !== null) {
+            $isAssignedPhotographer = $user->id === $event->photographer_user_id;
+            $isOrgManager = $user->hasAnyRole(['customer-admin', 'event-manager']);
 
-        if ($event->photographer_user_id === null) {
-            return;
+            return $user->can('media.upload') && ($isAssignedPhotographer || $isOrgManager);
         }
 
-        $isAssignedPhotographer = $request->user()->id === $event->photographer_user_id;
-        $isOrgManager = $request->user()->hasAnyRole(['customer-admin', 'event-manager']);
+        $isOwnPartnerEvent = $user->isActingAsPartnerOnly() && $event->partner_id === $user->partner->id;
 
-        abort_unless($isAssignedPhotographer || $isOrgManager, 403);
+        return $user->can('media.upload') || $isOwnPartnerEvent;
+    }
+
+    private function authorizeUpload(Request $request, Event $event): void
+    {
+        abort_unless($this->canUpload($request->user(), $event), 403);
     }
 }
