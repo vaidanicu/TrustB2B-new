@@ -283,6 +283,90 @@ class EventCreationTest extends TestCase
             && $mail->password === null);
     }
 
+    public function test_a_real_staff_members_email_cannot_be_used_as_the_events_photographer(): void
+    {
+        $this->seed(RolesAndPermissionsSeeder::class);
+
+        $franchisePartner = FranchisePartner::factory()->create();
+        $organization = Organization::factory()->for($franchisePartner)->create();
+        $user = $this->franchisePartnerAdmin($franchisePartner);
+        $staffMember = User::factory()->forOrganization($organization)->create(['email' => 'staff@exemplu.ro']);
+        (new AssignRole)->grant($staffMember, 'customer-admin', 'test');
+
+        $response = $this->actingAs($user)->post(route('events.store'), [
+            'organization_id' => $organization->id,
+            'name' => 'Eveniment test',
+            'country' => 'RO',
+            'language' => 'ro',
+            'starts_at' => '2026-12-01',
+            'ends_at' => '2026-12-01',
+            'retention_days' => 90,
+            'end_of_cycle_action' => 'delete',
+            'gdpr_contract_text' => 'Text.',
+            'photographer_email' => 'staff@exemplu.ro',
+        ]);
+
+        $response->assertSessionHasErrors('photographer_email');
+        $this->assertSame(0, Event::count());
+        $this->assertFalse($staffMember->fresh()->hasRole('photographer'));
+    }
+
+    public function test_a_real_staff_members_email_cannot_be_used_as_the_client_contact(): void
+    {
+        $this->seed(RolesAndPermissionsSeeder::class);
+
+        $franchisePartner = FranchisePartner::factory()->create();
+        $organization = Organization::factory()->for($franchisePartner)->create();
+        $user = $this->franchisePartnerAdmin($franchisePartner);
+        $staffMember = User::factory()->forOrganization($organization)->create(['email' => 'staff@exemplu.ro']);
+        (new AssignRole)->grant($staffMember, 'event-manager', 'test');
+
+        $response = $this->actingAs($user)->post(route('events.store'), [
+            'organization_id' => $organization->id,
+            'name' => 'Eveniment test',
+            'country' => 'RO',
+            'language' => 'ro',
+            'starts_at' => '2026-12-01',
+            'ends_at' => '2026-12-01',
+            'retention_days' => 90,
+            'end_of_cycle_action' => 'delete',
+            'gdpr_contract_text' => 'Text.',
+            'client_contact_email' => 'staff@exemplu.ro',
+        ]);
+
+        $response->assertSessionHasErrors('client_contact_email');
+        $this->assertSame(0, Event::count());
+        $this->assertFalse($staffMember->fresh()->hasRole('client-contact'));
+    }
+
+    public function test_an_account_that_is_only_a_photographer_can_still_be_reused_as_photographer(): void
+    {
+        Mail::fake();
+        $this->seed(RolesAndPermissionsSeeder::class);
+
+        $franchisePartner = FranchisePartner::factory()->create();
+        $organization = Organization::factory()->for($franchisePartner)->create();
+        $user = $this->franchisePartnerAdmin($franchisePartner);
+        $photographer = User::factory()->create(['email' => 'fotograf@exemplu.ro']);
+        (new AssignRole)->grant($photographer, 'photographer', 'test');
+
+        $response = $this->actingAs($user)->post(route('events.store'), [
+            'organization_id' => $organization->id,
+            'name' => 'Eveniment test',
+            'country' => 'RO',
+            'language' => 'ro',
+            'starts_at' => '2026-12-01',
+            'ends_at' => '2026-12-01',
+            'retention_days' => 90,
+            'end_of_cycle_action' => 'delete',
+            'gdpr_contract_text' => 'Text.',
+            'photographer_email' => 'fotograf@exemplu.ro',
+        ]);
+
+        $response->assertSessionDoesntHaveErrors('photographer_email');
+        $this->assertSame($photographer->id, Event::sole()->photographer_user_id);
+    }
+
     public function test_a_restaurant_event_does_not_require_gdpr_contract_text(): void
     {
         $this->seed(RolesAndPermissionsSeeder::class);

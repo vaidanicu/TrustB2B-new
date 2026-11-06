@@ -238,6 +238,27 @@ class EventController extends Controller
             ]);
         }
 
+        // Reported: a real customer-admin/event-manager/DPO got silently
+        // and additively granted 'photographer' or 'client-contact' just
+        // because their own email was typed into one of these fields —
+        // their dashboard then narrowed down to that one event, hiding
+        // every other event in their own organization (findOrCreate-
+        // Photographer()/notifyClientContact() below never revoke a role).
+        // Rather than let that happen and rely on User::isActingAs*Only()
+        // to paper over it afterwards, refuse the submission up front if
+        // the email already belongs to a real staff account, so the agency
+        // picks a different (actual photographer/contact) email instead.
+        $this->assertEmailIsNotARealStaffAccount(
+            $data['photographer_email'] ?? null,
+            'photographer_email',
+            'fotograf',
+        );
+        $this->assertEmailIsNotARealStaffAccount(
+            $data['client_contact_email'] ?? null,
+            'client_contact_email',
+            'persoana de contact client',
+        );
+
         // Organization's own TenantScope ('id' column) is what actually
         // enforces "only an organization this actor can already see" —
         // findOrFail throws (404) the same way it would for a bare id that
@@ -323,6 +344,30 @@ class EventController extends Controller
 
         return redirect()->route('organizations.events', $organization)
             ->with('status', FlashMessage::t($user->locale ?? 'ro', 'event.created', ['name' => $event->name]));
+    }
+
+    /**
+     * Blocks store() outright when $email already belongs to a real
+     * organization-staff account (User::hasNoRealOrganizationStaffRole()
+     * — customer-admin/event-manager/data-protection-officer), instead of
+     * letting findOrCreatePhotographer()/notifyClientContact() reuse that
+     * account and additively (and silently) widen its roles.
+     */
+    private function assertEmailIsNotARealStaffAccount(?string $email, string $field, string $roleLabel): void
+    {
+        if (blank($email)) {
+            return;
+        }
+
+        $account = User::withoutGlobalScopes()->where('email', $email)->first();
+
+        if ($account === null || $account->hasNoRealOrganizationStaffRole()) {
+            return;
+        }
+
+        throw ValidationException::withMessages([
+            $field => "Acest email apartine deja contului de organizatie al lui {$account->name} — nu poate fi folosit si ca {$roleLabel}. Foloseste alt email.",
+        ]);
     }
 
     /**
