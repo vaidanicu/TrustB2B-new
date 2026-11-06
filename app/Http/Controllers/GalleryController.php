@@ -44,7 +44,15 @@ class GalleryController extends Controller
     public function index(Request $request, Event $event): Response
     {
         $user = $request->user();
-        $isOwnPartnerEvent = $user->isActingAsPartnerOnly() && $event->partner_id === $user->partner->id;
+        // A plain hasRole('partner') check, not isActingAsPartnerOnly(): this
+        // "can act on its own event even without the matching media
+        // permission" fallback is a property of BEING a Partner at all, not
+        // of being a NARROW one — a merged partner (RolesAndPermissionsSeeder
+        // now grants 'partner' the same franchise-wide permissions as
+        // franchise-partner-admin, see User::isActingAsPartnerOnly()'s own
+        // docblock) still doesn't have media.upload/media.moderate-deletion-
+        // requests directly, and must keep this fallback for its own events.
+        $isOwnPartnerEvent = $user->hasRole('partner') && $user->partner !== null && $event->partner_id === $user->partner->id;
 
         // events.manage holders (franchise/platform — the only ones who can
         // create an event at all, see EventController) couldn't reach this
@@ -200,7 +208,9 @@ class GalleryController extends Controller
     public function approveRemoval(Request $request, Event $event, Media $media): RedirectResponse
     {
         $user = $request->user();
-        $isOwnPartnerEvent = $user->isActingAsPartnerOnly() && $event->partner_id === $user->partner->id;
+        // hasRole('partner'), not isActingAsPartnerOnly() — see index()'s
+        // own comment on this exact line for why.
+        $isOwnPartnerEvent = $user->hasRole('partner') && $user->partner !== null && $event->partner_id === $user->partner->id;
 
         abort_unless($user->can('media.moderate-deletion-requests') || $isOwnPartnerEvent, 403);
         abort_unless($media->model_type === Event::class && $media->model_id === $event->id, 404);
@@ -219,7 +229,9 @@ class GalleryController extends Controller
     public function denyRemoval(Request $request, Event $event, Media $media): RedirectResponse
     {
         $user = $request->user();
-        $isOwnPartnerEvent = $user->isActingAsPartnerOnly() && $event->partner_id === $user->partner->id;
+        // hasRole('partner'), not isActingAsPartnerOnly() — see index()'s
+        // own comment on this exact line for why.
+        $isOwnPartnerEvent = $user->hasRole('partner') && $user->partner !== null && $event->partner_id === $user->partner->id;
 
         abort_unless($user->can('media.moderate-deletion-requests') || $isOwnPartnerEvent, 403);
         abort_unless($media->model_type === Event::class && $media->model_id === $event->id, 404);
@@ -436,7 +448,15 @@ class GalleryController extends Controller
             return $user->can('media.upload') && ($isAssignedPhotographer || $isOrgManager);
         }
 
-        $isOwnPartnerEvent = $user->isActingAsPartnerOnly() && $event->partner_id === $user->partner->id;
+        // A plain hasRole('partner') check, not isActingAsPartnerOnly(): this
+        // "can act on its own event even without the matching media
+        // permission" fallback is a property of BEING a Partner at all, not
+        // of being a NARROW one — a merged partner (RolesAndPermissionsSeeder
+        // now grants 'partner' the same franchise-wide permissions as
+        // franchise-partner-admin, see User::isActingAsPartnerOnly()'s own
+        // docblock) still doesn't have media.upload/media.moderate-deletion-
+        // requests directly, and must keep this fallback for its own events.
+        $isOwnPartnerEvent = $user->hasRole('partner') && $user->partner !== null && $event->partner_id === $user->partner->id;
 
         return $user->can('media.upload') || $isOwnPartnerEvent;
     }

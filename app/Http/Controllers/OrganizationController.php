@@ -221,9 +221,9 @@ class OrganizationController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $user = $request->user();
-        $partner = $user->isActingAsPartnerOnly() ? $user->partner : null;
+        $actingPartner = $user->isActingAsPartnerOnly() ? $user->partner : null;
 
-        abort_unless($user->can('organizations.manage') || $partner !== null, 403);
+        abort_unless($user->can('organizations.manage') || $actingPartner !== null, 403);
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -239,9 +239,18 @@ class OrganizationController extends Controller
 
         $franchisePartnerId = $user->franchise_partner_id ?? $data['franchise_partner_id'];
 
+        // Credit whoever actually created this client if they're a Partner
+        // at all — not just a narrow ("isActingAsPartnerOnly") one. Unlike
+        // EventController::store(), this form has no "pick a partner"
+        // dropdown a merged partner (one also carrying the full
+        // organizations.manage permission, see User::isActingAsPartnerOnly()'s
+        // own docblock) could use instead, so losing this would leave the
+        // client completely unattributed with no way to fix it afterwards.
+        $creatingPartner = $user->partner;
+
         $organization = Organization::create([
             'franchise_partner_id' => $franchisePartnerId,
-            'partner_id' => $partner?->id,
+            'partner_id' => $creatingPartner?->id,
             'name' => $data['name'],
             'country' => $data['country'],
             'data_protection_contact_email' => $data['data_protection_contact_email'] ?? null,

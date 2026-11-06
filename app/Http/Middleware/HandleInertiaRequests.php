@@ -40,6 +40,13 @@ class HandleInertiaRequests extends Middleware
                     'organization' => $user->organization?->only(['id', 'name']),
                     'franchise_partner' => $user->franchisePartner?->only(['id', 'name', 'region_code']),
                     'partner_name' => $user->partner?->name,
+                    // Drives AppLayout's own nav: a plain 'partner' role now
+                    // carries the same franchise-wide permissions as
+                    // franchise-partner-admin (RolesAndPermissionsSeeder),
+                    // so the client can no longer tell "full access" from
+                    // the role-name list alone — see
+                    // User::isActingAsPartnerOnly()'s own docblock.
+                    'is_franchise_admin' => $user->can('organizations.manage'),
                 ] : null,
             ],
             // Shares whatever a controller actually flashed on the PREVIOUS

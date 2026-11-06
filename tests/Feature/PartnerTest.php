@@ -84,12 +84,11 @@ class PartnerTest extends TestCase
 
         $account = User::where('email', 'office-ro@ttc-group.hu')->sole();
         $this->assertTrue($account->hasRole('partner'));
-        // A brand-new Partner account is also made a franchise-partner-admin
-        // — in this business a Partner IS its own franchise — so it gets
-        // the full management dashboard, not just the narrow removal-
-        // requests-only one. See the regression test below for the
-        // end-to-end dashboard check.
-        $this->assertTrue($account->hasRole('franchise-partner-admin'));
+        // The 'partner' role itself now carries the same franchise-wide
+        // permissions as franchise-partner-admin (RolesAndPermissionsSeeder)
+        // — no separate role grant needed or wanted, see the regression
+        // test below for the end-to-end dashboard check.
+        $this->assertTrue($account->can('organizations.manage'));
 
         Mail::assertSent(StaffAccountCreated::class, fn (StaffAccountCreated $mail) => $mail->hasTo('office-ro@ttc-group.hu'));
     }
@@ -304,11 +303,20 @@ class PartnerTest extends TestCase
     /**
      * Pins down what happens for an account this guard can no longer let
      * get created, in case one already exists from before the fix (or any
-     * future bypass): isActingAsPartnerOnly() now explicitly excludes
+     * future bypass): isActingAsPartnerOnly() still explicitly excludes
      * hasNoRealOrganizationStaffRole(), so the account keeps its normal
-     * organization dashboard — it just can't reach organizations.index
-     * (customer-admin alone never carries organizations.manage), which is
-     * the correct, narrower failure mode rather than a broken partner view.
+     * organization dashboard (customer-admin's own role always wins there,
+     * narrow-vs-full routing is unaffected). It DOES now also reach
+     * organizations.index, though — 'partner' itself carries
+     * organizations.manage directly (RolesAndPermissionsSeeder, since in
+     * this business a Partner IS its own franchise), and Spatie permissions
+     * are a flat union of every role held, not filtered by
+     * isActingAsPartnerOnly()'s own narrower "is this account acting as a
+     * partner" question. Not a new hole this fix opens: the account only
+     * GAINS reach it didn't have before, nothing it already had (its own
+     * organization's dashboard/data) is exposed to anyone else, and
+     * AssertEmailIsNotARealStaffAccount already stops this combination from
+     * being created going forward.
      */
     public function test_a_customer_admin_with_a_dangling_partner_role_still_gets_their_organization_dashboard(): void
     {
@@ -328,7 +336,7 @@ class PartnerTest extends TestCase
                 ->where('showParticipantsLink', true)
                 ->has('events', 1));
 
-        $this->actingAs($admin)->get(route('organizations.index'))->assertForbidden();
+        $this->actingAs($admin)->get(route('organizations.index'))->assertOk();
     }
 
     public function test_an_organization_scoped_user_cannot_view_or_create_partners(): void
@@ -580,25 +588,38 @@ class PartnerTest extends TestCase
         $this->assertSame(0, Event::count());
     }
 
-    public function test_a_partner_account_only_sees_clients_it_has_an_event_with(): void
+    /**
+     * In this business a Partner IS its own franchise (RolesAndPermissionsSeeder
+     * grants 'partner' the same organizations.manage/events.manage/etc.
+     * permissions as franchise-partner-admin) — reported: it should see and
+     * administer every client/event in its franchise, same as an admin
+     * would, not just the ones it personally has an event with. Replaces
+     * the old "only sees clients it has an event with" expectation.
+     */
+    public function test_a_partner_account_sees_every_client_in_its_franchise_not_just_ones_it_has_an_event_with(): void
     {
         $franchisePartner = FranchisePartner::factory()->create();
+        $otherFranchisePartner = FranchisePartner::factory()->create();
         $partner = Partner::factory()->for($franchisePartner)->create();
         $partnerUser = $this->partnerAccount($partner);
 
         $theirClient = Organization::factory()->for($franchisePartner)->create(['name' => 'Theirs']);
         Event::factory()->for($theirClient)->create(['franchise_partner_id' => $franchisePartner->id, 'partner_id' => $partner->id]);
 
-        $otherClient = Organization::factory()->for($franchisePartner)->create(['name' => 'Not theirs']);
-        Event::factory()->for($otherClient)->create(['franchise_partner_id' => $franchisePartner->id]);
+        $otherClientSameFranchise = Organization::factory()->for($franchisePartner)->create(['name' => 'Same franchise, not theirs']);
+        Event::factory()->for($otherClientSameFranchise)->create(['franchise_partner_id' => $franchisePartner->id]);
+
+        // Still off limits: TenantScope's own franchise_partner_id
+        // boundary, not Partner ownership, is what actually isolates one
+        // franchise from another.
+        Organization::factory()->for($otherFranchisePartner)->create(['name' => 'Different franchise entirely']);
 
         $this->actingAs($partnerUser)
             ->get(route('organizations.index'))
             ->assertOk()
             ->assertInertia(fn ($page) => $page->component('Organizations/Index')
                 ->where('canManage', true)
-                ->has('organizations', 1)
-                ->where('organizations.0.name', 'Theirs'));
+                ->has('organizations', 2));
     }
 
     public function test_a_partner_can_create_a_client_organization(): void
@@ -668,18 +689,25 @@ class PartnerTest extends TestCase
         $this->assertSame('active', $organization->fresh()->contract_status);
     }
 
-    public function test_a_partner_cannot_change_the_contract_status_of_a_client_it_does_not_own(): void
+    public function test_a_partner_can_change_the_contract_status_of_a_client_it_does_not_own_too(): void
     {
         $franchisePartner = FranchisePartner::factory()->create();
+        $otherFranchisePartner = FranchisePartner::factory()->create();
         $partner = Partner::factory()->for($franchisePartner)->create();
         $partnerUser = $this->partnerAccount($partner);
         $organization = Organization::factory()->for($franchisePartner)->create(['contract_status' => 'onboarding']);
+        $otherFranchiseOrganization = Organization::factory()->for($otherFranchisePartner)->create(['contract_status' => 'onboarding']);
 
         $this->actingAs($partnerUser)
             ->patch(route('organizations.update-status', $organization), ['contract_status' => 'active'])
-            ->assertForbidden();
+            ->assertRedirect();
 
-        $this->assertSame('onboarding', $organization->fresh()->contract_status);
+        $this->assertSame('active', $organization->fresh()->contract_status);
+
+        // Still off limits: a different franchise entirely.
+        $this->actingAs($partnerUser)
+            ->patch(route('organizations.update-status', $otherFranchiseOrganization), ['contract_status' => 'active'])
+            ->assertNotFound();
     }
 
     public function test_a_partner_sees_every_event_of_a_client_it_owns_not_just_its_own(): void
@@ -698,7 +726,7 @@ class PartnerTest extends TestCase
             ->assertInertia(fn ($page) => $page->has('events', 2));
     }
 
-    public function test_a_partner_account_sees_only_its_own_events_for_a_client_with_photographer_and_contact_columns(): void
+    public function test_a_partner_account_sees_every_event_of_a_client_with_photographer_and_contact_columns(): void
     {
         $franchisePartner = FranchisePartner::factory()->create();
         $partner = Partner::factory()->for($franchisePartner)->create();
@@ -712,31 +740,53 @@ class PartnerTest extends TestCase
             'client_contact_name' => 'Bianca Ionescu',
             'client_contact_email' => 'bianca@hotelaurora.ro',
         ]);
-        Event::factory()->for($organization)->create(['franchise_partner_id' => $franchisePartner->id]);
+        $otherEvent = Event::factory()->for($organization)->create(['franchise_partner_id' => $franchisePartner->id]);
 
-        $this->actingAs($partnerUser)
+        $response = $this->actingAs($partnerUser)
             ->get(route('organizations.events', $organization))
             ->assertOk()
             ->assertInertia(fn ($page) => $page->component('Organizations/Events')
                 ->where('canManage', true)
-                ->has('events', 1)
-                ->where('events.0.id', $theirEvent->id)
-                ->where('events.0.photographerName', 'Ion Popescu')
-                ->where('events.0.clientContactEmail', 'bianca@hotelaurora.ro'));
+                ->has('events', 2));
+
+        $events = collect($response->viewData('page')['props']['events']);
+        $theirRow = $events->firstWhere('id', $theirEvent->id);
+        $this->assertSame('Ion Popescu', $theirRow['photographerName']);
+        $this->assertSame('bianca@hotelaurora.ro', $theirRow['clientContactEmail']);
+        $this->assertNotNull($otherEvent);
     }
 
-    public function test_a_partner_account_cannot_view_a_clients_events_it_has_no_event_with(): void
+    /**
+     * Replaces the old "cannot view a client's events it has no event with"
+     * expectation — a merged partner sees every client/event in its own
+     * franchise now, same as a franchise-partner-admin would. Still off
+     * limits: a client in a DIFFERENT franchise entirely, same TenantScope
+     * boundary as the contract-status test above.
+     */
+    public function test_a_partner_account_can_view_a_clients_events_it_has_no_event_with_but_not_another_franchises(): void
     {
         $franchisePartner = FranchisePartner::factory()->create();
+        $otherFranchisePartner = FranchisePartner::factory()->create();
         $partner = Partner::factory()->for($franchisePartner)->create();
         $partnerUser = $this->partnerAccount($partner);
 
         $organization = Organization::factory()->for($franchisePartner)->create();
         Event::factory()->for($organization)->create(['franchise_partner_id' => $franchisePartner->id]);
 
-        $this->actingAs($partnerUser)->get(route('organizations.events', $organization))->assertForbidden();
+        $otherFranchiseOrganization = Organization::factory()->for($otherFranchisePartner)->create();
+
+        $this->actingAs($partnerUser)->get(route('organizations.events', $organization))->assertOk();
+        $this->actingAs($partnerUser)->get(route('organizations.events', $otherFranchiseOrganization))->assertNotFound();
     }
 
+    /**
+     * A merged partner is now a full franchise admin (see
+     * User::isActingAsPartnerOnly()'s own docblock), so events.store()
+     * treats it exactly like a franchise-partner-admin: partner_id isn't
+     * auto-stamped from whoever's creating it anymore (that was the old
+     * NARROW partner's own behavior) — it's an explicit, optional pick from
+     * the full partner dropdown it now gets, same as the next test below.
+     */
     public function test_a_partner_account_can_create_an_event_for_any_client_in_its_franchise(): void
     {
         $franchisePartner = FranchisePartner::factory()->create();
@@ -756,11 +806,10 @@ class PartnerTest extends TestCase
         $response->assertRedirect(route('organizations.events', $organization));
 
         $event = Event::sole();
-        $this->assertSame($partner->id, $event->partner_id);
         $this->assertSame($partnerUser->id, $event->created_by);
     }
 
-    public function test_a_partner_account_cannot_pick_a_different_partner_for_its_own_event(): void
+    public function test_a_partner_account_can_now_pick_any_partner_including_another_one_for_its_event(): void
     {
         $franchisePartner = FranchisePartner::factory()->create();
         $partner = Partner::factory()->for($franchisePartner)->create();
@@ -778,24 +827,36 @@ class PartnerTest extends TestCase
             'partner_id' => $otherPartner->id,
         ]);
 
-        $this->assertSame($partner->id, Event::sole()->partner_id);
+        $this->assertSame($otherPartner->id, Event::sole()->partner_id);
     }
 
-    public function test_a_partner_account_sees_its_own_name_locked_on_the_create_event_page(): void
+    /**
+     * Replaces the old "sees its own name locked, no dropdown" expectation
+     * — a merged partner reaches events.create() like a franchise-partner-
+     * admin now, with the full dropdown (every partner in ITS OWN
+     * franchise, including itself), not a locked single name.
+     */
+    public function test_a_partner_account_sees_the_full_partner_dropdown_on_the_create_event_page(): void
     {
         $franchisePartner = FranchisePartner::factory()->create();
         $partner = Partner::factory()->for($franchisePartner)->create(['name' => 'MM Kft.']);
+        $otherPartner = Partner::factory()->for($franchisePartner)->create(['name' => 'Gall']);
         $partnerUser = $this->partnerAccount($partner);
 
         $this->actingAs($partnerUser)
             ->get(route('events.create'))
             ->assertOk()
             ->assertInertia(fn ($page) => $page->component('Events/Create')
-                ->where('lockedPartnerName', 'MM Kft.')
-                ->where('partners', []));
+                ->where('lockedPartnerName', null)
+                ->has('partners', 2));
     }
 
-    public function test_a_partner_account_can_reschedule_or_delete_its_own_event(): void
+    /**
+     * Replaces the old "can reschedule/delete its own event, but not
+     * someone else's" pair — a merged partner manages every event in its
+     * own franchise now, own or not, same as a franchise-partner-admin.
+     */
+    public function test_a_partner_account_can_reschedule_or_delete_any_event_in_its_franchise(): void
     {
         $franchisePartner = FranchisePartner::factory()->create();
         $partner = Partner::factory()->for($franchisePartner)->create();
@@ -803,7 +864,6 @@ class PartnerTest extends TestCase
         $organization = Organization::factory()->for($franchisePartner)->create();
         $event = Event::factory()->for($organization)->create([
             'franchise_partner_id' => $franchisePartner->id,
-            'partner_id' => $partner->id,
         ]);
 
         $this->actingAs($partnerUser)
@@ -816,24 +876,25 @@ class PartnerTest extends TestCase
         $this->assertNull(Event::find($event->id));
     }
 
-    public function test_a_partner_account_cannot_reschedule_or_delete_someone_elses_event(): void
+    public function test_a_partner_account_cannot_reschedule_or_delete_an_event_in_another_franchise(): void
     {
-        $franchisePartner = FranchisePartner::factory()->create();
-        $partner = Partner::factory()->for($franchisePartner)->create();
+        $ownFranchisePartner = FranchisePartner::factory()->create();
+        $otherFranchisePartner = FranchisePartner::factory()->create();
+        $partner = Partner::factory()->for($ownFranchisePartner)->create();
         $partnerUser = $this->partnerAccount($partner);
-        $organization = Organization::factory()->for($franchisePartner)->create();
+        $organization = Organization::factory()->for($otherFranchisePartner)->create();
         $event = Event::factory()->for($organization)->create([
-            'franchise_partner_id' => $franchisePartner->id,
+            'franchise_partner_id' => $otherFranchisePartner->id,
         ]);
 
         $this->actingAs($partnerUser)
             ->patch(route('events.update', $event), ['starts_at' => '2026-12-15 10:00', 'ends_at' => '2026-12-15 18:00'])
-            ->assertForbidden();
+            ->assertNotFound();
 
-        $this->actingAs($partnerUser)->delete(route('events.destroy', $event))->assertForbidden();
+        $this->actingAs($partnerUser)->delete(route('events.destroy', $event))->assertNotFound();
     }
 
-    public function test_a_partner_account_can_view_its_own_event_but_not_someone_elses(): void
+    public function test_a_partner_account_can_view_any_event_in_its_franchise(): void
     {
         $franchisePartner = FranchisePartner::factory()->create();
         $partner = Partner::factory()->for($franchisePartner)->create();
@@ -844,7 +905,7 @@ class PartnerTest extends TestCase
         $otherEvent = Event::factory()->for($organization)->create(['franchise_partner_id' => $franchisePartner->id]);
 
         $this->actingAs($partnerUser)->get(route('events.show', $ownEvent))->assertOk();
-        $this->actingAs($partnerUser)->get(route('events.show', $otherEvent))->assertForbidden();
+        $this->actingAs($partnerUser)->get(route('events.show', $otherEvent))->assertOk();
     }
 
     public function test_an_admin_account_linked_as_a_partner_still_sees_the_full_client_list_and_dashboard(): void
@@ -895,7 +956,7 @@ class PartnerTest extends TestCase
             ->assertOk();
     }
 
-    public function test_a_partner_cannot_manage_participants_on_someone_elses_event(): void
+    public function test_a_partner_can_also_manage_participants_on_an_event_that_isnt_its_own(): void
     {
         $franchisePartner = FranchisePartner::factory()->create();
         $partner = Partner::factory()->for($franchisePartner)->create();
@@ -906,7 +967,23 @@ class PartnerTest extends TestCase
             'is_restaurant' => false,
         ]);
 
-        $this->actingAs($partnerUser)->get(route('participants.status', $event))->assertForbidden();
-        $this->actingAs($partnerUser)->get(route('participants.checkin', $event))->assertForbidden();
+        $this->actingAs($partnerUser)->get(route('participants.status', $event))->assertOk();
+        $this->actingAs($partnerUser)->get(route('participants.checkin', $event))->assertOk();
+    }
+
+    public function test_a_partner_cannot_manage_participants_on_an_event_in_another_franchise(): void
+    {
+        $ownFranchisePartner = FranchisePartner::factory()->create();
+        $otherFranchisePartner = FranchisePartner::factory()->create();
+        $partner = Partner::factory()->for($ownFranchisePartner)->create();
+        $partnerUser = $this->partnerAccount($partner);
+        $organization = Organization::factory()->for($otherFranchisePartner)->create();
+        $event = Event::factory()->for($organization)->create([
+            'franchise_partner_id' => $otherFranchisePartner->id,
+            'is_restaurant' => false,
+        ]);
+
+        $this->actingAs($partnerUser)->get(route('participants.status', $event))->assertNotFound();
+        $this->actingAs($partnerUser)->get(route('participants.checkin', $event))->assertNotFound();
     }
 }

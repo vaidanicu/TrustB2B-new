@@ -110,30 +110,36 @@ class User extends Authenticatable
     }
 
     /**
-     * True only for an account whose entire capability IS the Partner
-     * role — reported: the platform operator's own admin account also
-     * needs to be the Partner record for Hungary ("MM Kft."), and must
-     * keep seeing everything, not fall into the restricted partner-only
-     * dashboard/client-list just because a Partner row now points at it.
-     * Every "show the partner-only view" branch (DashboardController,
-     * OrganizationController, AppLayout's nav) reads this, not partner()
-     * directly, so admin + Partner always wins.
+     * True only for a Partner account with none of the franchise-wide
+     * permissions RolesAndPermissionsSeeder now also grants the 'partner'
+     * role itself (organizations.manage and friends) — in this business a
+     * Partner IS its own franchise, so a brand-new one (PartnerController's
+     * own findOrCreateAccount()) is a full franchise-partner-admin in
+     * everything but name, same as this method's own long-standing "MM
+     * Kft." case (the platform operator's own admin account doubling as
+     * the Partner record for Hungary): every controller that used to check
+     * this to show the NARROW partner-only view (DashboardController's own
+     * removal-requests dashboard, "only its own client/event" scoping in
+     * OrganizationController/EventController/GalleryController/
+     * ParticipantController) now simply falls through to the SAME
+     * full-access branch a franchise-partner-admin already used — their
+     * own TenantScope('franchise_partner_id') is what actually keeps that
+     * to their own franchise, not any of this narrowing code. The
+     * 'franchise-partner-admin' role NAME itself is checked here only for
+     * whatever legacy account might still hold it bare (no merged
+     * permission on 'partner' yet) — new Partner accounts are never
+     * granted it anymore, see findOrCreateAccount()'s own comment.
      *
-     * hasNoRealOrganizationStaffRole() is checked explicitly here too, not
-     * left to happen by accident: a real customer-admin/event-manager/DPO
-     * whose email got reused for a Partner account (PartnerController's
-     * own findOrCreateAccount(), additive like every other role grant in
-     * this app) would otherwise ALREADY get false here anyway, since
-     * $this->partner can never resolve for an account that has an
-     * organization_id (Partner's own TenantScope('organization_id') scopes
-     * it to a column that's always null on a Partner row) — but relying on
-     * that side effect is fragile, and the AppLayout nav check below has no
-     * such protection of its own.
+     * hasNoRealOrganizationStaffRole() stays checked explicitly, same
+     * reasoning as before: a real customer-admin/event-manager/DPO whose
+     * email got reused for a Partner account must never be narrowed OR
+     * widened by it — their own real role always wins either way.
      */
     public function isActingAsPartnerOnly(): bool
     {
         return $this->partner !== null
             && $this->hasNoRealOrganizationStaffRole()
+            && ! $this->can('organizations.manage')
             && ! $this->hasAnyRole(['platform-admin', 'franchisor-admin', 'franchise-partner-admin']);
     }
 

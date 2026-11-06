@@ -86,30 +86,29 @@ export default function AppLayout({ title, active = null, actions = null, childr
     // raw permissions array just for this one nav item, same reasoning as
     // canManageTeam above.
     const canViewErrorLog = (user?.roles ?? []).some((role) => ['platform-admin', 'franchisor-admin'].includes(role));
-    // partners.manage (RolesAndPermissionsSeeder) is granted to the same
-    // three agency-level roles events.manage already is — checking role
-    // names client-side, same reasoning as the two checks above.
-    const canManagePartners = (user?.roles ?? []).some((role) => ['platform-admin', 'franchisor-admin', 'franchise-partner-admin'].includes(role));
+    // organizations.manage/partners.manage (RolesAndPermissionsSeeder) are
+    // granted together to every franchise/platform-level role AND, now, to
+    // a plain 'partner' too (in this business a Partner IS its own
+    // franchise — see User::isActingAsPartnerOnly()'s own docblock) — the
+    // server shares this one precomputed flag instead of the raw
+    // permissions array, since which role names carry it can no longer be
+    // hardcoded client-side the way canManageTeam/canViewAuditLog/
+    // canViewErrorLog above still can.
+    const isFranchiseAdmin = Boolean(user?.is_franchise_admin);
+    const canManagePartners = isFranchiseAdmin;
     // A Partner account (PartnerController::findOrCreateAccount) has
-    // organization_id === null just like franchise/platform staff, but
-    // isn't one of them — gets its own minimal nav instead of falling into
-    // the franchise/platform branch below, where every link would 403.
-    // Excluding the three admin roles mirrors User::isActingAsPartnerOnly()
-    // server-side: the platform operator's own admin account is also the
-    // Partner record for Hungary ("MM Kft.") and must keep the full nav,
-    // not fall into the restricted partner-only one just for holding both
-    // roles at once. The organization-staff roles are excluded too — same
-    // reasoning, same server-side method: reported live, a real
+    // organization_id === null just like franchise/platform staff. One
+    // WITHOUT the franchise-wide permissions above (isFranchiseAdmin false
+    // — some legacy account, never a freshly created one) gets its own
+    // minimal nav instead of falling into the franchise/platform branch
+    // below, where every link would 403. The organization-staff roles are
+    // excluded regardless of isFranchiseAdmin: reported live, a real
     // customer-admin whose email got reused for a Partner account
-    // (additive grant, never revoked) got shown this nav's "Clienți" link
-    // even though organizations.index 403s them server-side (their
-    // organization_id makes $user->partner unresolvable there), a dead end
-    // this check must avoid offering in the first place.
+    // (additive grant, never revoked) must keep ITS OWN nav either way,
+    // never this one or the restricted partner-only one.
     const isPartner = (user?.roles ?? []).includes('partner')
-        && !(user?.roles ?? []).some((role) => [
-            'platform-admin', 'franchisor-admin', 'franchise-partner-admin',
-            'customer-admin', 'event-manager', 'data-protection-officer',
-        ].includes(role));
+        && !isFranchiseAdmin
+        && !(user?.roles ?? []).some((role) => ['customer-admin', 'event-manager', 'data-protection-officer'].includes(role));
 
     const navItems = isPartner
         ? [

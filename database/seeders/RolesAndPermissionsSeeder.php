@@ -63,12 +63,20 @@ class RolesAndPermissionsSeeder extends Seeder
         // EventController::show()/DashboardController, not by any
         // permission here — see those controllers' own docblocks.
         'client-contact' => [],
-        // A regional reseller's own login (PartnerController::findOrCreateAccount),
-        // view-only: sees every flagged photo across the events assigned
-        // to them (DashboardController), never moderates — that stays
-        // with the client's own media.moderate-deletion-requests holders.
+        // A regional reseller's own login (PartnerController::findOrCreateAccount).
+        // Reported: in this business a Partner IS its own franchise — same
+        // permissions as franchise-partner-admin (full management of every
+        // client/event within its own franchise, via TenantScope's existing
+        // franchise_partner_id filtering — never another franchise's data),
+        // plus removal-requests.view for the cross-event flagged-photos
+        // dashboard a plain franchise-partner-admin has no reason to need.
+        // See User::isActingAsPartnerOnly()'s own docblock for how this
+        // permission (not the 'franchise-partner-admin' role name, kept
+        // only for whatever legacy account might still hold it bare) is
+        // what actually decides "full access" everywhere in the app now.
         'partner' => [
             'removal-requests.view',
+            'organizations.manage', 'users.manage', 'events.manage', 'audit-log.view', 'partners.manage',
         ],
     ];
 
