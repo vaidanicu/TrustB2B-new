@@ -55,6 +55,14 @@ class RolesAndPermissionsSeeder extends Seeder
         // No admin permissions at all — participants reach the platform
         // through personalised invitation links, not role-based access.
         'participant' => [],
+        // The client-side contact who signed the contract (Event's
+        // client_contact_email) — reported: they need to know their event
+        // was actually created, and see it (every event they're the
+        // contact for, not just one) without depending on a link that
+        // expires. View-only, identified by matching email on
+        // EventController::show()/DashboardController, not by any
+        // permission here — see those controllers' own docblocks.
+        'client-contact' => [],
         // A regional reseller's own login (PartnerController::findOrCreateAccount),
         // view-only: sees every flagged photo across the events assigned
         // to them (DashboardController), never moderates — that stays

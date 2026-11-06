@@ -83,4 +83,33 @@ class EventShowTest extends TestCase
         // this app behaves for a mismatched organization_id.
         $this->actingAs($user)->get(route('events.show', $event))->assertNotFound();
     }
+
+    public function test_the_client_contact_can_view_the_event_it_is_listed_on(): void
+    {
+        $organization = Organization::factory()->create();
+        $event = Event::factory()->for($organization)->create([
+            'franchise_partner_id' => $organization->franchise_partner_id,
+            'client_contact_email' => 'ion@paleus.ro',
+        ]);
+        $contact = User::factory()->forOrganization($organization)->create(['email' => 'ion@paleus.ro']);
+        (new AssignRole)->grant($contact, 'client-contact', 'test');
+
+        $this->actingAs($contact)
+            ->get(route('events.show', $event))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page->component('Events/Show')->where('canManage', false));
+    }
+
+    public function test_a_client_contact_cannot_view_an_event_it_is_not_listed_on(): void
+    {
+        $organization = Organization::factory()->create();
+        $event = Event::factory()->for($organization)->create([
+            'franchise_partner_id' => $organization->franchise_partner_id,
+            'client_contact_email' => 'ion@paleus.ro',
+        ]);
+        $contact = User::factory()->forOrganization($organization)->create(['email' => 'maria@paleus.ro']);
+        (new AssignRole)->grant($contact, 'client-contact', 'test');
+
+        $this->actingAs($contact)->get(route('events.show', $event))->assertForbidden();
+    }
 }

@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Actions\Tenancy\AssignRole;
+use App\Mail\EventCreatedForClientContact;
 use App\Mail\StaffAccountCreated;
 use App\Models\Event;
 use App\Models\FranchisePartner;
@@ -206,6 +207,74 @@ class EventCreationTest extends TestCase
         $this->assertSame(1, User::where('email', 'fotograf@exemplu.ro')->count());
         $this->assertSame($existingPhotographer->id, Event::sole()->photographer_user_id);
         Mail::assertNotSent(StaffAccountCreated::class);
+    }
+
+    public function test_a_client_contact_email_creates_an_account_and_is_notified(): void
+    {
+        Mail::fake();
+        $this->seed(RolesAndPermissionsSeeder::class);
+
+        $franchisePartner = FranchisePartner::factory()->create();
+        $organization = Organization::factory()->for($franchisePartner)->create();
+        $user = $this->franchisePartnerAdmin($franchisePartner);
+
+        $this->actingAs($user)->post(route('events.store'), [
+            'organization_id' => $organization->id,
+            'name' => 'Turneu de fotbal',
+            'country' => 'RO',
+            'language' => 'ro',
+            'starts_at' => '2026-12-01',
+            'ends_at' => '2026-12-01',
+            'retention_days' => 90,
+            'end_of_cycle_action' => 'delete',
+            'gdpr_contract_text' => 'Text.',
+            'client_contact_name' => 'Ion Pop',
+            'client_contact_email' => 'ion@paleus.ro',
+        ]);
+
+        $event = Event::sole();
+        $contact = User::where('email', 'ion@paleus.ro')->sole();
+
+        $this->assertTrue($contact->hasRole('client-contact'));
+        $this->assertSame($organization->id, $contact->organization_id);
+        $this->assertNotNull($contact->email_verified_at);
+
+        Mail::assertSent(EventCreatedForClientContact::class, fn (EventCreatedForClientContact $mail) => $mail->hasTo('ion@paleus.ro')
+            && $mail->event->is($event)
+            && $mail->password !== null);
+    }
+
+    public function test_an_existing_client_contact_is_reused_and_still_notified_without_a_password(): void
+    {
+        Mail::fake();
+        $this->seed(RolesAndPermissionsSeeder::class);
+
+        $franchisePartner = FranchisePartner::factory()->create();
+        $organization = Organization::factory()->for($franchisePartner)->create();
+        $user = $this->franchisePartnerAdmin($franchisePartner);
+        $existingContact = User::factory()->create(['email' => 'ion@paleus.ro']);
+
+        $this->actingAs($user)->post(route('events.store'), [
+            'organization_id' => $organization->id,
+            'name' => 'A doua ediție',
+            'country' => 'RO',
+            'language' => 'ro',
+            'starts_at' => '2026-12-01',
+            'ends_at' => '2026-12-01',
+            'retention_days' => 90,
+            'end_of_cycle_action' => 'delete',
+            'gdpr_contract_text' => 'Text.',
+            'client_contact_email' => 'ion@paleus.ro',
+        ]);
+
+        $this->assertSame(1, User::where('email', 'ion@paleus.ro')->count());
+        $this->assertTrue($existingContact->fresh()->hasRole('client-contact'));
+
+        // Unlike the photographer/partner reuse pattern, this one DOES
+        // still fire every time — the whole point is confirming THIS
+        // event's creation, not just handing out credentials once.
+        Mail::assertSent(EventCreatedForClientContact::class, fn (EventCreatedForClientContact $mail) => $mail->hasTo('ion@paleus.ro')
+            && $mail->password === null);
     }
 
     public function test_a_restaurant_event_does_not_require_gdpr_contract_text(): void

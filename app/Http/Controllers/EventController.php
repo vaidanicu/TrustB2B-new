@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Actions\Tenancy\AssignRole;
 use App\Actions\Tenancy\SendAccountCreatedEmail;
+use App\Mail\EventCreatedForClientContact;
 use App\Models\Event;
 use App\Models\Organization;
 use App\Models\Partner;
@@ -12,6 +13,8 @@ use App\Support\FlashMessage;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
@@ -50,9 +53,21 @@ class EventController extends Controller
     {
         $user = $request->user();
         $isOwnPartnerEvent = $user->isActingAsPartnerOnly() && $event->partner_id === $user->partner->id;
+        // The client-side contact who signed the contract (RolesAndPermissionsSeeder's
+        // 'client-contact' role) — identified by its own email matching
+        // this event's client_contact_email, not by organization_id (it
+        // may be the contact for only SOME of its organization's events,
+        // see DashboardController's own clientContactDashboard()). It also
+        // has organization_id set like real staff, so the generic
+        // "client's own staff" rule below is deliberately excluded for it
+        // — otherwise it would see every event in the organization, not
+        // just the one(s) it's actually listed as the contact for.
+        $isClientContact = $user->hasRole('client-contact');
+        $isOwnClientContact = $isClientContact && $event->client_contact_email === $user->email;
+        $isGenericOrgStaff = ! $isClientContact && $user->organization_id === $event->organization_id;
 
         abort_unless(
-            $user->can('events.manage') || $user->organization_id === $event->organization_id || $isOwnPartnerEvent,
+            $user->can('events.manage') || $isGenericOrgStaff || $isOwnPartnerEvent || $isOwnClientContact,
             403
         );
 
@@ -89,6 +104,7 @@ class EventController extends Controller
                 'agency' => $event->agency,
                 'photographer' => $event->photographer,
                 'photographerAccountEmail' => $event->photographerUser?->email,
+                'photographerConfirmedAt' => $event->photographer_confirmed_at?->format('d.m.Y H:i'),
                 'dataProtectionContact' => $event->data_protection_contact,
                 'finalPackageRecipient' => $event->final_package_recipient,
                 'partnerName' => $event->partner ? "{$event->partner->name} ({$event->partner->country})" : null,
@@ -274,9 +290,62 @@ class EventController extends Controller
             ->performedOn($event)
             ->log('event created');
 
+        // Reported: the client-side contact who signed the contract has no
+        // way to know the event was actually set up — unlike
+        // findOrCreatePhotographer()'s pattern, this notifies EVERY time
+        // (not just on a freshly created account), since the whole point
+        // is confirming this specific event's creation, not just handing
+        // out credentials once.
+        if (filled($data['client_contact_email'] ?? null)) {
+            $this->notifyClientContact(
+                $data['client_contact_email'],
+                $data['client_contact_name'] ?? $data['client_contact_email'],
+                $organization,
+                $event,
+                $user->locale ?? 'ro',
+            );
+        }
+
         return redirect()->route('organizations.events', $organization)
             ->with('status', FlashMessage::t($user->locale ?? 'ro', 'event.created', ['name' => $event->name]))
             ->with('photographerEmailSent', $photographerEmailSent);
+    }
+
+    /**
+     * Mirrors findOrCreatePhotographer() for the account itself (reuse by
+     * email, additive 'client-contact' role), but ALWAYS emails — a client
+     * contact with several events needs to hear about each one, not just
+     * the first time an account gets made for them.
+     */
+    private function notifyClientContact(string $email, string $name, Organization $organization, Event $event, string $lang): void
+    {
+        $account = User::withoutGlobalScopes()->where('email', $email)->first();
+        $password = null;
+
+        if ($account === null) {
+            $password = Str::password(14);
+
+            $account = User::create([
+                'name' => $name,
+                'email' => $email,
+                'password' => Hash::make($password),
+                'organization_id' => $organization->id,
+                'franchise_partner_id' => $organization->franchise_partner_id,
+                'email_verified_at' => now(),
+            ]);
+        }
+
+        (new AssignRole)->grant($account, 'client-contact', 'event client contact account');
+
+        try {
+            Mail::to($account->email)->send(new EventCreatedForClientContact($account, $event, $password, $lang));
+        } catch (\Throwable $e) {
+            Log::warning('Event-created notification to client contact failed to send', [
+                'event_id' => $event->id,
+                'account_id' => $account->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
     /**

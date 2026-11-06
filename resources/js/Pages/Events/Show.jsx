@@ -157,6 +157,16 @@ export default function Show({ backUrl, event, canManage }) {
                     <Field label={es.agency} value={event.agency} />
                     <Field label={es.photographer} value={event.photographer} />
                     <Field label={es.photographerAccount} value={event.photographerAccountEmail} />
+                    {event.photographerAccountEmail && (
+                        <div>
+                            <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted">{es.photographerConfirmed}</p>
+                            {event.photographerConfirmedAt ? (
+                                <p className="mt-0.5 text-sm text-teal-ink">{es.photographerConfirmedYes(event.photographerConfirmedAt)}</p>
+                            ) : (
+                                <p className="mt-0.5 text-sm text-amber-700">{es.photographerConfirmedNo}</p>
+                            )}
+                        </div>
+                    )}
                     <Field label={es.dpoContact} value={event.dataProtectionContact} />
                     <Field label={es.finalRecipient} value={event.finalPackageRecipient} />
                 </Section>

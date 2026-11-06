@@ -31,6 +31,10 @@ class DashboardController extends Controller
             return $this->partnerDashboard($user->partner);
         }
 
+        if ($user->hasRole('client-contact')) {
+            return $this->clientContactDashboard($user->email);
+        }
+
         if ($user->organization_id === null) {
             return redirect()->route('organizations.index');
         }
@@ -47,6 +51,36 @@ class DashboardController extends Controller
                 'status' => $event->status,
                 'isRestaurant' => $event->is_restaurant,
             ]),
+            'readOnly' => false,
+        ]);
+    }
+
+    /**
+     * The client-side contact's own dashboard — reported: they need to see
+     * every event they're the contact for (EventController::
+     * notifyClientContact()), not just one via a link that expires. Scoped
+     * by matching email on client_contact_email, NOT by organization_id:
+     * an organization can have a different contact per event, so this
+     * stays narrower than "every event of my organization" on purpose.
+     * Read-only — Dashboard.jsx hides the Participants/Gallery actions a
+     * real org-scoped staff member would get.
+     */
+    private function clientContactDashboard(string $email): Response
+    {
+        $events = Event::withoutGlobalScopes()
+            ->where('client_contact_email', $email)
+            ->orderBy('starts_at')
+            ->get(['id', 'name', 'starts_at', 'status', 'is_restaurant']);
+
+        return Inertia::render('Dashboard', [
+            'events' => $events->map(fn (Event $event) => [
+                'id' => $event->id,
+                'name' => $event->name,
+                'date' => $event->starts_at->format('d.m.Y H:i'),
+                'status' => $event->status,
+                'isRestaurant' => $event->is_restaurant,
+            ]),
+            'readOnly' => true,
         ]);
     }
 

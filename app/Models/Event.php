@@ -34,7 +34,7 @@ use Spatie\MediaLibrary\InteractsWithMedia;
     'data_protection_contact', 'final_package_recipient',
     'organization_id', 'is_restaurant', 'gdpr_contract_text',
     'client_contact_name', 'client_company_name', 'client_contact_email', 'client_address', 'client_tax_number',
-    'photographer_user_id', 'partner_id',
+    'photographer_user_id', 'photographer_confirmed_at', 'partner_id',
     'retention_processed_at', 'export_path', 'export_password', 'export_confirmed_at',
 ])]
 class Event extends Model implements HasMedia
@@ -67,6 +67,7 @@ class Event extends Model implements HasMedia
             'is_restaurant' => 'boolean',
             'retention_processed_at' => 'datetime',
             'export_confirmed_at' => 'datetime',
+            'photographer_confirmed_at' => 'datetime',
         ];
     }
 

@@ -57,6 +57,12 @@ export default function AppLayout({ title, active = null, actions = null, childr
     // for this one nav item, and matches exactly what UserController's
     // own authorizeTeamManagement() enforces server-side regardless.
     const canManageTeam = (user?.roles ?? []).includes('customer-admin');
+    // audit-log.view (RolesAndPermissionsSeeder) is only ever granted to
+    // these three organization-level roles — a photographer or
+    // client-contact account also has organization_id set, but holds
+    // neither this permission nor any reason to browse the org's audit
+    // trail, so the link would just 403 for them without this check.
+    const canViewAuditLog = (user?.roles ?? []).some((role) => ['customer-admin', 'event-manager', 'data-protection-officer'].includes(role));
     // system.view-logs (RolesAndPermissionsSeeder) is only ever granted to
     // these two roles — checking role names client-side avoids sharing a
     // raw permissions array just for this one nav item, same reasoning as
@@ -88,7 +94,7 @@ export default function AppLayout({ title, active = null, actions = null, childr
             ? [
                   { key: 'dashboard', label: t.nav.dashboard, href: route('dashboard') },
                   ...(canManageTeam ? [{ key: 'users', label: t.nav.team, href: route('users.index') }] : []),
-                  { key: 'audit-log', label: t.nav.auditLog, href: route('audit-log.index') },
+                  ...(canViewAuditLog ? [{ key: 'audit-log', label: t.nav.auditLog, href: route('audit-log.index') }] : []),
                   { key: 'guide', label: t.nav.guide, href: route('guide.index') },
               ]
             : [

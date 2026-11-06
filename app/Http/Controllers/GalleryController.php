@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\PhotographerConfirmedAccess;
 use App\Mail\PhotoRemovalRequested;
 use App\Models\Event;
 use App\Models\User;
@@ -58,6 +59,17 @@ class GalleryController extends Controller
             $user->can('media.upload') || $user->can('media.publish') || $user->can('events.manage') || $isOwnPartnerEvent,
             403
         );
+
+        // Reported: a partner/admin needs real proof the designated
+        // photographer actually saw their access instructions before the
+        // event — "email opened" can't be trusted (many clients block
+        // remote images; Gmail proxies them regardless of whether a human
+        // read anything). This fires once, the first time that exact
+        // account opens this exact event's gallery.
+        if ($event->photographer_user_id === $user->id && $event->photographer_confirmed_at === null) {
+            $event->forceFill(['photographer_confirmed_at' => now()])->save();
+            $this->notifyPhotographerConfirmed($event, $user);
+        }
 
         $publicGalleryUrl = $this->publicGalleryUrl($event);
 
@@ -296,6 +308,38 @@ class GalleryController extends Controller
                     'error' => $e->getMessage(),
                 ]);
             }
+        }
+    }
+
+    /**
+     * Same recipient-resolution reasoning as notifyModerators(): the
+     * event's assigned Partner's own account if it has one, otherwise the
+     * event's creator as a fallback. $photographer is the account that
+     * just confirmed, not the recipient.
+     */
+    private function notifyPhotographerConfirmed(Event $event, User $photographer): void
+    {
+        $event->loadMissing('partner.user', 'creator');
+        $recipient = $event->partner?->user ?? $event->creator;
+
+        if ($recipient === null) {
+            return;
+        }
+
+        try {
+            Mail::to($recipient->email)->send(new PhotographerConfirmedAccess(
+                $event,
+                $photographer->name,
+                $photographer->email,
+                route('events.show', $event),
+                $recipient->locale ?? 'ro',
+            ));
+        } catch (\Throwable $e) {
+            Log::warning('Photographer-confirmed notification failed to send', [
+                'event_id' => $event->id,
+                'recipient_id' => $recipient->id,
+                'error' => $e->getMessage(),
+            ]);
         }
     }
 

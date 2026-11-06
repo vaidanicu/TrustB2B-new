@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Actions\Tenancy\AssignRole;
+use App\Mail\PhotographerConfirmedAccess;
 use App\Mail\PhotoRemovalRequested;
 use App\Models\Event;
 use App\Models\FranchisePartner;
@@ -437,6 +438,44 @@ class GalleryTest extends TestCase
         $this->actingAs($photographer)
             ->patch(route('gallery.approve-removal', [$event, $photo]))
             ->assertForbidden();
+    }
+
+    public function test_the_designated_photographer_confirms_access_on_first_gallery_visit_and_notifies_the_creator(): void
+    {
+        Mail::fake();
+
+        $organization = Organization::factory()->create();
+        $creator = User::factory()->forFranchisePartner($organization->franchisePartner)->create();
+        $event = Event::factory()->for($organization)->create([
+            'franchise_partner_id' => $organization->franchise_partner_id,
+            'created_by' => $creator->id,
+        ]);
+        $photographer = $this->userWithRole($organization, 'photographer');
+        $event->forceFill(['photographer_user_id' => $photographer->id])->save();
+
+        $this->actingAs($photographer)->get(route('gallery.index', $event))->assertOk();
+
+        $this->assertNotNull($event->fresh()->photographer_confirmed_at);
+        Mail::assertSent(PhotographerConfirmedAccess::class, fn (PhotographerConfirmedAccess $mail) => $mail->hasTo($creator->email)
+            && $mail->photographerEmail === $photographer->email);
+    }
+
+    public function test_a_second_gallery_visit_does_not_resend_the_confirmation_notification(): void
+    {
+        Mail::fake();
+
+        $organization = Organization::factory()->create();
+        $event = Event::factory()->for($organization)->create(['franchise_partner_id' => $organization->franchise_partner_id]);
+        $photographer = $this->userWithRole($organization, 'photographer');
+        $event->forceFill(['photographer_user_id' => $photographer->id])->save();
+
+        $this->actingAs($photographer)->get(route('gallery.index', $event));
+        $firstConfirmedAt = $event->fresh()->photographer_confirmed_at;
+
+        $this->actingAs($photographer)->get(route('gallery.index', $event));
+
+        $this->assertSame($firstConfirmedAt->toIso8601String(), $event->fresh()->photographer_confirmed_at->toIso8601String());
+        Mail::assertSent(PhotographerConfirmedAccess::class, 1);
     }
 
     public function test_a_partner_can_upload_to_its_own_event_when_no_photographer_is_assigned(): void

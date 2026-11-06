@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Actions\Tenancy\AssignRole;
+use App\Models\Event;
 use App\Models\FranchisePartner;
 use App\Models\Organization;
 use App\Models\User;
@@ -46,6 +47,33 @@ class AppPagesTest extends TestCase
             ->get(route('dashboard'))
             ->assertOk()
             ->assertInertia(fn ($page) => $page->component('Dashboard')->where('events', []));
+    }
+
+    public function test_a_client_contact_only_sees_events_where_it_is_the_listed_contact(): void
+    {
+        $this->seed(RolesAndPermissionsSeeder::class);
+
+        $organization = Organization::factory()->create();
+        Event::factory()->for($organization)->create([
+            'franchise_partner_id' => $organization->franchise_partner_id,
+            'name' => 'Theirs',
+            'client_contact_email' => 'ion@paleus.ro',
+        ]);
+        Event::factory()->for($organization)->create([
+            'franchise_partner_id' => $organization->franchise_partner_id,
+            'name' => 'Not theirs',
+            'client_contact_email' => 'maria@paleus.ro',
+        ]);
+        $contact = User::factory()->forOrganization($organization)->create(['email' => 'ion@paleus.ro']);
+        (new AssignRole)->grant($contact, 'client-contact', 'test');
+
+        $this->actingAs($contact)
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page->component('Dashboard')
+                ->where('readOnly', true)
+                ->has('events', 1)
+                ->where('events.0.name', 'Theirs'));
     }
 
     public function test_franchise_scoped_user_is_redirected_from_dashboard_to_organizations(): void
