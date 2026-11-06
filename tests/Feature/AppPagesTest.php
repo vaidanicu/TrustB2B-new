@@ -71,9 +71,49 @@ class AppPagesTest extends TestCase
             ->get(route('dashboard'))
             ->assertOk()
             ->assertInertia(fn ($page) => $page->component('Dashboard')
-                ->where('readOnly', true)
+                ->where('showParticipantsLink', false)
+                ->where('showGalleryLink', false)
                 ->has('events', 1)
                 ->where('events.0.name', 'Theirs'));
+    }
+
+    public function test_a_photographer_sees_their_events_across_every_organization_they_shoot_for(): void
+    {
+        $this->seed(RolesAndPermissionsSeeder::class);
+
+        $firstOrganization = Organization::factory()->create();
+        $secondOrganization = Organization::factory()->create();
+
+        $photographer = User::factory()->forOrganization($firstOrganization)->create(['email' => 'pisti@example.test']);
+        (new AssignRole)->grant($photographer, 'photographer', 'test');
+
+        Event::factory()->for($firstOrganization)->create([
+            'franchise_partner_id' => $firstOrganization->franchise_partner_id,
+            'name' => 'First client event',
+            'photographer_user_id' => $photographer->id,
+        ]);
+        Event::factory()->for($secondOrganization)->create([
+            'franchise_partner_id' => $secondOrganization->franchise_partner_id,
+            'name' => 'Second client event',
+            'photographer_user_id' => $photographer->id,
+        ]);
+        Event::factory()->for($firstOrganization)->create([
+            'franchise_partner_id' => $firstOrganization->franchise_partner_id,
+            'name' => 'Not their event',
+        ]);
+
+        $response = $this->actingAs($photographer)->get(route('dashboard'))->assertOk();
+
+        $response->assertInertia(fn ($page) => $page->component('Dashboard')
+            ->where('showParticipantsLink', false)
+            ->where('showGalleryLink', true)
+            ->has('events', 2));
+
+        $names = $response->viewData('page')['props']['events'];
+        $this->assertEqualsCanonicalizing(
+            ['First client event', 'Second client event'],
+            array_column($names, 'name'),
+        );
     }
 
     public function test_franchise_scoped_user_is_redirected_from_dashboard_to_organizations(): void

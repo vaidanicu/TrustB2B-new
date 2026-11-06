@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Event;
 use App\Models\Partner;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -16,7 +17,11 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  * account's (PartnerController::findOrCreateAccount()) is a cross-event
  * removal-requests view; a franchise/system-level actor's real home is the
  * client list, so we send them straight there instead of showing an empty
- * events screen that isn't theirs.
+ * events screen that isn't theirs. A client-contact or photographer
+ * account can be reused across several unrelated organizations (same
+ * email, different clients), so their dashboards are scoped by their own
+ * identity (client_contact_email / photographer_user_id) instead of
+ * organization_id, which would only ever reflect the first one.
  *
  * Events are real now (AP07/08) — Event's BelongsToOrganization scope
  * already limits this query to the acting user's own organization.
@@ -35,6 +40,10 @@ class DashboardController extends Controller
             return $this->clientContactDashboard($user->email);
         }
 
+        if ($user->hasRole('photographer')) {
+            return $this->photographerDashboard($user);
+        }
+
         if ($user->organization_id === null) {
             return redirect()->route('organizations.index');
         }
@@ -51,7 +60,8 @@ class DashboardController extends Controller
                 'status' => $event->status,
                 'isRestaurant' => $event->is_restaurant,
             ]),
-            'readOnly' => false,
+            'showParticipantsLink' => true,
+            'showGalleryLink' => true,
         ]);
     }
 
@@ -62,8 +72,8 @@ class DashboardController extends Controller
      * by matching email on client_contact_email, NOT by organization_id:
      * an organization can have a different contact per event, so this
      * stays narrower than "every event of my organization" on purpose.
-     * Read-only — Dashboard.jsx hides the Participants/Gallery actions a
-     * real org-scoped staff member would get.
+     * Read-only — Dashboard.jsx hides both the Participants and Gallery
+     * actions a real org-scoped staff member would get.
      */
     private function clientContactDashboard(string $email): Response
     {
@@ -80,7 +90,40 @@ class DashboardController extends Controller
                 'status' => $event->status,
                 'isRestaurant' => $event->is_restaurant,
             ]),
-            'readOnly' => true,
+            'showParticipantsLink' => false,
+            'showGalleryLink' => false,
+        ]);
+    }
+
+    /**
+     * The assigned photographer's own dashboard — reported: a photographer
+     * who shoots for several different organizations only ever saw the
+     * events of whichever organization their account happened to be
+     * created under first (EventController::findOrCreatePhotographer()
+     * stamps organization_id once, on creation, and never again), so the
+     * normal org-scoped query above hid every other client's events from
+     * them entirely. Scoped by matching photographer_user_id, NOT by
+     * organization_id, same reasoning as clientContactDashboard() above.
+     * Gallery stays visible (that's how they upload); Participants is
+     * hidden — a photographer never gets participants.view.
+     */
+    private function photographerDashboard(User $user): Response
+    {
+        $events = Event::withoutGlobalScopes()
+            ->where('photographer_user_id', $user->id)
+            ->orderBy('starts_at')
+            ->get(['id', 'name', 'starts_at', 'status', 'is_restaurant']);
+
+        return Inertia::render('Dashboard', [
+            'events' => $events->map(fn (Event $event) => [
+                'id' => $event->id,
+                'name' => $event->name,
+                'date' => $event->starts_at->format('d.m.Y H:i'),
+                'status' => $event->status,
+                'isRestaurant' => $event->is_restaurant,
+            ]),
+            'showParticipantsLink' => false,
+            'showGalleryLink' => true,
         ]);
     }
 

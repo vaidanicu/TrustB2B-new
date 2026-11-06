@@ -2,7 +2,7 @@ import AppLayout from '@/Layouts/AppLayout';
 import { useAppTranslations } from '@/i18n/appTranslations';
 import { Head, Link, usePage } from '@inertiajs/react';
 
-export default function Dashboard({ events, readOnly = false }) {
+export default function Dashboard({ events, showParticipantsLink = true, showGalleryLink = true }) {
     const { flash } = usePage().props;
     const { t } = useAppTranslations();
     const statusStyles = {
@@ -71,17 +71,15 @@ export default function Dashboard({ events, readOnly = false }) {
                                             {style.label}
                                         </span>
                                         <span className="flex items-center justify-end gap-3">
-                                            {!readOnly && (
-                                                <>
-                                                    {!event.isRestaurant && (
-                                                        <Link href={route('participants.status', event.id)} className="text-xs text-accent underline">
-                                                            {t.dashboard.participants}
-                                                        </Link>
-                                                    )}
-                                                    <Link href={route('gallery.index', event.id)} className="text-xs text-accent underline">
-                                                        {t.dashboard.gallery}
-                                                    </Link>
-                                                </>
+                                            {showParticipantsLink && !event.isRestaurant && (
+                                                <Link href={route('participants.status', event.id)} className="text-xs text-accent underline">
+                                                    {t.dashboard.participants}
+                                                </Link>
+                                            )}
+                                            {showGalleryLink && (
+                                                <Link href={route('gallery.index', event.id)} className="text-xs text-accent underline">
+                                                    {t.dashboard.gallery}
+                                                </Link>
                                             )}
                                         </span>
                                     </div>
