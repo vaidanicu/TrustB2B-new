@@ -77,6 +77,41 @@ class AppPagesTest extends TestCase
                 ->where('events.0.name', 'Theirs'));
     }
 
+    /**
+     * Reported live: a customer-admin got additively granted 'photographer'
+     * (same email used as an event's own photographer_email) and their
+     * dashboard dropped down to showing only that one event, hiding every
+     * other event in their own organization.
+     */
+    public function test_a_customer_admin_who_is_also_an_events_photographer_still_sees_every_event_in_their_organization(): void
+    {
+        $this->seed(RolesAndPermissionsSeeder::class);
+
+        $organization = Organization::factory()->create();
+        $admin = User::factory()->forOrganization($organization)->create();
+        (new AssignRole)->grant($admin, 'customer-admin', 'test');
+
+        Event::factory()->for($organization)->create([
+            'franchise_partner_id' => $organization->franchise_partner_id,
+            'name' => 'Theirs as photographer',
+            'photographer_user_id' => $admin->id,
+        ]);
+        (new AssignRole)->grant($admin, 'photographer', 'test');
+
+        Event::factory()->for($organization)->create([
+            'franchise_partner_id' => $organization->franchise_partner_id,
+            'name' => 'Not photographed by them',
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page->component('Dashboard')
+                ->where('showParticipantsLink', true)
+                ->where('showGalleryLink', true)
+                ->has('events', 2));
+    }
+
     public function test_a_photographer_sees_their_events_across_every_organization_they_shoot_for(): void
     {
         $this->seed(RolesAndPermissionsSeeder::class);

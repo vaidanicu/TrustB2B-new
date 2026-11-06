@@ -62,7 +62,11 @@ class EventController extends Controller
         // "client's own staff" rule below is deliberately excluded for it
         // — otherwise it would see every event in the organization, not
         // just the one(s) it's actually listed as the contact for.
-        $isClientContact = $user->hasRole('client-contact');
+        // isActingAsClientContactOnly(), not a bare hasRole(): a real
+        // customer-admin/event-manager who's also some event's listed
+        // contact (same email, granted additively) must keep seeing every
+        // event in its organization, not just that one.
+        $isClientContact = $user->isActingAsClientContactOnly();
         $isOwnClientContact = $isClientContact && $event->client_contact_email === $user->email;
         $isGenericOrgStaff = ! $isClientContact && $user->organization_id === $event->organization_id;
 

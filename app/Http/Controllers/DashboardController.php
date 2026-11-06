@@ -21,7 +21,12 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  * account can be reused across several unrelated organizations (same
  * email, different clients), so their dashboards are scoped by their own
  * identity (client_contact_email / photographer_user_id) instead of
- * organization_id, which would only ever reflect the first one.
+ * organization_id, which would only ever reflect the first one. Routed via
+ * User::isActingAsClientContactOnly()/isActingAsPhotographerOnly(), not a
+ * bare hasRole() — a real customer-admin/event-manager/data-protection-
+ * officer listed as an event's own contact or photographer (both roles are
+ * granted additively, by email, whenever that happens) must still land on
+ * their real management dashboard, not this narrow one.
  *
  * Events are real now (AP07/08) — Event's BelongsToOrganization scope
  * already limits this query to the acting user's own organization.
@@ -36,11 +41,11 @@ class DashboardController extends Controller
             return $this->partnerDashboard($user->partner);
         }
 
-        if ($user->hasRole('client-contact')) {
+        if ($user->isActingAsClientContactOnly()) {
             return $this->clientContactDashboard($user->email);
         }
 
-        if ($user->hasRole('photographer')) {
+        if ($user->isActingAsPhotographerOnly()) {
             return $this->photographerDashboard($user);
         }
 

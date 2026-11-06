@@ -124,4 +124,31 @@ class User extends Authenticatable
         return $this->partner !== null
             && ! $this->hasAnyRole(['platform-admin', 'franchisor-admin', 'franchise-partner-admin']);
     }
+
+    /**
+     * True only for an account with NO real organization-staff role —
+     * reported live: a customer-admin got listed as an event's photographer
+     * (same email, EventController::findOrCreatePhotographer() grants
+     * 'photographer' additively and never revokes anything), and the
+     * account's full management view disappeared behind the narrow
+     * photographer-only one everywhere that checked hasRole('photographer')
+     * directly. The 'photographer'/'client-contact' roles describe how an
+     * account was first reached (an event's own designated fields), never
+     * what it's allowed to do — genuine org staff always wins, same
+     * reasoning as isActingAsPartnerOnly() above.
+     */
+    public function hasNoRealOrganizationStaffRole(): bool
+    {
+        return ! $this->hasAnyRole(['customer-admin', 'event-manager', 'data-protection-officer']);
+    }
+
+    public function isActingAsPhotographerOnly(): bool
+    {
+        return $this->hasRole('photographer') && $this->hasNoRealOrganizationStaffRole();
+    }
+
+    public function isActingAsClientContactOnly(): bool
+    {
+        return $this->hasRole('client-contact') && $this->hasNoRealOrganizationStaffRole();
+    }
 }

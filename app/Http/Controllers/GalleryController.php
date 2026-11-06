@@ -89,8 +89,11 @@ class GalleryController extends Controller
         // no 'events.manage'/Partner access to organizations.events (403,
         // same-org or not), and participants.status is meant to stay off
         // limits to this role entirely (see authorizeParticipantManagement())
-        // — "back" always goes to its own dashboard instead.
-        if ($user->hasRole('photographer')) {
+        // — "back" always goes to its own dashboard instead. isActingAs
+        // PhotographerOnly(), not a bare hasRole(): a real customer-admin/
+        // event-manager who's also this event's listed photographer (same
+        // email, granted additively) still gets its usual destination.
+        if ($user->isActingAsPhotographerOnly()) {
             $backUrl = route('dashboard');
         } elseif ($event->is_restaurant || $user->organization_id === null) {
             $backUrl = route('organizations.events', $event->organization_id);
