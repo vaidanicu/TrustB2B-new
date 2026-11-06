@@ -83,6 +83,11 @@ class ParticipantRsvpTest extends TestCase
                 ->where('participantName', 'Maria Ionescu')
                 ->where('attending', true)
                 ->where('photoConsent', true)
+                // Reported: "Înapoi la invitație" on the confirmation page
+                // linked to the static marketing demo instead of back to
+                // this exact participant's own invitation — the page needs
+                // its own signed URL to link to, not the demo route.
+                ->where('signedUrl', $url)
             );
     }
 

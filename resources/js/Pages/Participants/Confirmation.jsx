@@ -72,7 +72,7 @@ export default function Confirmation({ event, participantName, attending, photoC
                     </div>
                 )}
 
-                <Link href={route('participants.invitation')} className="mt-4 block text-center text-sm text-ink-muted underline">
+                <Link href={signedUrl ?? route('participants.invitation')} className="mt-4 block text-center text-sm text-ink-muted underline">
                     Înapoi la invitație
                 </Link>
 
