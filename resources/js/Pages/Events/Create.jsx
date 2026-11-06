@@ -221,7 +221,15 @@ export default function Create({ organizations, partners, selectedOrganizationId
 
                     <div className="mt-5">
                         <span className="mb-2 block text-sm font-medium text-ink-soft">{c.retentionLabel}</span>
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-3 gap-3">
+                            <RadioCard
+                                name="retention"
+                                value="30"
+                                checked={data.retention_days === '30'}
+                                onChange={(e) => setData('retention_days', e.target.value)}
+                                title={c.retention30Title}
+                                hint={c.retention30Hint}
+                            />
                             <RadioCard
                                 name="retention"
                                 value="60"

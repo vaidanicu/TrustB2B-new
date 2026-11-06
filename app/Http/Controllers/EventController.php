@@ -210,7 +210,7 @@ class EventController extends Controller
             'language' => ['required', 'string', 'max:5'],
             'starts_at' => ['required', 'date'],
             'ends_at' => ['required', 'date', 'after_or_equal:starts_at'],
-            'retention_days' => ['required', 'integer', 'in:60,90'],
+            'retention_days' => ['required', 'integer', 'in:30,60,90'],
             'end_of_cycle_action' => ['required', 'in:delete,export'],
             'organizer' => ['nullable', 'string', 'max:255'],
             'co_organizer' => ['nullable', 'string', 'max:255'],

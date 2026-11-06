@@ -472,6 +472,30 @@ class EventCreationTest extends TestCase
             );
     }
 
+    public function test_a_30_day_retention_is_accepted(): void
+    {
+        $this->seed(RolesAndPermissionsSeeder::class);
+
+        $franchisePartner = FranchisePartner::factory()->create();
+        $organization = Organization::factory()->for($franchisePartner)->create();
+        $user = $this->franchisePartnerAdmin($franchisePartner);
+
+        $response = $this->actingAs($user)->post(route('events.store'), [
+            'organization_id' => $organization->id,
+            'name' => 'Eveniment test',
+            'country' => 'RO',
+            'language' => 'ro',
+            'starts_at' => '2026-12-01',
+            'ends_at' => '2026-12-01',
+            'retention_days' => 30,
+            'end_of_cycle_action' => 'delete',
+            'gdpr_contract_text' => 'Text.',
+        ]);
+
+        $response->assertRedirect(route('organizations.events', $organization));
+        $this->assertSame(30, Event::sole()->retention_days);
+    }
+
     public function test_an_invalid_retention_value_is_rejected(): void
     {
         $this->seed(RolesAndPermissionsSeeder::class);
@@ -487,7 +511,7 @@ class EventCreationTest extends TestCase
             'language' => 'ro',
             'starts_at' => '2026-12-01',
             'ends_at' => '2026-12-01',
-            'retention_days' => 45, // only 60 or 90 are allowed (roadmap §1)
+            'retention_days' => 45, // only 30, 60 or 90 are allowed
             'end_of_cycle_action' => 'delete',
             'gdpr_contract_text' => 'Text.',
         ]);
