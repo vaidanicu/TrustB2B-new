@@ -9,10 +9,10 @@ use App\Models\FranchisePartner;
 use App\Models\Organization;
 use App\Models\User;
 use App\Support\FlashMessage;
+use App\Support\GeneratedPassword;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -247,7 +247,7 @@ class OrganizationController extends Controller
             'data_protection_contact_email' => $data['data_protection_contact_email'] ?? null,
         ]);
 
-        $password = Str::password(16);
+        $password = GeneratedPassword::make(16);
 
         $admin = User::create([
             'name' => $data['admin_name'],

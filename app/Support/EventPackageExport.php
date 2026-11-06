@@ -43,7 +43,7 @@ class EventPackageExport
             return null;
         }
 
-        $password = Str::password(16);
+        $password = GeneratedPassword::make(16);
 
         foreach ($files as $file) {
             $entryName = $file->id.'-'.$file->file_name;

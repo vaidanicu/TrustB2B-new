@@ -9,10 +9,10 @@ use App\Models\FranchisePartner;
 use App\Models\Partner;
 use App\Models\User;
 use App\Support\FlashMessage;
+use App\Support\GeneratedPassword;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -301,7 +301,7 @@ class PartnerController extends Controller
             return back()->with('status', FlashMessage::t($request->user()->locale ?? 'ro', 'partner.no_account', ['name' => $partner->name]));
         }
 
-        $password = Str::password(14);
+        $password = GeneratedPassword::make();
         $partner->user->forceFill(['password' => Hash::make($password)])->save();
 
         activity()->causedBy($request->user())->performedOn($partner->user)->log('partner password reset');
@@ -328,7 +328,7 @@ class PartnerController extends Controller
         $password = null;
 
         if ($user === null) {
-            $password = Str::password(14);
+            $password = GeneratedPassword::make();
 
             $user = User::create([
                 'name' => $partnerName,

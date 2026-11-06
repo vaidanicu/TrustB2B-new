@@ -11,12 +11,12 @@ use App\Models\Organization;
 use App\Models\Partner;
 use App\Models\User;
 use App\Support\FlashMessage;
+use App\Support\GeneratedPassword;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -359,7 +359,7 @@ class EventController extends Controller
         $password = null;
 
         if ($account === null) {
-            $password = Str::password(14);
+            $password = GeneratedPassword::make();
 
             $account = User::create([
                 'name' => $name,
@@ -401,7 +401,7 @@ class EventController extends Controller
         $password = null;
 
         if ($user === null) {
-            $password = Str::password(14);
+            $password = GeneratedPassword::make();
 
             $user = User::create([
                 'name' => $name,

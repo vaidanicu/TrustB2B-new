@@ -6,10 +6,10 @@ use App\Actions\Tenancy\AssignRole;
 use App\Actions\Tenancy\SendAccountCreatedEmail;
 use App\Models\User;
 use App\Support\FlashMessage;
+use App\Support\GeneratedPassword;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -65,7 +65,7 @@ class UserController extends Controller
             'role' => ['required', Rule::in(self::ASSIGNABLE_ROLES)],
         ]);
 
-        $password = Str::password(14);
+        $password = GeneratedPassword::make();
         $actor = $request->user();
 
         $staff = User::create([
