@@ -47,10 +47,16 @@ class PartnerController extends Controller
     {
         abort_unless($request->user()->can('partners.manage'), 403);
 
+        $isSystemOperator = $request->user()->franchise_partner_id === null;
+
         return Inertia::render('Partners/Create', [
-            'franchisePartners' => $request->user()->franchise_partner_id !== null
-                ? []
-                : FranchisePartner::query()->orderBy('name')->get(['id', 'name']),
+            // isSystemOperator distinguishes "no choice to make, exactly
+            // one already" from "a system operator who simply has zero
+            // franchise partners yet" — both would otherwise show up as the
+            // same empty array, and the latter still needs the "Franciză
+            // nouă" option to bootstrap the very first one.
+            'franchisePartners' => $isSystemOperator ? FranchisePartner::query()->orderBy('name')->get(['id', 'name']) : [],
+            'isSystemOperator' => $isSystemOperator,
         ]);
     }
 
@@ -62,10 +68,18 @@ class PartnerController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'country' => ['required', 'string', 'size:2'],
             'email' => ['nullable', 'email', 'max:255'],
+            // 'new' is a sentinel, not a real id — see the "new franchise
+            // partner" block below for why this can't just be
+            // 'exists:franchise_partners,id' like every other foreign-key
+            // pick in this app.
             'franchise_partner_id' => [
                 Rule::requiredIf($request->user()->franchise_partner_id === null),
-                'nullable', 'exists:franchise_partners,id',
+                'nullable',
             ],
+            'new_franchise_name' => ['required_if:franchise_partner_id,new', 'nullable', 'string', 'max:255'],
+            'new_franchise_region_code' => ['required_if:franchise_partner_id,new', 'nullable', 'string', 'max:255', 'unique:franchise_partners,region_code'],
+            'new_franchise_country' => ['required_if:franchise_partner_id,new', 'nullable', 'string', 'size:2'],
+            'new_franchise_contact_email' => ['required_if:franchise_partner_id,new', 'nullable', 'email', 'max:255'],
         ]);
 
         // Reported live: a real customer-admin's email was reused here too
@@ -79,7 +93,34 @@ class PartnerController extends Controller
         // account ends up with a dead-end "Clienți" nav link that 403s.
         (new AssertEmailIsNotARealStaffAccount)($data['email'] ?? null, 'email', 'partener');
 
-        $franchisePartnerId = $request->user()->franchise_partner_id ?? $data['franchise_partner_id'];
+        // Reported live: a system operator creating the agency's first
+        // Partner for a brand-new region had no way to add that region's
+        // own FranchisePartner at all — no UI anywhere ever created one,
+        // so the dropdown here (and on Organizations/Create) stayed stuck
+        // on whichever franchise(s) already existed. In this business a
+        // Partner and its franchise are the same real-world company, so
+        // "Partener nou" is where a new one gets created too, instead of a
+        // separate, standalone "Franchise Partners" admin screen.
+        if ($request->user()->franchise_partner_id !== null) {
+            $franchisePartnerId = $request->user()->franchise_partner_id;
+        } elseif ($data['franchise_partner_id'] === 'new') {
+            $franchisePartner = FranchisePartner::create([
+                'name' => $data['new_franchise_name'],
+                'region_code' => strtoupper($data['new_franchise_region_code']),
+                'country' => strtoupper($data['new_franchise_country']),
+                'contact_email' => $data['new_franchise_contact_email'],
+            ]);
+
+            activity()->causedBy($request->user())->performedOn($franchisePartner)->log('franchise partner created');
+
+            $franchisePartnerId = $franchisePartner->id;
+        } else {
+            // Same reasoning as Organization::findOrFail($data['organization_id'])
+            // in EventController::store(): 404s the same way it would for a
+            // bare id that doesn't exist at all, rather than a bespoke
+            // 'exists' validation message.
+            $franchisePartnerId = FranchisePartner::findOrFail($data['franchise_partner_id'])->id;
+        }
 
         $accountEmailSent = null;
         $partnerUserId = null;

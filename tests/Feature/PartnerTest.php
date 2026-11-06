@@ -110,6 +110,94 @@ class PartnerTest extends TestCase
         Mail::assertNotSent(StaffAccountCreated::class);
     }
 
+    /**
+     * Reported live: a system operator onboarding the agency's first
+     * Partner for a brand-new region had no way to create that region's
+     * own FranchisePartner at all — nothing in the app ever created one
+     * except a raw DB/tinker insert, so the dropdown here (and on
+     * Organizations/Create) stayed stuck on whichever franchise(s) already
+     * existed. In this business a Partner and its franchise are the same
+     * real-world company, so "Partener nou" is where a new one gets
+     * created too.
+     */
+    public function test_a_system_operator_can_create_a_brand_new_franchise_partner_along_with_a_partner(): void
+    {
+        $user = User::factory()->create();
+        $user->assignRole('platform-admin');
+
+        $response = $this->actingAs($user)->post(route('partners.store'), [
+            'name' => 'Auras srl',
+            'country' => 'RO',
+            'franchise_partner_id' => 'new',
+            'new_franchise_name' => 'RO Auras',
+            'new_franchise_region_code' => 'ro-auras',
+            'new_franchise_country' => 'ro',
+            'new_franchise_contact_email' => 'office@auras.ro',
+        ]);
+
+        $response->assertRedirect(route('partners.index'));
+
+        $franchisePartner = FranchisePartner::where('name', 'RO Auras')->sole();
+        $this->assertSame('RO-AURAS', $franchisePartner->region_code);
+        $this->assertSame('RO', $franchisePartner->country);
+        $this->assertSame('office@auras.ro', $franchisePartner->contact_email);
+
+        $partner = Partner::sole();
+        $this->assertSame($franchisePartner->id, $partner->franchise_partner_id);
+    }
+
+    public function test_creating_a_new_franchise_partner_requires_its_own_fields(): void
+    {
+        $user = User::factory()->create();
+        $user->assignRole('platform-admin');
+
+        $response = $this->actingAs($user)->post(route('partners.store'), [
+            'name' => 'Auras srl',
+            'country' => 'RO',
+            'franchise_partner_id' => 'new',
+        ]);
+
+        $response->assertSessionHasErrors(['new_franchise_name', 'new_franchise_region_code', 'new_franchise_country', 'new_franchise_contact_email']);
+        $this->assertSame(0, Partner::count());
+        $this->assertSame(0, FranchisePartner::count());
+    }
+
+    public function test_a_new_franchise_partners_region_code_must_be_unique(): void
+    {
+        $user = User::factory()->create();
+        $user->assignRole('platform-admin');
+        FranchisePartner::factory()->create(['region_code' => 'RO-AURAS']);
+
+        $response = $this->actingAs($user)->post(route('partners.store'), [
+            'name' => 'Auras srl',
+            'country' => 'RO',
+            'franchise_partner_id' => 'new',
+            'new_franchise_name' => 'RO Auras',
+            'new_franchise_region_code' => 'RO-AURAS',
+            'new_franchise_country' => 'RO',
+            'new_franchise_contact_email' => 'office@auras.ro',
+        ]);
+
+        $response->assertSessionHasErrors('new_franchise_region_code');
+        $this->assertSame(0, Partner::count());
+    }
+
+    public function test_a_franchise_partner_admin_always_gets_their_own_franchise_regardless_of_input(): void
+    {
+        $franchisePartner = FranchisePartner::factory()->create();
+        $otherFranchisePartner = FranchisePartner::factory()->create();
+        $user = $this->franchisePartnerAdmin($franchisePartner);
+
+        $this->actingAs($user)->post(route('partners.store'), [
+            'name' => 'Auras srl',
+            'country' => 'RO',
+            'franchise_partner_id' => $otherFranchisePartner->id,
+        ]);
+
+        $this->assertSame($franchisePartner->id, Partner::sole()->franchise_partner_id);
+        $this->assertSame(2, FranchisePartner::count());
+    }
+
     public function test_a_system_operator_must_pick_a_franchise_partner_explicitly(): void
     {
         $user = User::factory()->create();

@@ -16,7 +16,7 @@ function Field({ label, field, errors, hint, ...props }) {
     );
 }
 
-export default function Create({ franchisePartners }) {
+export default function Create({ franchisePartners, isSystemOperator }) {
     const { t } = useAppTranslations();
     const c = t.partners.create;
 
@@ -24,8 +24,14 @@ export default function Create({ franchisePartners }) {
         name: '',
         country: 'RO',
         email: '',
-        franchise_partner_id: franchisePartners?.[0]?.id ?? '',
+        franchise_partner_id: franchisePartners?.[0]?.id ?? (isSystemOperator ? 'new' : ''),
+        new_franchise_name: '',
+        new_franchise_region_code: '',
+        new_franchise_country: 'RO',
+        new_franchise_contact_email: '',
     });
+
+    const isNewFranchise = isSystemOperator && data.franchise_partner_id === 'new';
 
     function submit(e) {
         e.preventDefault();
@@ -65,7 +71,7 @@ export default function Create({ franchisePartners }) {
                             hint={c.emailHint}
                         />
 
-                        {franchisePartners?.length > 0 && (
+                        {isSystemOperator && (
                             <div>
                                 <InputLabel value={c.franchiseLabel} />
                                 <select
@@ -76,8 +82,43 @@ export default function Create({ franchisePartners }) {
                                     {franchisePartners.map((franchisePartner) => (
                                         <option key={franchisePartner.id} value={franchisePartner.id}>{franchisePartner.name}</option>
                                     ))}
+                                    <option value="new">{c.newFranchiseOption}</option>
                                 </select>
                                 <InputError message={errors.franchise_partner_id} className="mt-1" />
+                            </div>
+                        )}
+
+                        {isNewFranchise && (
+                            <div className="flex flex-col gap-4 rounded-md border border-line bg-paper-sunken p-4">
+                                <p className="text-xs font-medium text-ink-soft">{c.newFranchiseHint}</p>
+                                <Field
+                                    label={c.newFranchiseNameLabel}
+                                    placeholder={c.newFranchiseNamePlaceholder}
+                                    field={{ value: data.new_franchise_name, onChange: (e) => setData('new_franchise_name', e.target.value) }}
+                                    errors={errors.new_franchise_name}
+                                />
+                                <div className="grid grid-cols-2 gap-4">
+                                    <Field
+                                        label={c.newFranchiseRegionCodeLabel}
+                                        placeholder={c.newFranchiseRegionCodePlaceholder}
+                                        field={{ value: data.new_franchise_region_code, onChange: (e) => setData('new_franchise_region_code', e.target.value.toUpperCase()) }}
+                                        errors={errors.new_franchise_region_code}
+                                        hint={c.newFranchiseRegionCodeHint}
+                                    />
+                                    <Field
+                                        label={c.countryLabel}
+                                        placeholder="RO"
+                                        maxLength={2}
+                                        field={{ value: data.new_franchise_country, onChange: (e) => setData('new_franchise_country', e.target.value.toUpperCase()) }}
+                                        errors={errors.new_franchise_country}
+                                    />
+                                </div>
+                                <Field
+                                    label={c.newFranchiseContactEmailLabel}
+                                    type="email"
+                                    field={{ value: data.new_franchise_contact_email, onChange: (e) => setData('new_franchise_contact_email', e.target.value) }}
+                                    errors={errors.new_franchise_contact_email}
+                                />
                             </div>
                         )}
                     </div>
