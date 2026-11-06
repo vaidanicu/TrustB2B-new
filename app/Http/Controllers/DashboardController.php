@@ -105,7 +105,12 @@ class DashboardController extends Controller
      * them entirely. Scoped by matching photographer_user_id, NOT by
      * organization_id, same reasoning as clientContactDashboard() above.
      * Gallery stays visible (that's how they upload); Participants is
-     * hidden — a photographer never gets participants.view.
+     * hidden — a photographer never gets participants.view. The event
+     * name itself links straight to the gallery too, not the full
+     * Events/Show detail page (client billing info, GDPR contract text):
+     * EventController::show() isn't meant for this role, and Event's own
+     * route binding only widens for the gallery/upload path a photographer
+     * actually needs, not for every event route.
      */
     private function photographerDashboard(User $user): Response
     {
@@ -123,7 +128,8 @@ class DashboardController extends Controller
                 'isRestaurant' => $event->is_restaurant,
             ]),
             'showParticipantsLink' => false,
-            'showGalleryLink' => true,
+            'showGalleryLink' => false,
+            'eventsLinkTo' => 'gallery',
         ]);
     }
 

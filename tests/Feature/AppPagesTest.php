@@ -106,7 +106,8 @@ class AppPagesTest extends TestCase
 
         $response->assertInertia(fn ($page) => $page->component('Dashboard')
             ->where('showParticipantsLink', false)
-            ->where('showGalleryLink', true)
+            ->where('showGalleryLink', false)
+            ->where('eventsLinkTo', 'gallery')
             ->has('events', 2));
 
         $names = $response->viewData('page')['props']['events'];

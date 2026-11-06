@@ -80,6 +80,42 @@ class Event extends Model implements HasMedia
     }
 
     /**
+     * Reported: a photographer re-used across several unrelated clients
+     * (EventController::findOrCreatePhotographer() stamps organization_id
+     * once, on account creation, never again) got a 404 on every event
+     * beyond the first client — implicit route binding runs through
+     * BelongsToOrganization's TenantScope before any controller
+     * authorization is reached at all, and that scope only ever matches
+     * the acting user's OWN organization_id. Falls back to an unscoped
+     * lookup, but only for the one event this exact account is actually
+     * the designated photographer_user_id on — never a blanket bypass, and
+     * safe to do at all only because RLS is already disabled on this table
+     * (see disable_row_level_security_on_events_table) for the same class
+     * of "authorized, but not by tenant" access.
+     */
+    public function resolveRouteBinding($value, $field = null)
+    {
+        $field ??= $this->getRouteKeyName();
+
+        $event = static::where($field, $value)->first();
+
+        if ($event !== null) {
+            return $event;
+        }
+
+        $user = auth()->user();
+
+        if ($user === null) {
+            return null;
+        }
+
+        return static::withoutGlobalScopes()
+            ->where($field, $value)
+            ->where('photographer_user_id', $user->id)
+            ->first();
+    }
+
+    /**
      * The single person allowed to upload to this event's gallery when set
      * — see GalleryController's authorizeUpload(). Distinct from the plain
      * `photographer` text field, which is just a display name and existed

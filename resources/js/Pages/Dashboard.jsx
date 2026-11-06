@@ -2,7 +2,7 @@ import AppLayout from '@/Layouts/AppLayout';
 import { useAppTranslations } from '@/i18n/appTranslations';
 import { Head, Link, usePage } from '@inertiajs/react';
 
-export default function Dashboard({ events, showParticipantsLink = true, showGalleryLink = true }) {
+export default function Dashboard({ events, showParticipantsLink = true, showGalleryLink = true, eventsLinkTo = 'show' }) {
     const { flash } = usePage().props;
     const { t } = useAppTranslations();
     const statusStyles = {
@@ -56,7 +56,10 @@ export default function Dashboard({ events, showParticipantsLink = true, showGal
                                         className="grid grid-cols-[2.2fr_1fr_1.2fr_auto] items-center gap-3 border-b border-line px-5 py-4 text-sm last:border-0 hover:bg-paper-raised"
                                     >
                                         <span className="font-medium text-ink">
-                                            <Link href={route('events.show', event.id)} className="hover:underline">
+                                            <Link
+                                                href={eventsLinkTo === 'gallery' ? route('gallery.index', event.id) : route('events.show', event.id)}
+                                                className="hover:underline"
+                                            >
                                                 {event.name}
                                             </Link>
                                             {event.isRestaurant && (

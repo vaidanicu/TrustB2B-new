@@ -478,6 +478,39 @@ class GalleryTest extends TestCase
         Mail::assertSent(PhotographerConfirmedAccess::class, 1);
     }
 
+    public function test_a_photographer_can_open_and_upload_to_an_assigned_event_at_a_different_client_than_their_own_account(): void
+    {
+        $ownOrganization = Organization::factory()->create();
+        $otherOrganization = Organization::factory()->create();
+
+        $photographer = $this->userWithRole($ownOrganization, 'photographer');
+        $event = Event::factory()->for($otherOrganization)->create([
+            'franchise_partner_id' => $otherOrganization->franchise_partner_id,
+            'photographer_user_id' => $photographer->id,
+        ]);
+
+        $this->actingAs($photographer)->get(route('gallery.index', $event))->assertOk();
+
+        $this->actingAs($photographer)
+            ->post(route('gallery.store', $event), ['photos' => [UploadedFile::fake()->image('photo.jpg')]])
+            ->assertRedirect();
+
+        $this->assertCount(1, $event->fresh()->getMedia('gallery'));
+    }
+
+    public function test_a_photographer_still_cannot_reach_an_event_at_another_client_they_are_not_assigned_to(): void
+    {
+        $ownOrganization = Organization::factory()->create();
+        $otherOrganization = Organization::factory()->create();
+
+        $photographer = $this->userWithRole($ownOrganization, 'photographer');
+        $event = Event::factory()->for($otherOrganization)->create([
+            'franchise_partner_id' => $otherOrganization->franchise_partner_id,
+        ]);
+
+        $this->actingAs($photographer)->get(route('gallery.index', $event))->assertNotFound();
+    }
+
     public function test_a_partner_can_upload_to_its_own_event_when_no_photographer_is_assigned(): void
     {
         $franchisePartner = FranchisePartner::factory()->create();
