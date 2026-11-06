@@ -84,8 +84,58 @@ class PartnerTest extends TestCase
 
         $account = User::where('email', 'office-ro@ttc-group.hu')->sole();
         $this->assertTrue($account->hasRole('partner'));
+        // A brand-new Partner account is also made a franchise-partner-admin
+        // — in this business a Partner IS its own franchise — so it gets
+        // the full management dashboard, not just the narrow removal-
+        // requests-only one. See the regression test below for the
+        // end-to-end dashboard check.
+        $this->assertTrue($account->hasRole('franchise-partner-admin'));
 
         Mail::assertSent(StaffAccountCreated::class, fn (StaffAccountCreated $mail) => $mail->hasTo('office-ro@ttc-group.hu'));
+    }
+
+    public function test_a_freshly_created_partner_account_sees_the_full_franchise_dashboard_not_just_the_partner_one(): void
+    {
+        Mail::fake();
+
+        $franchisePartner = FranchisePartner::factory()->create();
+        $user = $this->franchisePartnerAdmin($franchisePartner);
+
+        $this->actingAs($user)->post(route('partners.store'), [
+            'name' => 'Auras srl',
+            'country' => 'RO',
+            'email' => 'office-ro@ttc-group.hu',
+        ]);
+
+        $newAccount = User::where('email', 'office-ro@ttc-group.hu')->sole();
+
+        $this->actingAs($newAccount)
+            ->get(route('dashboard'))
+            ->assertRedirect(route('organizations.index'));
+
+        $this->actingAs($newAccount)
+            ->get(route('organizations.index'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page->component('Organizations/Index')->where('canManage', true));
+    }
+
+    public function test_reusing_an_existing_account_for_a_new_partner_does_not_also_make_it_a_franchise_partner_admin(): void
+    {
+        Mail::fake();
+
+        $franchisePartner = FranchisePartner::factory()->create();
+        $user = $this->franchisePartnerAdmin($franchisePartner);
+        $existing = User::factory()->create(['email' => 'office-ro@ttc-group.hu']);
+
+        $this->actingAs($user)->post(route('partners.store'), [
+            'name' => 'Csaba',
+            'country' => 'RO',
+            'email' => 'office-ro@ttc-group.hu',
+        ]);
+
+        $fresh = $existing->fresh();
+        $this->assertTrue($fresh->hasRole('partner'));
+        $this->assertFalse($fresh->hasRole('franchise-partner-admin'));
     }
 
     public function test_creating_a_partner_with_an_existing_email_does_not_flash_a_password(): void

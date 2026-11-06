@@ -319,6 +319,17 @@ class PartnerController extends Controller
      * email the credentials — only a freshly created account gets that
      * email, an existing one already knows how to log in.
      *
+     * Reported: in this business a Partner IS its own franchise (see
+     * AssertEmailIsNotARealStaffAccount's own docblock and the "Franciză
+     * nouă" option on store() above), so a brand-new Partner account is
+     * also made a franchise-partner-admin — the full management view
+     * ("Gall"'s own dashboard: Clienți/Parteneri/create client/create
+     * event), not just the narrow Partner-only one (cross-event removal
+     * requests). Only on first creation, not when REUSING an existing
+     * account by email: that account may already have its own deliberate
+     * role setup we have no business expanding just because its email
+     * happened to be typed into this form.
+     *
      * @return array{0: User, 1: bool|null, 2: string|null}
      */
     private function findOrCreateAccount(string $email, string $partnerName, int $franchisePartnerId, string $lang): array
@@ -340,6 +351,8 @@ class PartnerController extends Controller
             ]);
 
             $emailSent = (new SendAccountCreatedEmail)->send($user, $password, 'regional-partner', $partnerName, $lang);
+
+            (new AssignRole)->grant($user, 'franchise-partner-admin', 'new partner account is also its own franchise admin');
         }
 
         (new AssignRole)->grant($user, 'partner', 'regional partner account');
