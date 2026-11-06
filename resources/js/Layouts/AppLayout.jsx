@@ -80,9 +80,18 @@ export default function AppLayout({ title, active = null, actions = null, childr
     // server-side: the platform operator's own admin account is also the
     // Partner record for Hungary ("MM Kft.") and must keep the full nav,
     // not fall into the restricted partner-only one just for holding both
-    // roles at once.
+    // roles at once. The organization-staff roles are excluded too — same
+    // reasoning, same server-side method: reported live, a real
+    // customer-admin whose email got reused for a Partner account
+    // (additive grant, never revoked) got shown this nav's "Clienți" link
+    // even though organizations.index 403s them server-side (their
+    // organization_id makes $user->partner unresolvable there), a dead end
+    // this check must avoid offering in the first place.
     const isPartner = (user?.roles ?? []).includes('partner')
-        && !(user?.roles ?? []).some((role) => ['platform-admin', 'franchisor-admin', 'franchise-partner-admin'].includes(role));
+        && !(user?.roles ?? []).some((role) => [
+            'platform-admin', 'franchisor-admin', 'franchise-partner-admin',
+            'customer-admin', 'event-manager', 'data-protection-officer',
+        ].includes(role));
 
     const navItems = isPartner
         ? [

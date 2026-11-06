@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Tenancy\AssertEmailIsNotARealStaffAccount;
 use App\Actions\Tenancy\AssignRole;
 use App\Mail\EventCreatedForClientContact;
 use App\Mail\PhotographerAssignedToEvent;
@@ -248,12 +249,12 @@ class EventController extends Controller
         // to paper over it afterwards, refuse the submission up front if
         // the email already belongs to a real staff account, so the agency
         // picks a different (actual photographer/contact) email instead.
-        $this->assertEmailIsNotARealStaffAccount(
+        (new AssertEmailIsNotARealStaffAccount)(
             $data['photographer_email'] ?? null,
             'photographer_email',
             'fotograf',
         );
-        $this->assertEmailIsNotARealStaffAccount(
+        (new AssertEmailIsNotARealStaffAccount)(
             $data['client_contact_email'] ?? null,
             'client_contact_email',
             'persoana de contact client',
@@ -344,30 +345,6 @@ class EventController extends Controller
 
         return redirect()->route('organizations.events', $organization)
             ->with('status', FlashMessage::t($user->locale ?? 'ro', 'event.created', ['name' => $event->name]));
-    }
-
-    /**
-     * Blocks store() outright when $email already belongs to a real
-     * organization-staff account (User::hasNoRealOrganizationStaffRole()
-     * — customer-admin/event-manager/data-protection-officer), instead of
-     * letting findOrCreatePhotographer()/notifyClientContact() reuse that
-     * account and additively (and silently) widen its roles.
-     */
-    private function assertEmailIsNotARealStaffAccount(?string $email, string $field, string $roleLabel): void
-    {
-        if (blank($email)) {
-            return;
-        }
-
-        $account = User::withoutGlobalScopes()->where('email', $email)->first();
-
-        if ($account === null || $account->hasNoRealOrganizationStaffRole()) {
-            return;
-        }
-
-        throw ValidationException::withMessages([
-            $field => "Acest email apartine deja contului de organizatie al lui {$account->name} — nu poate fi folosit si ca {$roleLabel}. Foloseste alt email.",
-        ]);
     }
 
     /**

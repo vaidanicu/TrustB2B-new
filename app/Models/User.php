@@ -118,10 +118,22 @@ class User extends Authenticatable
      * Every "show the partner-only view" branch (DashboardController,
      * OrganizationController, AppLayout's nav) reads this, not partner()
      * directly, so admin + Partner always wins.
+     *
+     * hasNoRealOrganizationStaffRole() is checked explicitly here too, not
+     * left to happen by accident: a real customer-admin/event-manager/DPO
+     * whose email got reused for a Partner account (PartnerController's
+     * own findOrCreateAccount(), additive like every other role grant in
+     * this app) would otherwise ALREADY get false here anyway, since
+     * $this->partner can never resolve for an account that has an
+     * organization_id (Partner's own TenantScope('organization_id') scopes
+     * it to a column that's always null on a Partner row) — but relying on
+     * that side effect is fragile, and the AppLayout nav check below has no
+     * such protection of its own.
      */
     public function isActingAsPartnerOnly(): bool
     {
         return $this->partner !== null
+            && $this->hasNoRealOrganizationStaffRole()
             && ! $this->hasAnyRole(['platform-admin', 'franchisor-admin', 'franchise-partner-admin']);
     }
 

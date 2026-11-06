@@ -124,6 +124,75 @@ class PartnerTest extends TestCase
         $this->assertSame(0, Partner::count());
     }
 
+    public function test_a_real_staff_members_email_cannot_be_used_to_create_a_partner_account(): void
+    {
+        $franchisePartner = FranchisePartner::factory()->create();
+        $organization = Organization::factory()->for($franchisePartner)->create();
+        $user = $this->franchisePartnerAdmin($franchisePartner);
+        $staffMember = User::factory()->forOrganization($organization)->create(['email' => 'staff@exemplu.ro']);
+        (new AssignRole)->grant($staffMember, 'customer-admin', 'test');
+
+        $response = $this->actingAs($user)->post(route('partners.store'), [
+            'name' => 'Auras srl',
+            'country' => 'RO',
+            'email' => 'staff@exemplu.ro',
+        ]);
+
+        $response->assertSessionHasErrors('email');
+        $this->assertSame(0, Partner::count());
+        $this->assertFalse($staffMember->fresh()->hasRole('partner'));
+    }
+
+    public function test_a_real_staff_members_email_cannot_be_used_to_relink_a_partner_account(): void
+    {
+        $franchisePartner = FranchisePartner::factory()->create();
+        $organization = Organization::factory()->for($franchisePartner)->create();
+        $partner = Partner::factory()->for($franchisePartner)->create();
+        $user = $this->franchisePartnerAdmin($franchisePartner);
+        $staffMember = User::factory()->forOrganization($organization)->create(['email' => 'staff@exemplu.ro']);
+        (new AssignRole)->grant($staffMember, 'event-manager', 'test');
+
+        $response = $this->actingAs($user)->patch(route('partners.update', $partner), [
+            'name' => $partner->name,
+            'country' => $partner->country,
+            'email' => 'staff@exemplu.ro',
+        ]);
+
+        $response->assertSessionHasErrors('email');
+        $this->assertNull($partner->fresh()->user_id);
+        $this->assertFalse($staffMember->fresh()->hasRole('partner'));
+    }
+
+    /**
+     * Pins down what happens for an account this guard can no longer let
+     * get created, in case one already exists from before the fix (or any
+     * future bypass): isActingAsPartnerOnly() now explicitly excludes
+     * hasNoRealOrganizationStaffRole(), so the account keeps its normal
+     * organization dashboard — it just can't reach organizations.index
+     * (customer-admin alone never carries organizations.manage), which is
+     * the correct, narrower failure mode rather than a broken partner view.
+     */
+    public function test_a_customer_admin_with_a_dangling_partner_role_still_gets_their_organization_dashboard(): void
+    {
+        $franchisePartner = FranchisePartner::factory()->create();
+        $organization = Organization::factory()->for($franchisePartner)->create();
+        $admin = User::factory()->forOrganization($organization)->create();
+        (new AssignRole)->grant($admin, 'customer-admin', 'test');
+        (new AssignRole)->grant($admin, 'partner', 'test');
+        Partner::factory()->for($franchisePartner)->create(['user_id' => $admin->id]);
+
+        Event::factory()->for($organization)->create(['franchise_partner_id' => $franchisePartner->id, 'name' => 'Theirs']);
+
+        $this->actingAs($admin)
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page->component('Dashboard')
+                ->where('showParticipantsLink', true)
+                ->has('events', 1));
+
+        $this->actingAs($admin)->get(route('organizations.index'))->assertForbidden();
+    }
+
     public function test_an_organization_scoped_user_cannot_view_or_create_partners(): void
     {
         $user = User::factory()->forOrganization()->create();

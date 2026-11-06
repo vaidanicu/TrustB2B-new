@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Tenancy\AssertEmailIsNotARealStaffAccount;
 use App\Actions\Tenancy\AssignRole;
 use App\Actions\Tenancy\SendAccountCreatedEmail;
 use App\Models\FranchisePartner;
@@ -66,6 +67,17 @@ class PartnerController extends Controller
                 'nullable', 'exists:franchise_partners,id',
             ],
         ]);
+
+        // Reported live: a real customer-admin's email was reused here too
+        // (same pattern as EventController's photographer_email/
+        // client_contact_email), additively granting it 'partner' — and,
+        // unlike the photographer/client-contact case, this one doesn't
+        // just narrow the account's dashboard: Partner's own
+        // TenantScope('organization_id') can never resolve $user->partner
+        // for an account that already has an organization_id (a Partner
+        // row's own organization_id is always null by design), so the
+        // account ends up with a dead-end "Clienți" nav link that 403s.
+        (new AssertEmailIsNotARealStaffAccount)($data['email'] ?? null, 'email', 'partener');
 
         $franchisePartnerId = $request->user()->franchise_partner_id ?? $data['franchise_partner_id'];
 
@@ -162,6 +174,9 @@ class PartnerController extends Controller
 
         if ($newEmail !== $partner->email) {
             if (filled($newEmail)) {
+                // Same guard as store() — see its own comment.
+                (new AssertEmailIsNotARealStaffAccount)($newEmail, 'email', 'partener');
+
                 [$partnerUser, $accountEmailSent, $newAccountPassword] = $this->findOrCreateAccount(
                     $newEmail,
                     $data['name'],
