@@ -157,7 +157,11 @@ class EventController extends Controller
         abort_unless($partner !== null || $user->can('events.manage'), 403);
 
         return Inertia::render('Events/Create', [
-            'organizations' => Organization::query()->orderBy('name')->get(['id', 'name']),
+            // A suspended client can't be picked for a new event at all —
+            // reported: "Suspendat" didn't actually stop anything. Its
+            // existing events/participants/gallery stay fully usable;
+            // only starting something NEW for it is blocked.
+            'organizations' => Organization::query()->where('contract_status', '!=', 'suspended')->orderBy('name')->get(['id', 'name']),
             // A Partner never picks "Partener responsabil" — it's always
             // itself, forced in store() below — so it gets no dropdown
             // list at all, just its own name shown read-only.
@@ -217,6 +221,15 @@ class EventController extends Controller
         // doesn't exist at all if a franchise-partner-admin tries to pass
         // another partner's organization_id by hand.
         $organization = Organization::findOrFail($data['organization_id']);
+
+        // Same guard as create()'s own dropdown filter, enforced again
+        // here in case of a direct POST (e.g. a stale page, or the client
+        // got suspended between loading the form and submitting it).
+        if ($organization->contract_status === 'suspended') {
+            throw ValidationException::withMessages([
+                'organization_id' => 'Acest client e suspendat — nu i se mai pot crea evenimente noi.',
+            ]);
+        }
 
         // A Partner is always the event's own partner — never a free
         // choice (the dropdown doesn't even reach it, see create()) — a

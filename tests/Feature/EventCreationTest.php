@@ -336,4 +336,42 @@ class EventCreationTest extends TestCase
         $response->assertSessionHasErrors('retention_days');
         $this->assertSame(0, Event::count());
     }
+
+    public function test_a_suspended_clients_organization_is_not_offered_on_the_create_page(): void
+    {
+        $this->seed(RolesAndPermissionsSeeder::class);
+
+        $franchisePartner = FranchisePartner::factory()->create();
+        Organization::factory()->for($franchisePartner)->create(['name' => 'Suspended Co', 'contract_status' => 'suspended']);
+        Organization::factory()->for($franchisePartner)->create(['name' => 'Active Co', 'contract_status' => 'active']);
+        $user = $this->franchisePartnerAdmin($franchisePartner);
+
+        $this->actingAs($user)
+            ->get(route('events.create'))
+            ->assertInertia(fn ($page) => $page->has('organizations', 1)->where('organizations.0.name', 'Active Co'));
+    }
+
+    public function test_an_event_cannot_be_created_for_a_suspended_client(): void
+    {
+        $this->seed(RolesAndPermissionsSeeder::class);
+
+        $franchisePartner = FranchisePartner::factory()->create();
+        $organization = Organization::factory()->for($franchisePartner)->create(['contract_status' => 'suspended']);
+        $user = $this->franchisePartnerAdmin($franchisePartner);
+
+        $response = $this->actingAs($user)->post(route('events.store'), [
+            'organization_id' => $organization->id,
+            'name' => 'Eveniment test',
+            'country' => 'RO',
+            'language' => 'ro',
+            'starts_at' => '2026-12-01',
+            'ends_at' => '2026-12-01',
+            'retention_days' => 90,
+            'end_of_cycle_action' => 'delete',
+            'gdpr_contract_text' => 'Text.',
+        ]);
+
+        $response->assertSessionHasErrors('organization_id');
+        $this->assertSame(0, Event::count());
+    }
 }
