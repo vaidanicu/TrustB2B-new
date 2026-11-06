@@ -4,7 +4,7 @@ namespace Tests\Feature;
 
 use App\Actions\Tenancy\AssignRole;
 use App\Mail\EventCreatedForClientContact;
-use App\Mail\StaffAccountCreated;
+use App\Mail\PhotographerAssignedToEvent;
 use App\Models\Event;
 use App\Models\FranchisePartner;
 use App\Models\Organization;
@@ -177,8 +177,9 @@ class EventCreationTest extends TestCase
         $this->assertTrue($photographer->hasRole('photographer'));
         $this->assertNotNull($photographer->email_verified_at);
 
-        Mail::assertSent(StaffAccountCreated::class, fn (StaffAccountCreated $mail) => $mail->hasTo('fotograf@exemplu.ro')
-            && $mail->contextType === 'event-photographer');
+        Mail::assertSent(PhotographerAssignedToEvent::class, fn (PhotographerAssignedToEvent $mail) => $mail->hasTo('fotograf@exemplu.ro')
+            && $mail->event->is($event)
+            && $mail->password !== null);
     }
 
     public function test_an_existing_photographer_account_is_reused_not_recreated(): void
@@ -206,7 +207,12 @@ class EventCreationTest extends TestCase
 
         $this->assertSame(1, User::where('email', 'fotograf@exemplu.ro')->count());
         $this->assertSame($existingPhotographer->id, Event::sole()->photographer_user_id);
-        Mail::assertNotSent(StaffAccountCreated::class);
+
+        // Unlike before, this now fires every time regardless — same
+        // reasoning as the client-contact notification — but without a
+        // password, since the existing account already knows how to log in.
+        Mail::assertSent(PhotographerAssignedToEvent::class, fn (PhotographerAssignedToEvent $mail) => $mail->hasTo('fotograf@exemplu.ro')
+            && $mail->password === null);
     }
 
     public function test_a_client_contact_email_creates_an_account_and_is_notified(): void

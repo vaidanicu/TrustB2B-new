@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Actions\Tenancy\AssignRole;
-use App\Actions\Tenancy\SendAccountCreatedEmail;
 use App\Mail\EventCreatedForClientContact;
+use App\Mail\PhotographerAssignedToEvent;
 use App\Models\Event;
 use App\Models\Organization;
 use App\Models\Partner;
@@ -257,16 +257,14 @@ class EventController extends Controller
             ? $actingPartner->id
             : (filled($data['partner_id'] ?? null) ? Partner::findOrFail($data['partner_id'])->id : null);
 
-        $photographerEmailSent = null;
+        $photographerPassword = null;
         $photographerUser = null;
 
         if (filled($data['photographer_email'] ?? null)) {
-            [$photographerUser, $photographerEmailSent] = $this->findOrCreatePhotographer(
+            [$photographerUser, $photographerPassword] = $this->findOrCreatePhotographer(
                 $data['photographer_email'],
                 $data['photographer'] ?? $data['photographer_email'],
                 $organization,
-                $data['name'],
-                $user->locale ?? 'ro',
             );
         }
 
@@ -290,9 +288,19 @@ class EventController extends Controller
             ->performedOn($event)
             ->log('event created');
 
+        // Reported: a photographer needs to hear about EVERY event they're
+        // assigned to, not just the first time an account gets created for
+        // them — "der Fotograf... weiß, wie und wo er Fotos hochladen
+        // soll" has to hold for the 2nd/3rd event too. Sent after the event
+        // exists (unlike the account itself, resolved above before
+        // Event::create() needed its id for photographer_user_id).
+        if ($photographerUser !== null) {
+            $this->notifyPhotographerAssigned($photographerUser, $event, $photographerPassword, $user->locale ?? 'ro');
+        }
+
         // Reported: the client-side contact who signed the contract has no
-        // way to know the event was actually set up — unlike
-        // findOrCreatePhotographer()'s pattern, this notifies EVERY time
+        // way to know the event was actually set up — same reasoning as
+        // the photographer notification above, this notifies EVERY time
         // (not just on a freshly created account), since the whole point
         // is confirming this specific event's creation, not just handing
         // out credentials once.
@@ -307,8 +315,7 @@ class EventController extends Controller
         }
 
         return redirect()->route('organizations.events', $organization)
-            ->with('status', FlashMessage::t($user->locale ?? 'ro', 'event.created', ['name' => $event->name]))
-            ->with('photographerEmailSent', $photographerEmailSent);
+            ->with('status', FlashMessage::t($user->locale ?? 'ro', 'event.created', ['name' => $event->name]));
     }
 
     /**
@@ -353,16 +360,16 @@ class EventController extends Controller
      * events shouldn't get a new password every time) or creates one —
      * either way, grants 'photographer' additively (AssignRole never
      * revokes what's already there) and links it as this event's one
-     * allowed uploader (GalleryController::authorizeUpload()). Only a
-     * freshly created account gets the "here's your password" email; an
-     * existing one already knows how to log in.
+     * allowed uploader (GalleryController::authorizeUpload()). The actual
+     * "you've been assigned to this event" email is sent separately, once
+     * the event exists — see notifyPhotographerAssigned() below.
      *
-     * @return array{0: User, 1: bool|null}
+     * @return array{0: User, 1: string|null}
      */
-    private function findOrCreatePhotographer(string $email, string $name, Organization $organization, string $eventName, string $lang): array
+    private function findOrCreatePhotographer(string $email, string $name, Organization $organization): array
     {
         $user = User::withoutGlobalScopes()->where('email', $email)->first();
-        $emailSent = null;
+        $password = null;
 
         if ($user === null) {
             $password = Str::password(14);
@@ -375,13 +382,29 @@ class EventController extends Controller
                 'franchise_partner_id' => $organization->franchise_partner_id,
                 'email_verified_at' => now(),
             ]);
-
-            $emailSent = (new SendAccountCreatedEmail)->send($user, $password, 'event-photographer', $eventName, $lang);
         }
 
         (new AssignRole)->grant($user, 'photographer', 'designated event uploader');
 
-        return [$user, $emailSent];
+        return [$user, $password];
+    }
+
+    /**
+     * Mirrors notifyClientContact(): fires EVERY time a photographer is
+     * designated for an event, not just the first time an account is
+     * created for them.
+     */
+    private function notifyPhotographerAssigned(User $account, Event $event, ?string $password, string $lang): void
+    {
+        try {
+            Mail::to($account->email)->send(new PhotographerAssignedToEvent($account, $event, $password, $lang));
+        } catch (\Throwable $e) {
+            Log::warning('Event-assignment notification to photographer failed to send', [
+                'event_id' => $event->id,
+                'account_id' => $account->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
     /**
