@@ -59,14 +59,16 @@ class OrganizationController extends Controller
                     $query->where('partner_id', $partner->id)
                         ->orWhereHas('events', fn ($eventsQuery) => $eventsQuery->where('partner_id', $partner->id));
                 })
+                ->with('partner')
                 ->orderBy('name')
-                ->get(['id', 'name', 'country', 'contract_status']);
+                ->get(['id', 'name', 'country', 'contract_status', 'partner_id']);
         } else {
             abort_unless($user->can('organizations.manage'), 403);
 
             $organizations = Organization::query()
+                ->with('partner')
                 ->orderBy('name')
-                ->get(['id', 'name', 'country', 'contract_status']);
+                ->get(['id', 'name', 'country', 'contract_status', 'partner_id']);
         }
 
         return Inertia::render('Organizations/Index', [
@@ -80,6 +82,12 @@ class OrganizationController extends Controller
                 'name' => $organization->name,
                 'country' => $organization->country,
                 'status' => $organization->contract_status,
+                // Reported: on the full client list, an admin should see
+                // at a glance which Partner brought each client on —
+                // "Organization.partner_id" (see the model's own
+                // docblock), not Event.partner_id, since a client can
+                // have events from several partners.
+                'partnerName' => $organization->partner?->name,
             ]),
         ]);
     }

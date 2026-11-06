@@ -91,8 +91,9 @@ export default function Index({ organizations, canManage }) {
                 </p>
 
                 <div className="overflow-hidden rounded-lg bg-white shadow-sm">
-                    <div className="grid grid-cols-[2.4fr_1fr_1fr_auto] gap-3 border-b border-line px-5 py-3 text-xs font-semibold uppercase tracking-wide text-ink-muted">
+                    <div className="grid grid-cols-[2fr_1.2fr_0.8fr_1fr_auto] gap-3 border-b border-line px-5 py-3 text-xs font-semibold uppercase tracking-wide text-ink-muted">
                         <span>{t.organizations.index.colOrg}</span>
+                        <span>{t.organizations.index.colPartner}</span>
                         <span>{t.organizations.index.colCountry}</span>
                         <span>{t.organizations.index.colStatus}</span>
                         <span></span>
@@ -108,9 +109,10 @@ export default function Index({ organizations, canManage }) {
                         return (
                             <div
                                 key={organization.id}
-                                className="grid grid-cols-[2.4fr_1fr_1fr_auto] items-center gap-3 border-b border-line px-5 py-4 text-sm last:border-0 hover:bg-paper-raised"
+                                className="grid grid-cols-[2fr_1.2fr_0.8fr_1fr_auto] items-center gap-3 border-b border-line px-5 py-4 text-sm last:border-0 hover:bg-paper-raised"
                             >
                                 <span className="font-medium text-ink">{organization.name}</span>
+                                <span className="min-w-0 truncate text-ink-soft">{organization.partnerName ?? '—'}</span>
                                 <span className="text-ink-soft">{organization.country}</span>
                                 {canManage ? (
                                     <StatusSelect organization={organization} style={style} t={t} />

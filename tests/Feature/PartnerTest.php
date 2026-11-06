@@ -394,6 +394,21 @@ class PartnerTest extends TestCase
             ->assertInertia(fn ($page) => $page->has('organizations', 1)->where('organizations.0.name', 'Fresh client'));
     }
 
+    public function test_the_client_list_shows_which_partner_each_client_belongs_to(): void
+    {
+        $franchisePartner = FranchisePartner::factory()->create();
+        $partner = Partner::factory()->for($franchisePartner)->create(['name' => 'Gall']);
+        $admin = $this->franchisePartnerAdmin($franchisePartner);
+        Organization::factory()->for($franchisePartner)->create(['name' => 'Owned client', 'partner_id' => $partner->id]);
+        Organization::factory()->for($franchisePartner)->create(['name' => 'No partner client']);
+
+        $this->actingAs($admin)
+            ->get(route('organizations.index'))
+            ->assertInertia(fn ($page) => $page
+                ->where('organizations.0.partnerName', null)
+                ->where('organizations.1.partnerName', 'Gall'));
+    }
+
     public function test_a_partner_can_change_the_contract_status_of_its_own_client(): void
     {
         $franchisePartner = FranchisePartner::factory()->create();

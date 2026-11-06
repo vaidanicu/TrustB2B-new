@@ -23,7 +23,7 @@ export const APP_TRANSLATIONS = {
                 emailFailed: 'Emailul nu a putut fi trimis automat — trimite datele manual (apar o singură dată):',
                 emailLabel: 'Email', passwordLabel: 'Parolă',
                 countOne: 'organizație client', countOther: 'organizații client',
-                colOrg: 'Organizație', colCountry: 'Țară', colStatus: 'Stare', empty: 'Niciun client încă.',
+                colOrg: 'Organizație', colPartner: 'Partener', colCountry: 'Țară', colStatus: 'Stare', empty: 'Niciun client încă.',
             },
             create: {
                 title: 'Client nou',
@@ -329,7 +329,7 @@ export const APP_TRANSLATIONS = {
                 emailFailed: "The email couldn't be sent automatically — send the details manually (they appear here, once):",
                 emailLabel: 'Email', passwordLabel: 'Password',
                 countOne: 'client organization', countOther: 'client organizations',
-                colOrg: 'Organization', colCountry: 'Country', colStatus: 'Status', empty: 'No clients yet.',
+                colOrg: 'Organization', colPartner: 'Partner', colCountry: 'Country', colStatus: 'Status', empty: 'No clients yet.',
             },
             create: {
                 title: 'New client',
@@ -635,7 +635,7 @@ export const APP_TRANSLATIONS = {
                 emailFailed: 'Die E-Mail konnte nicht automatisch gesendet werden — senden Sie die Daten manuell (sie erscheinen hier, einmalig):',
                 emailLabel: 'E-Mail', passwordLabel: 'Passwort',
                 countOne: 'Kundenorganisation', countOther: 'Kundenorganisationen',
-                colOrg: 'Organisation', colCountry: 'Land', colStatus: 'Status', empty: 'Noch keine Kunden.',
+                colOrg: 'Organisation', colPartner: 'Partner', colCountry: 'Land', colStatus: 'Status', empty: 'Noch keine Kunden.',
             },
             create: {
                 title: 'Neuer Kunde',
