@@ -11,6 +11,24 @@ function initials(name) {
         .join('');
 }
 
+// Reported: while testing with many accounts at once, it's easy to forget
+// which one is logged in and what it actually is — the header showed the
+// name and the organization/franchise, never the role itself. Most privileged
+// first: a dual-role account (e.g. a real customer-admin additively also
+// granted 'partner', see User::isActingAsPartnerOnly()'s own docblock) shows
+// its real role, not the narrow one it happened to pick up along the way.
+const ROLE_DISPLAY_PRIORITY = [
+    'platform-admin', 'franchisor-admin', 'franchise-partner-admin',
+    'customer-admin', 'event-manager', 'data-protection-officer',
+    'partner', 'photographer', 'client-contact',
+];
+
+function primaryRoleLabel(roles, labels) {
+    const role = ROLE_DISPLAY_PRIORITY.find((candidate) => roles.includes(candidate));
+
+    return role ? labels[role] : null;
+}
+
 function LocaleSwitcher({ current }) {
     return (
         <div className="flex items-center gap-1 text-xs font-semibold">
@@ -120,6 +138,8 @@ export default function AppLayout({ title, active = null, actions = null, childr
             ? user.organization?.name
             : (user?.franchise_partner?.name ?? (user?.roles ?? [])[0]);
 
+    const roleLabel = primaryRoleLabel(user?.roles ?? [], t.users.roles);
+
     return (
         <div className="min-h-screen bg-paper">
             <nav className="border-b border-line bg-white">
@@ -156,6 +176,7 @@ export default function AppLayout({ title, active = null, actions = null, childr
                             <span>
                                 <span className="text-ink-soft">{user.name}</span>
                                 {contextLabel && <span className="text-ink-muted"> · {contextLabel}</span>}
+                                {roleLabel && <span className="text-ink-muted"> · {roleLabel}</span>}
                             </span>
                             <Link
                                 href={route('profile.edit')}

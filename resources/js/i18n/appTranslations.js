@@ -87,7 +87,11 @@ export const APP_TRANSLATIONS = {
             },
         },
         users: {
-            roles: { 'customer-admin': 'Admin organizație', 'event-manager': 'Manager eveniment', 'data-protection-officer': 'Responsabil protecția datelor', photographer: 'Fotograf' },
+            roles: {
+                'platform-admin': 'Admin platformă', 'franchisor-admin': 'Admin francizor', 'franchise-partner-admin': 'Admin franciză',
+                'customer-admin': 'Admin organizație', 'event-manager': 'Manager eveniment', 'data-protection-officer': 'Responsabil protecția datelor',
+                photographer: 'Fotograf', partner: 'Partener', 'client-contact': 'Contact client',
+            },
             index: {
                 title: 'Echipă', newUser: 'Adaugă coleg',
                 emailSent: 'Trimis automat pe email noului coleg. Datele apar și aici, o singură dată:',
@@ -404,7 +408,11 @@ export const APP_TRANSLATIONS = {
             },
         },
         users: {
-            roles: { 'customer-admin': 'Organization admin', 'event-manager': 'Event manager', 'data-protection-officer': 'Data protection officer', photographer: 'Photographer' },
+            roles: {
+                'platform-admin': 'Platform admin', 'franchisor-admin': 'Franchisor admin', 'franchise-partner-admin': 'Franchise admin',
+                'customer-admin': 'Organization admin', 'event-manager': 'Event manager', 'data-protection-officer': 'Data protection officer',
+                photographer: 'Photographer', partner: 'Partner', 'client-contact': 'Client contact',
+            },
             index: {
                 title: 'Team', newUser: 'Add colleague',
                 emailSent: 'Automatically emailed to the new colleague. The details also appear here, once:',
@@ -721,7 +729,11 @@ export const APP_TRANSLATIONS = {
             },
         },
         users: {
-            roles: { 'customer-admin': 'Organisations-Admin', 'event-manager': 'Event-Manager', 'data-protection-officer': 'Datenschutzbeauftragter', photographer: 'Fotograf' },
+            roles: {
+                'platform-admin': 'Platform-Admin', 'franchisor-admin': 'Franchisegeber-Admin', 'franchise-partner-admin': 'Franchise-Admin',
+                'customer-admin': 'Organisations-Admin', 'event-manager': 'Event-Manager', 'data-protection-officer': 'Datenschutzbeauftragter',
+                photographer: 'Fotograf', partner: 'Partner', 'client-contact': 'Kundenkontakt',
+            },
             index: {
                 title: 'Team', newUser: 'Kollegen hinzufügen',
                 emailSent: 'Automatisch an den neuen Kollegen gesendet. Die Daten erscheinen auch hier, einmalig:',
