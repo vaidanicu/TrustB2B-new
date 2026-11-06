@@ -2,10 +2,12 @@
 
 namespace Tests\Feature;
 
+use App\Actions\Tenancy\AssignRole;
 use App\Models\Event;
 use App\Models\FranchisePartner;
 use App\Models\Organization;
 use App\Models\User;
+use Database\Seeders\RolesAndPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -67,5 +69,23 @@ class ParticipantPagesTest extends TestCase
         $user = User::factory()->forFranchisePartner($franchisePartner)->create();
 
         $this->actingAs($user)->get(route('participants.status', $event))->assertForbidden();
+    }
+
+    /**
+     * RolesAndPermissionsSeeder's own "Fotograf: nur Upload... kein
+     * Teilnehmerdatenexport" — a photographer has organization_id set like
+     * real staff, so the generic "has an organization" branch would
+     * otherwise let it through same as any customer-admin/event-manager.
+     */
+    public function test_status_board_is_forbidden_for_a_photographer_even_in_their_own_organization(): void
+    {
+        $this->seed(RolesAndPermissionsSeeder::class);
+
+        $organization = Organization::factory()->create();
+        $event = Event::factory()->for($organization)->create(['franchise_partner_id' => $organization->franchise_partner_id]);
+        $photographer = User::factory()->forOrganization($organization)->create();
+        (new AssignRole)->grant($photographer, 'photographer', 'test');
+
+        $this->actingAs($photographer)->get(route('participants.status', $event))->assertForbidden();
     }
 }

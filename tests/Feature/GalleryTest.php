@@ -494,13 +494,32 @@ class GalleryTest extends TestCase
             'is_restaurant' => true,
         ]);
 
-        $this->actingAs($photographer)->get(route('gallery.index', $event))->assertOk();
+        $this->actingAs($photographer)->get(route('gallery.index', $event))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page->where('backUrl', route('dashboard')));
 
         $this->actingAs($photographer)
             ->post(route('gallery.store', $event), ['photos' => [UploadedFile::fake()->image('photo.jpg')]])
             ->assertRedirect();
 
         $this->assertCount(1, $event->fresh()->getMedia('gallery'));
+    }
+
+    public function test_a_photographers_back_link_goes_to_their_dashboard_even_for_a_non_restaurant_event(): void
+    {
+        $ownOrganization = Organization::factory()->create();
+        $otherOrganization = Organization::factory()->create();
+
+        $photographer = $this->userWithRole($ownOrganization, 'photographer');
+        $event = Event::factory()->for($otherOrganization)->create([
+            'franchise_partner_id' => $otherOrganization->franchise_partner_id,
+            'photographer_user_id' => $photographer->id,
+            'is_restaurant' => false,
+        ]);
+
+        $this->actingAs($photographer)->get(route('gallery.index', $event))
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page->where('backUrl', route('dashboard')));
     }
 
     public function test_a_photographer_still_cannot_reach_an_event_at_another_client_they_are_not_assigned_to(): void

@@ -383,13 +383,22 @@ class ParticipantController extends Controller
      * Partner may do the same, but only for its OWN event — same per-row
      * scoping reasoning as EventController::update()/destroy(), since
      * events.manage carries no such restriction on its own.
+     *
+     * The photographer role is explicitly excluded from the generic
+     * "has an organization_id" branch — RolesAndPermissionsSeeder's own
+     * "Fotograf: nur Upload... kein Teilnehmerdatenexport" means never, not
+     * just within its own client: Event's own route binding now lets a
+     * photographer reach an assigned event at a different client entirely
+     * (see Event::resolveRouteBinding()), which would otherwise have handed
+     * it participant names/emails/RSVP status there too.
      */
     private function authorizeParticipantManagement(Request $request, Event $event): void
     {
         $user = $request->user();
         $isOwnPartnerEvent = $user->isActingAsPartnerOnly() && $event->partner_id === $user->partner->id;
+        $isPhotographer = $user->hasRole('photographer');
 
-        abort_unless($user->organization_id !== null || $user->can('events.manage') || $isOwnPartnerEvent, 403);
+        abort_unless((! $isPhotographer && $user->organization_id !== null) || $user->can('events.manage') || $isOwnPartnerEvent, 403);
     }
 
     private function eventPayload(Participant $participant): array

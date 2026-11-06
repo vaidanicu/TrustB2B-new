@@ -84,9 +84,19 @@ class GalleryController extends Controller
         // only ever matches their single home organization — so loading the
         // relation here would silently come back null and route() would
         // throw trying to build a URL from it.
-        $backUrl = $event->is_restaurant || $user->organization_id === null
-            ? route('organizations.events', $event->organization_id)
-            : route('participants.status', $event);
+        //
+        // A photographer gets neither of those destinations at all: it has
+        // no 'events.manage'/Partner access to organizations.events (403,
+        // same-org or not), and participants.status is meant to stay off
+        // limits to this role entirely (see authorizeParticipantManagement())
+        // — "back" always goes to its own dashboard instead.
+        if ($user->hasRole('photographer')) {
+            $backUrl = route('dashboard');
+        } elseif ($event->is_restaurant || $user->organization_id === null) {
+            $backUrl = route('organizations.events', $event->organization_id);
+        } else {
+            $backUrl = route('participants.status', $event);
+        }
 
         return Inertia::render('Events/Gallery', [
             'event' => ['id' => $event->id, 'name' => $event->name],
